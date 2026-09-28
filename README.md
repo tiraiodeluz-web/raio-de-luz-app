@@ -96,9 +96,15 @@ Este repositório cobre:
   "Confirmar pedido". Ao confirmar, chama `criar_pedido` (transação no
   banco) e abre o WhatsApp com "Oi acabei de realizar o pedido N° X"
   (regra 13).
+- **Etapa 6** — cliente: aba Meus pedidos (`(tabs)/pedidos.tsx`, sem
+  cancelar — decisão tomada #6, só o admin cancela) e o detalhe do pedido
+  (`src/app/pedido/[id].tsx`); Conta (`(tabs)/conta.tsx`) com foto, nome,
+  telefone, CNPJ, política de privacidade, sobre o app, "Ver como admin"
+  (para admins) e exclusão de conta (exigência das lojas).
 
-Ainda faltam as etapas 6 a 9 (cliente, admin, push, lojas e virada) — as
-abas Meus pedidos e Conta continuam provisórias.
+Ainda faltam as etapas 7 a 9 (admin, push, lojas e virada) — a área
+administrativa (métricas, pedidos, clientes, carrinhos abandonados,
+notificações) ainda não existe; "Ver como admin" mostra um aviso.
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
@@ -117,14 +123,24 @@ pendente conseguiam ver produto nenhum. Agora a leitura é pública (só
 
 Sem simulador/dispositivo disponível aqui, a validação foi:
 `tsc --noEmit` limpo em todo o app; as consultas da vitrine (etapa 4)
-testadas direto no Postgres com `set role anon`; e o fluxo de compra
+testadas direto no Postgres com `set role anon`; o fluxo de compra
 completo da etapa 5 (embalagem múltipla, `adicionar_ao_carrinho` somando
 quantidade em vez de duplicar, cupom, `criar_pedido` em transação,
-carrinho esvaziado, vendas incrementadas) testado simulando uma sessão
-autenticada no Postgres (`request.jwt.claims`) com um usuário e produtos
-de teste, todos removidos depois. O fluxo de login/cadastro/redefinição
-de senha (etapa 3) só foi validado por leitura. Vale um teste manual
-completo num dispositivo real antes de seguir para a etapa 6.
+carrinho esvaziado, vendas incrementadas) e a exclusão de conta da etapa 6
+(`excluir_minha_conta` apaga `auth.users` e `perfis` em cascata), todos
+testados simulando uma sessão autenticada no Postgres
+(`request.jwt.claims`) com usuários e produtos de teste, removidos
+depois. O fluxo de login/cadastro/redefinição de senha (etapa 3) só foi
+validado por leitura. Vale um teste manual completo num dispositivo real
+antes de seguir para a etapa 7.
+
+### Texto provisório
+
+`src/app/politica-privacidade.tsx` tem um texto genérico gerado na
+migração — precisa ser revisado antes de publicar. `src/constants/
+institucional.ts` deixa site, Instagram e e-mail como `null` (a tela
+"Sobre o aplicativo" esconde o link em vez de inventar uma URL) até
+alguém preencher com os dados reais.
 
 ## Publicação (EAS)
 
