@@ -1,56 +1,86 @@
-# Welcome to your Expo app 👋
+# Raio de Luz Religiosos — app B2B
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App React Native (Expo) que substitui o app Bubble da Raio de Luz Religiosos.
+Backend em Supabase (Postgres, Auth, Storage, Edge Functions), hospedado em
+São Paulo (`sa-east-1`). O sistema de cotação de frete **não** faz parte
+deste app — veja o levantamento de migração para o escopo completo.
 
-## Get started
+## Estrutura
 
-1. Install dependencies
+```
+src/
+  app/            rotas (Expo Router) — src/app/(tabs) tem as 5 abas do cliente
+  components/      componentes de UI reutilizáveis
+  constants/       tema e cores da marca
+  hooks/           hooks (tema, color scheme)
+  lib/supabase.ts  cliente Supabase
+  types/database.ts tipos gerados a partir do schema do Postgres
+supabase/
+  migrations/      schema, RLS, funções, push, storage — histórico completo
+  functions/       Edge Functions (processar-fila-push)
+```
+
+## Configuração
+
+1. Instalar dependências:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Variáveis de ambiente — copie `.env.example` para `.env`. A URL e a chave
+   publicável (anon) do Supabase já estão preenchidas; não são segredo (o
+   acesso aos dados é controlado pelas políticas de RLS de cada tabela, ver
+   `supabase/migrations`).
+
+3. Rodar o app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Banco de dados (Supabase)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+O projeto Supabase (`raio-de-luz-app`, região `sa-east-1`) já tem o schema
+aplicado. As migrations em `supabase/migrations/` são a fonte da verdade —
+para reaplicar do zero num projeto novo:
 
 ```bash
-npm run reset-project
+npx supabase link --project-ref <project-id>
+npx supabase db push
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Para atualizar os tipos TypeScript depois de uma nova migration:
 
-### Other setup steps
+```bash
+npx supabase gen types typescript --project-id <project-id> > src/types/database.ts
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### Configuração pendente em `privado.config`
 
-## Learn more
+Duas chaves ficam vazias até você preencher (não são segredos de app, mas
+não têm um valor padrão seguro):
 
-To learn more about developing your project with Expo, look at the following resources:
+- `n8n_carrinho_url`: URL do webhook do n8n que dispara o WhatsApp de
+  carrinho abandonado. Proteja com um token no cabeçalho (ver seção
+  Segurança do levantamento).
+- A Edge Function `processar-fila-push` precisa do secret
+  `EXPO_ACCESS_TOKEN` **apenas** se "Enhanced push security" estiver
+  ligado no painel da Expo.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Estado da migração
 
-## Join the community
+Este repositório cobre a Etapa 1 (base do projeto) e a Etapa 2 (banco) do
+plano de execução. Ainda faltam as etapas 3 a 9 (acesso, vitrine, compra,
+cliente, admin, push, lojas e virada) — as 5 abas hoje são telas
+provisórias que apontam para a etapa que as substitui.
 
-Join our community of developers creating universal apps.
+A carga de ensaio a partir do Bubble depende de liberar a Data API no
+Bubble e gerar um token (Settings → API); isso ainda não foi feito.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Publicação (EAS)
+
+`eas.json` já tem os perfis `development`, `preview` e `production`. O
+pacote Android é `com.raiodeluzreligiosos.mobile` (o mesmo do app já
+publicado) — mantenha o mesmo keystore ou ative o Play App Signing antes
+do primeiro build de produção.

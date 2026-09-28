@@ -1,18 +1,22 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Raio de Luz Religiosos",
+    "slug": "raio-de-luz-religiosos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "app",
+    "scheme": "raiodeluz",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#010534",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.raiodeluzreligiosos.mobile",
+      "supportsTablet": false
     },
     "android": {
+      "package": "com.raiodeluzreligiosos.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#010534",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -28,9 +32,15 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#010534",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#C9A227"
         }
       ]
     ],

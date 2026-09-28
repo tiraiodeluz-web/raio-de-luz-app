@@ -7,6 +7,14 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Cores da marca Raio de Luz Religiosos, extraídas do app Bubble.
+// Fundo escuro rgba(1,5,52) = #010534; dourado usado em destaques e no CTA principal.
+export const BrandColors = {
+  fundoEscuro: '#010534',
+  dourado: '#C9A227',
+  whatsapp: '#25D366',
+} as const;
+
 export const Colors = {
   light: {
     text: '#000000',
@@ -14,6 +22,8 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    tint: BrandColors.fundoEscuro,
+    accent: BrandColors.dourado,
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +31,8 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    tint: BrandColors.dourado,
+    accent: BrandColors.dourado,
   },
 } as const;
 
