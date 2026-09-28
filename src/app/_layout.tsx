@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { RODANDO_NO_EXPO_GO } from '@/lib/notificacoes-push';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -67,10 +68,34 @@ function GuardiaoDeRotas() {
     }
   }, [carregando, session, perfil, modoAcesso, segments, router]);
 
-  // Toque numa notificação (app em segundo plano ou fechado — "cold start")
-  // navega para a rota gravada em eventos_push.rota, já com os placeholders
-  // substituídos pelo banco (ex.: /pedido/<uuid>).
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+      {/* Expo Go (SDK 53+) não suporta as APIs nativas de notificação — nem
+          chamá-las. RODANDO_NO_EXPO_GO é fixo durante toda a vida do app,
+          então montar/desmontar este componente condicionalmente aqui é
+          seguro (nunca alterna, não quebra a ordem dos hooks). */}
+      {!RODANDO_NO_EXPO_GO ? <TratadorDeNotificacoes carregando={carregando} router={router} /> : null}
+    </>
+  );
+}
+
+// Toque numa notificação (app em segundo plano ou fechado — "cold start")
+// navega para a rota gravada em eventos_push.rota, já com os placeholders
+// substituídos pelo banco (ex.: /pedido/<uuid>).
+function TratadorDeNotificacoes({
+  carregando,
+  router,
+}: {
+  carregando: boolean;
+  router: ReturnType<typeof useRouter>;
+}) {
   const resposta = Notifications.useLastNotificationResponse();
+
   useEffect(() => {
     if (carregando || !resposta) return;
     const rota = resposta.notification.request.content.data?.rota;
@@ -80,11 +105,5 @@ function GuardiaoDeRotas() {
     }
   }, [carregando, resposta, router]);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
-  );
+  return null;
 }

@@ -1,9 +1,19 @@
-import Constants from 'expo-constants';
+import Constants, { AppOwnership } from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+
+// Expo Go não suporta mais push remoto a partir do SDK 53 — qualquer chamada
+// às APIs nativas de notificação lança uma exceção que derruba o app
+// inteiro (não só uma função isolada). `AppOwnership.Expo` é a forma
+// específica de detectar o Expo Go (diferente de um development build, que
+// também aparece como "storeClient" em executionEnvironment mas suporta
+// push normalmente). Está depreciada na documentação, mas é a única forma
+// direta de fazer essa distinção — por isso o app inteiro passa longe das
+// APIs de notificação quando é o caso.
+export const RODANDO_NO_EXPO_GO = Constants.appOwnership === AppOwnership.Expo;
 
 // Canal Android usado pela Edge Function processar-fila-push (channelId:
 // "padrao"). Sem criar o canal aqui, o Android não sabe como notificar
@@ -11,6 +21,8 @@ import { supabase } from '@/lib/supabase';
 const CANAL_ANDROID = 'padrao';
 
 export async function configurarNotificacoes() {
+  if (RODANDO_NO_EXPO_GO) return;
+
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
@@ -38,6 +50,8 @@ let tokenAtual: string | null = null;
 // respondeu (o SO só pergunta uma vez) e garante que quem ainda está
 // aguardando aprovação já fica registrado pra receber o push de aprovado.
 export async function registrarDispositivoPush() {
+  if (RODANDO_NO_EXPO_GO) return;
+
   try {
     // Simulador/emulador não tem push de verdade e getExpoPushTokenAsync falha.
     if (!Device.isDevice) return;
@@ -72,7 +86,7 @@ export async function registrarDispositivoPush() {
 // Chamado ao sair (não apaga o histórico, só marca este aparelho como
 // inativo para esta conta — cada login registra de novo).
 export async function removerDispositivoAtual() {
-  if (!tokenAtual) return;
+  if (RODANDO_NO_EXPO_GO || !tokenAtual) return;
   try {
     await supabase.rpc('remover_dispositivo', { p_token: tokenAtual });
   } catch (erro) {
