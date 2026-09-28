@@ -1,19 +1,18 @@
-import Constants, { AppOwnership } from 'expo-constants';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+// Import só de tipos: não gera um require() real no bundle, então não
+// dispara o crash do Expo Go (ver ambiente.ts). O módulo em si só é
+// carregado (via require() lá embaixo) depois de checar RODANDO_NO_EXPO_GO.
+import type * as NotificationsType from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { supabase } from '@/lib/supabase';
 
-// Expo Go não suporta mais push remoto a partir do SDK 53 — qualquer chamada
-// às APIs nativas de notificação lança uma exceção que derruba o app
-// inteiro (não só uma função isolada). `AppOwnership.Expo` é a forma
-// específica de detectar o Expo Go (diferente de um development build, que
-// também aparece como "storeClient" em executionEnvironment mas suporta
-// push normalmente). Está depreciada na documentação, mas é a única forma
-// direta de fazer essa distinção — por isso o app inteiro passa longe das
-// APIs de notificação quando é o caso.
-export const RODANDO_NO_EXPO_GO = Constants.appOwnership === AppOwnership.Expo;
+function carregarNotifications(): typeof NotificationsType {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('expo-notifications');
+}
 
 // Canal Android usado pela Edge Function processar-fila-push (channelId:
 // "padrao"). Sem criar o canal aqui, o Android não sabe como notificar
@@ -22,6 +21,7 @@ const CANAL_ANDROID = 'padrao';
 
 export async function configurarNotificacoes() {
   if (RODANDO_NO_EXPO_GO) return;
+  const Notifications = carregarNotifications();
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -56,6 +56,7 @@ export async function registrarDispositivoPush() {
     // Simulador/emulador não tem push de verdade e getExpoPushTokenAsync falha.
     if (!Device.isDevice) return;
 
+    const Notifications = carregarNotifications();
     const permissaoAtual = await Notifications.getPermissionsAsync();
     let concedida = permissaoAtual.granted;
     if (!concedida && permissaoAtual.canAskAgain) {

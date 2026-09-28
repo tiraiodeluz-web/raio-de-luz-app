@@ -1,12 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, type Href } from 'expo-router';
-import * as Notifications from 'expo-notifications';
+// Import só de tipos — não gera um require() real no bundle (ver
+// src/lib/ambiente.ts e notificacoes-push.ts para o porquê).
+import type * as NotificationsType from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
-import { RODANDO_NO_EXPO_GO } from '@/lib/notificacoes-push';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -75,10 +77,11 @@ function GuardiaoDeRotas() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
       </Stack>
-      {/* Expo Go (SDK 53+) não suporta as APIs nativas de notificação — nem
-          chamá-las. RODANDO_NO_EXPO_GO é fixo durante toda a vida do app,
-          então montar/desmontar este componente condicionalmente aqui é
-          seguro (nunca alterna, não quebra a ordem dos hooks). */}
+      {/* Expo Go (SDK 53+) quebra só de importar expo-notifications — nem
+          chega a chamar nada. RODANDO_NO_EXPO_GO é fixo durante toda a vida
+          do app, então montar/desmontar este componente condicionalmente
+          aqui é seguro (nunca alterna, não quebra a ordem dos hooks), e é
+          o que evita o require() do módulo problemático no Expo Go. */}
       {!RODANDO_NO_EXPO_GO ? <TratadorDeNotificacoes carregando={carregando} router={router} /> : null}
     </>
   );
@@ -94,6 +97,8 @@ function TratadorDeNotificacoes({
   carregando: boolean;
   router: ReturnType<typeof useRouter>;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Notifications = require('expo-notifications') as typeof NotificationsType;
   const resposta = Notifications.useLastNotificationResponse();
 
   useEffect(() => {
