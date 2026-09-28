@@ -6,8 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { formatarReais } from '@/lib/formatacao';
 import { usePedidoDetalhe } from '@/lib/pedidos';
 
@@ -44,7 +43,7 @@ export default function DetalhePedidoScreen() {
       <CabecalhoVoltar titulo={`Pedido Nº ${pedido.numero}`} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.cabecalho}>
-          <StatusPedidoBadge status={pedido.status} />
+          <StatusPedidoBadge status={pedido.status} semFundo />
           <ThemedText themeColor="textSecondary">{FORMATADOR_DATA.format(new Date(pedido.criado_em))}</ThemedText>
         </View>
 
@@ -67,7 +66,7 @@ export default function DetalhePedidoScreen() {
         <View style={styles.secao}>
           <ThemedText type="smallBold">Itens</ThemedText>
           {itens.map((item) => (
-            <ThemedView key={item.id} type="backgroundElement" style={styles.item}>
+            <View key={item.id} style={styles.item}>
               <Image source={{ uri: item.imagem_url ?? undefined }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
@@ -83,17 +82,20 @@ export default function DetalhePedidoScreen() {
                 </ThemedText>
               </View>
               <ThemedText type="smallBold">{formatarReais(item.subtotal)}</ThemedText>
-            </ThemedView>
+            </View>
           ))}
         </View>
 
-        <ThemedView type="backgroundElement" style={styles.resumo}>
+        <View style={styles.resumo}>
+          <ThemedText type="smallBold" style={styles.resumoTitulo}>
+            Resumo do Pedido
+          </ThemedText>
           <LinhaResumo rotulo="Subtotal" valor={formatarReais(pedido.subtotal)} />
           {pedido.desconto > 0 ? (
             <LinhaResumo rotulo={`Desconto${pedido.cupom_codigo ? ` (${pedido.cupom_codigo})` : ''}`} valor={`− ${formatarReais(pedido.desconto)}`} />
           ) : null}
           <LinhaResumo rotulo="Total" valor={formatarReais(pedido.total)} destaque />
-        </ThemedView>
+        </View>
 
         {pedido.observacoes ? (
           <View style={styles.secao}>
@@ -118,14 +120,24 @@ function LinhaResumo({ rotulo, valor, destaque }: { rotulo: string; valor: strin
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   scroll: { padding: Spacing.three, gap: Spacing.three, paddingBottom: Spacing.six },
   cabecalho: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   secao: { gap: Spacing.one },
-  item: { flexDirection: 'row', gap: Spacing.two, padding: Spacing.two, borderRadius: 10, alignItems: 'center' },
+  item: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
   itemImagem: { width: 56, height: 56, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
-  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one },
+  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
+  resumoTitulo: { marginBottom: Spacing.one, color: BrandColors.fundoEscuro },
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },
 });

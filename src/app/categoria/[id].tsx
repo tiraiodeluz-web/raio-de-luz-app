@@ -30,5 +30,5 @@ export default function CategoriaScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
 });

@@ -8,8 +8,7 @@ import { Button } from '@/components/button';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { proximoStatus, useAlterarStatusPedido, usePedidoAdminDetalhe } from '@/lib/admin';
 import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos } from '@/lib/mascaras';
@@ -84,7 +83,7 @@ export default function DetalhePedidoAdminScreen() {
         <View style={styles.secao}>
           <ThemedText type="smallBold">Itens</ThemedText>
           {itens.map((item) => (
-            <ThemedView key={item.id} type="backgroundElement" style={styles.item}>
+            <View key={item.id} style={styles.item}>
               <Image source={{ uri: item.imagem_url ?? undefined }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
@@ -100,15 +99,18 @@ export default function DetalhePedidoAdminScreen() {
                 </ThemedText>
               </View>
               <ThemedText type="smallBold">{formatarReais(item.subtotal)}</ThemedText>
-            </ThemedView>
+            </View>
           ))}
         </View>
 
-        <ThemedView type="backgroundElement" style={styles.resumo}>
+        <View style={styles.resumo}>
+          <ThemedText type="smallBold" style={styles.resumoTitulo}>
+            Resumo do Pedido
+          </ThemedText>
           <LinhaResumo rotulo="Subtotal" valor={formatarReais(pedido.subtotal)} />
           {pedido.desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(pedido.desconto)}`} /> : null}
           <LinhaResumo rotulo="Total" valor={formatarReais(pedido.total)} destaque />
-        </ThemedView>
+        </View>
       </ScrollView>
 
       {pedido.status !== 'cancelado' ? (
@@ -116,11 +118,12 @@ export default function DetalhePedidoAdminScreen() {
           {proximo ? (
             <Button
               titulo={`Marcar como ${ROTULO_STATUS[proximo]}`}
+              icone="checkmark-done"
               onPress={() => alterarStatus.mutate({ id: pedido.id, status: proximo })}
               carregando={alterarStatus.isPending}
             />
           ) : null}
-          <Button titulo="Cancelar pedido" variante="texto" onPress={confirmarCancelamento} />
+          <Button titulo="Cancelar pedido" variante="texto" icone="close-circle" corIcone="#D64545" onPress={confirmarCancelamento} />
         </View>
       ) : null}
     </SafeAreaView>
@@ -139,17 +142,27 @@ function LinhaResumo({ rotulo, valor, destaque }: { rotulo: string; valor: strin
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   scroll: { padding: Spacing.three, gap: Spacing.three, paddingBottom: Spacing.three },
   cabecalho: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   secao: { gap: Spacing.one },
   clienteLinha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   clienteTexto: { flex: 1 },
-  item: { flexDirection: 'row', gap: Spacing.two, padding: Spacing.two, borderRadius: 10, alignItems: 'center' },
+  item: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
   itemImagem: { width: 56, height: 56, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
-  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one },
+  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
+  resumoTitulo: { marginBottom: Spacing.one, color: BrandColors.fundoEscuro },
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },
   rodape: { padding: Spacing.three, gap: Spacing.one },
 });

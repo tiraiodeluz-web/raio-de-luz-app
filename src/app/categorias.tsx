@@ -29,7 +29,7 @@ export default function CategoriasScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   lista: { padding: Spacing.three, gap: Spacing.three },
   linha: { justifyContent: 'space-between' },
 });

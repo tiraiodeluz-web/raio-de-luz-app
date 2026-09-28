@@ -7,7 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 type Props = TextInputProps & {
-  rotulo: string;
+  rotulo?: string;
   erro?: string;
   icone?: keyof typeof Ionicons.glyphMap;
   // Telas com fundo navy cheio (Login/Cadastro): rótulo em branco, campo
@@ -22,9 +22,11 @@ export function TextField({ rotulo, erro, icone, claro, style, ...rest }: Props)
 
   return (
     <View style={styles.container}>
-      <ThemedText type="smallBold" themeColor={claro ? undefined : 'textSecondary'} style={claro ? styles.rotuloClaro : undefined}>
-        {rotulo}
-      </ThemedText>
+      {rotulo ? (
+        <ThemedText type="smallBold" themeColor={claro ? undefined : 'textSecondary'} style={claro ? styles.rotuloClaro : undefined}>
+          {rotulo}
+        </ThemedText>
+      ) : null}
       <View
         style={[
           styles.pilula,

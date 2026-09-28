@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCarrinhoDoCliente } from '@/lib/admin';
 import { formatarReais, precoExibido } from '@/lib/formatacao';
@@ -39,7 +38,7 @@ export default function CarrinhoDoClienteScreen() {
           }
           ListEmptyComponent={<EstadoVazio icone="cart-outline" titulo="Carrinho vazio" />}
           renderItem={({ item }) => (
-            <ThemedView type="backgroundElement" style={styles.item}>
+            <View style={styles.item}>
               <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
@@ -54,7 +53,7 @@ export default function CarrinhoDoClienteScreen() {
                   {item.quantidade} × {formatarReais(precoExibido(item.produto.preco, item.produto.preco_promocional))}
                 </ThemedText>
               </View>
-            </ThemedView>
+            </View>
           )}
         />
       )}
@@ -63,11 +62,20 @@ export default function CarrinhoDoClienteScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
   total: { marginBottom: Spacing.one },
-  item: { flexDirection: 'row', gap: Spacing.two, padding: Spacing.two, borderRadius: 10, alignItems: 'center' },
+  item: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
   itemImagem: { width: 56, height: 56, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
 });

@@ -38,11 +38,11 @@ export default function EnviarNotificacaoScreen() {
       <AdminCabecalho titulo="Enviar notificação" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={60}>
         <ScrollView contentContainerStyle={styles.scroll}>
-          <TextField rotulo="Título" value={titulo} onChangeText={setTitulo} placeholder="Título" />
-          <TextField rotulo="Subtítulo" value={legenda} onChangeText={setLegenda} placeholder="Opcional" />
+          <TextField rotulo="Título" value={titulo} onChangeText={setTitulo} placeholder="Título" icone="text-outline" />
+          <TextField rotulo="Subtítulo" value={legenda} onChangeText={setLegenda} placeholder="Opcional" icone="text-outline" />
           <TextField rotulo="Corpo" value={corpo} onChangeText={setCorpo} placeholder="Mensagem" multiline numberOfLines={4} style={styles.corpo} />
           {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
-          <Button titulo="Enviar para todos" onPress={enviarNotificacao} carregando={enviar.isPending} />
+          <Button titulo="Enviar para todos" icone="megaphone" onPress={enviarNotificacao} carregando={enviar.isPending} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -50,7 +50,7 @@ export default function EnviarNotificacaoScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   flex: { flex: 1 },
   scroll: { padding: Spacing.three, gap: Spacing.three },
   corpo: { minHeight: 100, textAlignVertical: 'top' },

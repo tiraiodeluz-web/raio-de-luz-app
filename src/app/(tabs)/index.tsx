@@ -11,9 +11,8 @@ import { EstadoVazio } from '@/components/estado-vazio';
 import { ProdutoCard } from '@/components/produto-card';
 import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import {
   useBanners,
   useCategorias,
@@ -54,7 +53,7 @@ export default function InicioScreen() {
         </View>
 
         <View style={styles.secao}>
-          <SecaoCabecalho titulo="Em oferta" verMaisHref="/ofertas" />
+          <SecaoCabecalho titulo="Em oferta" verMaisHref="/ofertas" icone="flame" corIcone="#E85D3A" />
           {destaque.isLoading ? (
             <ActivityIndicator style={styles.carregandoHorizontal} />
           ) : destaque.data && destaque.data.length > 0 ? (
@@ -76,13 +75,13 @@ export default function InicioScreen() {
         </View>
 
         <View style={styles.secao}>
-          <SecaoCabecalho titulo="Mais vendidos" verMaisHref="/mais-vendidos" />
+          <SecaoCabecalho titulo="Mais vendidos" verMaisHref="/mais-vendidos" icone="star" corIcone={BrandColors.dourado} />
           {maisVendidos.isLoading ? (
             <ActivityIndicator style={styles.carregandoHorizontal} />
           ) : maisVendidos.data && maisVendidos.data.length > 0 ? (
             <View style={styles.grade2Colunas}>
               {maisVendidos.data.map((produto) => (
-                <ProdutoCard key={produto.id} produto={produto} />
+                <ProdutoCard key={produto.id} produto={produto} mostrarComprar onComprar={setProdutoParaComprar} />
               ))}
             </View>
           ) : (
@@ -102,34 +101,60 @@ export default function InicioScreen() {
 
 function Cabecalho() {
   return (
-    <ThemedView style={styles.cabecalho}>
-      <ThemedText type="title" style={styles.logo}>
-        Raio de Luz
-      </ThemedText>
-      <View style={styles.cabecalhoIcones}>
-        <Pressable onPress={() => router.push('/busca')} hitSlop={8}>
-          <Ionicons name="search" size={24} />
-        </Pressable>
-        <Pressable onPress={() => router.push('/notificacoes')} hitSlop={8}>
-          <Ionicons name="notifications-outline" size={24} />
-        </Pressable>
+    <View style={styles.cabecalho}>
+      <View style={styles.cabecalhoLogo}>
+        <ThemedText style={styles.logoTitulo} numberOfLines={1}>
+          RAIO DE LUZ
+        </ThemedText>
+        <ThemedText style={styles.logoSubtitulo} numberOfLines={1}>
+          RELIGIOSOS
+        </ThemedText>
       </View>
-    </ThemedView>
+      <Pressable style={styles.busca} onPress={() => router.push('/busca')}>
+        <Ionicons name="search" size={18} color="#8A8D99" />
+        <ThemedText type="small" themeColor="textSecondary">
+          Buscar produtos...
+        </ThemedText>
+      </Pressable>
+      <Pressable style={styles.sino} onPress={() => router.push('/notificacoes')} hitSlop={8}>
+        <Ionicons name="notifications-outline" size={20} color="#ffffff" />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   scroll: { paddingBottom: Spacing.six, gap: Spacing.four },
   cabecalho: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  logo: { fontSize: 22, lineHeight: 26 },
-  cabecalhoIcones: { flexDirection: 'row', gap: Spacing.three },
+  cabecalhoLogo: { gap: 0 },
+  logoTitulo: { color: BrandColors.fundoEscuro, fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
+  logoSubtitulo: { color: BrandColors.fundoEscuro, fontSize: 9, fontWeight: '600', letterSpacing: 1 },
+  busca: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    minHeight: 40,
+    borderRadius: Radii.pilula,
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+    paddingHorizontal: Spacing.three,
+  },
+  sino: {
+    width: 40,
+    height: 40,
+    borderRadius: Radii.pilula,
+    backgroundColor: BrandColors.fundoEscuro,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   secao: { gap: Spacing.two },
   listaHorizontal: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   carregandoHorizontal: { marginVertical: Spacing.three },

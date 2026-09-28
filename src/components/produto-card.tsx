@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import type { ProdutoResumo } from '@/lib/produtos';
@@ -22,8 +21,8 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
 
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/produto/${produto.id}`)}>
-      <ThemedView type="backgroundElement" style={styles.imagemContainer}>
-        <Image source={{ uri: produto.imagem_principal ?? undefined }} style={styles.imagem} contentFit="cover" />
+      <View style={styles.imagemContainer}>
+        <Image source={{ uri: produto.imagem_principal ?? undefined }} style={styles.imagem} contentFit="contain" />
         {temDesconto ? (
           <View style={styles.selo}>
             <ThemedText type="small" style={styles.seloTexto}>
@@ -31,7 +30,7 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
             </ThemedText>
           </View>
         ) : null}
-      </ThemedView>
+      </View>
 
       <ThemedText type="small" numberOfLines={2} style={styles.nome}>
         {produto.nome}
@@ -43,22 +42,32 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
             {formatarReais(produto.preco)}
           </ThemedText>
         ) : null}
-        <ThemedText type="smallBold">{formatarReais(preco)}</ThemedText>
+        <ThemedText type="smallBold" style={styles.preco}>
+          {formatarReais(preco)}
+        </ThemedText>
       </View>
 
-      {mostrarComprar ? (
-        <Button titulo="Comprar" variante="secundario" onPress={() => onComprar?.(produto)} />
-      ) : null}
+      {mostrarComprar ? <Button titulo="Comprar" icone="cart" onPress={() => onComprar?.(produto)} /> : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, gap: Spacing.half, maxWidth: '48%' },
+  container: {
+    flex: 1,
+    gap: Spacing.half,
+    maxWidth: '48%',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+    borderRadius: 10,
+    padding: Spacing.two,
+  },
   imagemContainer: {
     aspectRatio: 1,
-    borderRadius: 10,
+    borderRadius: 8,
     overflow: 'hidden',
+    backgroundColor: '#ffffff',
   },
   imagem: { width: '100%', height: '100%' },
   selo: {
@@ -71,7 +80,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   seloTexto: { color: '#ffffff' },
-  nome: { minHeight: 36 },
-  precos: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.one, flexWrap: 'wrap' },
+  nome: { minHeight: 36, textAlign: 'center' },
+  precos: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.one, flexWrap: 'wrap', justifyContent: 'center' },
+  preco: { fontSize: 17 },
   precoRiscado: { textDecorationLine: 'line-through' },
 });

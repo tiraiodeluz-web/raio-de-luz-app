@@ -5,8 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdminCabecalho } from '@/components/admin-cabecalho';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radii, Spacing } from '@/constants/theme';
 import { useCarrinhosAbandonados } from '@/lib/admin';
 import { formatarReais } from '@/lib/formatacao';
 
@@ -26,7 +25,7 @@ export default function CarrinhosAbandonadosScreen() {
           ListEmptyComponent={<EstadoVazio icone="cart-outline" titulo="Nenhum carrinho abandonado" />}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/admin/carrinho/${item.usuario_id}`)}>
-              <ThemedView type="backgroundElement" style={styles.item}>
+              <View style={styles.item}>
                 <View style={styles.cabecalho}>
                   <ThemedText type="smallBold" style={styles.nome}>
                     {item.razao_social || item.nome}
@@ -40,7 +39,7 @@ export default function CarrinhosAbandonadosScreen() {
                 <ThemedText themeColor="textSecondary">
                   {item.itens} {item.itens === 1 ? 'item' : 'itens'} · {formatarReais(item.valor)}
                 </ThemedText>
-              </ThemedView>
+              </View>
             </Pressable>
           )}
         />
@@ -50,13 +49,13 @@ export default function CarrinhosAbandonadosScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
-  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half },
+  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   nome: { flex: 1 },
-  selo: { borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: 2 },
+  selo: { borderRadius: Radii.pilula, paddingHorizontal: Spacing.two, paddingVertical: 2 },
   seloEnviado: { backgroundColor: '#1E8E3E22' },
   seloNaoEnviado: { backgroundColor: '#00000014' },
   seloTexto: { fontWeight: '700' },

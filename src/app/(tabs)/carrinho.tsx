@@ -10,8 +10,7 @@ import { EstadoVazio } from '@/components/estado-vazio';
 import { SeletorQuantidade } from '@/components/seletor-quantidade';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import {
   calcularSubtotalCarrinho,
@@ -91,9 +90,7 @@ export default function CarrinhoScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ThemedText type="title" style={styles.titulo}>
-        Carrinho
-      </ThemedText>
+      <ThemedText style={styles.titulo}>Carrinho</ThemedText>
 
       <FlatList
         data={listaItens}
@@ -112,10 +109,12 @@ export default function CarrinhoScreen() {
         ListFooterComponent={
           listaItens.length > 0 ? (
             <View style={styles.rodapeLista}>
+              <ThemedText type="smallBold" style={styles.cupomTitulo}>
+                Cupom de Desconto
+              </ThemedText>
               <View style={styles.linhaCupom}>
                 <View style={styles.campoCupom}>
                   <TextField
-                    rotulo="Cupom de desconto"
                     value={codigoCupom}
                     onChangeText={setCodigoCupom}
                     autoCapitalize="characters"
@@ -123,7 +122,7 @@ export default function CarrinhoScreen() {
                     erro={erroCupom ?? undefined}
                   />
                 </View>
-                <Button titulo="Aplicar" variante="secundario" onPress={aplicarCupom} carregando={verificandoCupom} />
+                <Button titulo="Aplicar" onPress={aplicarCupom} carregando={verificandoCupom} />
               </View>
               {cupom ? (
                 <ThemedText type="small" style={styles.cupomAplicado}>
@@ -131,11 +130,14 @@ export default function CarrinhoScreen() {
                 </ThemedText>
               ) : null}
 
-              <ThemedView type="backgroundElement" style={styles.resumo}>
+              <View style={styles.resumo}>
+                <ThemedText type="smallBold" style={styles.resumoTitulo}>
+                  Resumo do Pedido
+                </ThemedText>
                 <LinhaResumo rotulo="Subtotal" valor={formatarReais(subtotal)} />
                 {desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(desconto)}`} /> : null}
                 <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
-              </ThemedView>
+              </View>
 
               <Button titulo="Finalizar compra" onPress={finalizarCompra} />
             </View>
@@ -158,7 +160,7 @@ function ItemLinha({
   const preco = item.produto.preco_promocional && item.produto.preco_promocional > 0 ? item.produto.preco_promocional : item.produto.preco;
 
   return (
-    <ThemedView type="backgroundElement" style={styles.item}>
+    <View style={styles.item}>
       <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
@@ -182,9 +184,9 @@ function ItemLinha({
         </View>
       </View>
       <Pressable onPress={onRemover} hitSlop={8} style={styles.itemRemover}>
-        <Ionicons name="trash-outline" size={20} />
+        <Ionicons name="trash-outline" size={20} color={BrandColors.fundoEscuro} />
       </Pressable>
-    </ThemedView>
+    </View>
   );
 }
 
@@ -200,20 +202,37 @@ function LinhaResumo({ rotulo, valor, destaque }: { rotulo: string; valor: strin
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  titulo: { fontSize: 22, lineHeight: 28, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
+  titulo: { fontSize: 20, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three },
   carregando: { marginTop: Spacing.five },
   botaoEntrar: { paddingHorizontal: Spacing.four },
   lista: { padding: Spacing.three, gap: Spacing.two, flexGrow: 1 },
-  item: { flexDirection: 'row', gap: Spacing.two, padding: Spacing.two, borderRadius: 10 },
+  item: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
   itemImagem: { width: 72, height: 72, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
   itemLinhaBaixo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.one },
   itemRemover: { padding: Spacing.half },
   rodapeLista: { gap: Spacing.two, marginTop: Spacing.two },
+  cupomTitulo: { color: BrandColors.fundoEscuro },
   linhaCupom: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end' },
   campoCupom: { flex: 1 },
   cupomAplicado: { color: '#1E8E3E' },
-  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one },
+  resumo: {
+    borderRadius: 12,
+    padding: Spacing.three,
+    gap: Spacing.one,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
+  resumoTitulo: { color: BrandColors.fundoEscuro, marginBottom: Spacing.one },
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },
 });

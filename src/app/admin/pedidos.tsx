@@ -8,8 +8,7 @@ import { EstadoVazio } from '@/components/estado-vazio';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { BrandColors, Spacing } from '@/constants/theme';
+import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import { usePedidosAdmin, type StatusFiltro } from '@/lib/admin';
 import { formatarReais } from '@/lib/formatacao';
 
@@ -36,7 +35,7 @@ export default function PedidosAdminScreen() {
       <AdminCabecalho titulo="Pedidos" />
 
       <View style={styles.campoBusca}>
-        <TextField rotulo="Buscar por número" value={busca} onChangeText={setBusca} keyboardType="number-pad" placeholder="Nº do pedido" />
+        <TextField value={busca} onChangeText={setBusca} keyboardType="number-pad" placeholder="Buscar por número" icone="search" />
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtros}>
@@ -64,14 +63,15 @@ export default function PedidosAdminScreen() {
             const cliente = item.cliente_snapshot as { nome?: string; razao_social?: string } | null;
             return (
               <Pressable onPress={() => router.push(`/admin/pedido/${item.id}`)}>
-                <ThemedView type="backgroundElement" style={styles.item}>
+                <View style={styles.item}>
                   <StatusPedidoBadge status={item.status} />
                   <ThemedText type="smallBold">Pedido Nº {item.numero}</ThemedText>
                   <ThemedText themeColor="textSecondary">{cliente?.razao_social || cliente?.nome}</ThemedText>
-                  <ThemedText themeColor="textSecondary">
-                    {formatarReais(item.total)} · {FORMATADOR_DATA.format(new Date(item.criado_em))}
-                  </ThemedText>
-                </ThemedView>
+                  <View style={styles.itemLinhaBaixo}>
+                    <ThemedText type="smallBold">{formatarReais(item.total)}</ThemedText>
+                    <ThemedText themeColor="textSecondary">{FORMATADOR_DATA.format(new Date(item.criado_em))}</ThemedText>
+                  </View>
+                </View>
               </Pressable>
             );
           }}
@@ -82,13 +82,14 @@ export default function PedidosAdminScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   campoBusca: { paddingHorizontal: Spacing.three },
   filtros: { paddingHorizontal: Spacing.three, gap: Spacing.one, paddingVertical: Spacing.two },
-  filtro: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one, borderRadius: 16, borderWidth: 1, borderColor: BrandColors.fundoEscuro },
+  filtro: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one, borderRadius: Radii.pilula, borderWidth: 1, borderColor: BrandColors.fundoEscuro },
   filtroAtivo: { backgroundColor: BrandColors.fundoEscuro },
   filtroTextoAtivo: { color: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
-  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half },
+  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
+  itemLinhaBaixo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.half },
 });

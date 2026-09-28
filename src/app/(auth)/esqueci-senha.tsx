@@ -47,7 +47,7 @@ export default function EsqueciSenhaScreen() {
           <ThemedText themeColor="textSecondary" style={styles.texto}>
             Se {email.trim()} tiver um cadastro, enviamos um link para redefinir a senha.
           </ThemedText>
-          <Button titulo="Voltar ao login" onPress={() => router.replace('/(auth)/login')} />
+          <Button titulo="Voltar ao login" icone="arrow-back" onPress={() => router.replace('/(auth)/login')} />
         </ThemedView>
       </SafeAreaView>
     );
@@ -68,9 +68,10 @@ export default function EsqueciSenhaScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          icone="mail-outline"
         />
         {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
-        <Button titulo="Enviar" onPress={enviar} carregando={enviando} />
+        <Button titulo="Enviar" icone="send" onPress={enviar} carregando={enviando} />
         <Button titulo="Voltar" variante="texto" onPress={() => router.back()} />
       </ThemedView>
     </SafeAreaView>
@@ -78,7 +79,7 @@ export default function EsqueciSenhaScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
   titulo: { fontSize: 28, lineHeight: 34 },
   texto: { marginBottom: Spacing.two },

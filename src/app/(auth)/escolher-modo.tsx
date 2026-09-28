@@ -18,15 +18,15 @@ export default function EscolherModoScreen() {
           Olá, {perfil?.nome || 'admin'}!
         </ThemedText>
         <ThemedText themeColor="textSecondary">Ir para?</ThemedText>
-        <Button titulo="Administrador" onPress={() => escolherModo('admin')} />
-        <Button titulo="Usuário" variante="secundario" onPress={() => escolherModo('cliente')} />
+        <Button titulo="Administrador" icone="shield-checkmark-outline" onPress={() => escolherModo('admin')} />
+        <Button titulo="Usuário" variante="secundario" icone="person-outline" onPress={() => escolherModo('cliente')} />
       </ThemedView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
   titulo: { fontSize: 28, lineHeight: 34 },
 });

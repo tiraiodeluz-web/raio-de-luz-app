@@ -26,13 +26,7 @@ export default function BuscaScreen() {
     <SafeAreaView style={styles.safeArea}>
       <CabecalhoVoltar titulo="Buscar" />
       <View style={styles.campo}>
-        <TextField
-          rotulo="O que você procura?"
-          value={texto}
-          onChangeText={setTexto}
-          autoFocus
-          placeholder="Nome do produto"
-        />
+        <TextField value={texto} onChangeText={setTexto} autoFocus placeholder="O que você procura?" icone="search" />
       </View>
       <GradeProdutos
         query={query}
@@ -44,6 +38,6 @@ export default function BuscaScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   campo: { marginHorizontal: Spacing.three, marginBottom: Spacing.two },
 });

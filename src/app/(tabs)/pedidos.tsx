@@ -1,12 +1,11 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
@@ -22,9 +21,7 @@ export default function PedidosScreen() {
   if (!session) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="title" style={styles.titulo}>
-          Meus pedidos
-        </ThemedText>
+        <ThemedText style={styles.titulo}>Meus Pedidos</ThemedText>
         <EstadoVazio icone="log-in-outline" titulo="Faça login para ver seus pedidos" />
         <Button titulo="Entrar" onPress={() => router.push('/(auth)/login')} />
       </SafeAreaView>
@@ -33,9 +30,7 @@ export default function PedidosScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ThemedText type="title" style={styles.titulo}>
-        Meus pedidos
-      </ThemedText>
+      <ThemedText style={styles.titulo}>Meus Pedidos</ThemedText>
 
       {isLoading ? (
         <ActivityIndicator style={styles.carregando} />
@@ -47,13 +42,14 @@ export default function PedidosScreen() {
           ListEmptyComponent={<EstadoVazio icone="receipt-outline" titulo="Você ainda não fez nenhum pedido" />}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/pedido/${item.id}`)}>
-              <ThemedView type="backgroundElement" style={styles.item}>
-                <StatusPedidoBadge status={item.status} />
-                <ThemedText type="smallBold">Pedido Nº {item.numero}</ThemedText>
-                <ThemedText themeColor="textSecondary">
-                  {formatarReais(item.total)} · {FORMATADOR_DATA.format(new Date(item.criado_em))}
-                </ThemedText>
-              </ThemedView>
+              <View style={styles.item}>
+                <StatusPedidoBadge status={item.status} semFundo />
+                <ThemedText>Pedido: {item.numero}</ThemedText>
+                <View style={styles.itemLinhaBaixo}>
+                  <ThemedText type="smallBold">Valor: {formatarReais(item.total)}</ThemedText>
+                  <ThemedText themeColor="textSecondary">Data: {FORMATADOR_DATA.format(new Date(item.criado_em))}</ThemedText>
+                </View>
+              </View>
             </Pressable>
           )}
         />
@@ -65,9 +61,17 @@ export default function PedidosScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  titulo: { fontSize: 22, lineHeight: 28, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
+  titulo: { fontSize: 20, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
-  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half },
+  item: {
+    borderRadius: 10,
+    padding: Spacing.three,
+    gap: Spacing.half,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
+  itemLinhaBaixo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.half },
 });

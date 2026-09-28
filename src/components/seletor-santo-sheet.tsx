@@ -3,8 +3,7 @@ import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import type { SantoDoProduto } from '@/lib/produtos';
 
 type Props = {
@@ -21,9 +20,9 @@ export function SeletorSantoSheet({ visivel, santos, carregando, onFechar, onSel
     <Modal visible={visivel} animationType="slide" transparent onRequestClose={onFechar}>
       <Pressable style={styles.fundo} onPress={onFechar} />
       <SafeAreaView style={styles.folhaWrapper} edges={['bottom']}>
-        <ThemedView style={styles.folha}>
+        <View style={styles.folha}>
           <View style={styles.alca} />
-          <ThemedText type="smallBold" style={styles.titulo}>
+          <ThemedText type="title" style={styles.titulo}>
             Escolha o santo
           </ThemedText>
           <FlatList
@@ -32,16 +31,16 @@ export function SeletorSantoSheet({ visivel, santos, carregando, onFechar, onSel
             contentContainerStyle={styles.lista}
             renderItem={({ item }) => (
               <Pressable style={styles.item} onPress={() => onSelecionar(item)} disabled={carregando}>
-                <ThemedView type="backgroundElement" style={styles.fotoContainer}>
+                <View style={styles.fotoContainer}>
                   {item.fotoUrl ? (
                     <Image source={{ uri: item.fotoUrl }} style={styles.foto} contentFit="cover" />
                   ) : null}
-                </ThemedView>
+                </View>
                 <ThemedText>{item.nome}</ThemedText>
               </Pressable>
             )}
           />
-        </ThemedView>
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -50,7 +49,13 @@ export function SeletorSantoSheet({ visivel, santos, carregando, onFechar, onSel
 const styles = StyleSheet.create({
   fundo: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
   folhaWrapper: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  folha: { borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', paddingTop: Spacing.two },
+  folha: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingTop: Spacing.two,
+    backgroundColor: '#ffffff',
+  },
   alca: {
     alignSelf: 'center',
     width: 40,
@@ -59,9 +64,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#00000022',
     marginBottom: Spacing.two,
   },
-  titulo: { paddingHorizontal: Spacing.three, marginBottom: Spacing.two },
+  titulo: { fontSize: 18, paddingHorizontal: Spacing.three, marginBottom: Spacing.two, color: BrandColors.fundoEscuro },
   lista: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.four, gap: Spacing.one },
   item: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.one },
-  fotoContainer: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
+  fotoContainer: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden', borderWidth: 1.5, borderColor: BrandColors.fundoEscuro },
   foto: { width: '100%', height: '100%' },
 });

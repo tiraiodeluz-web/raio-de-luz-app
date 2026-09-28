@@ -1,12 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { usePedidosDoCliente } from '@/lib/admin';
 import { formatarReais } from '@/lib/formatacao';
@@ -30,13 +29,13 @@ export default function PedidosDoClienteScreen() {
           ListEmptyComponent={<EstadoVazio icone="receipt-outline" titulo="Este cliente ainda não fez pedidos" />}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/admin/pedido/${item.id}`)}>
-              <ThemedView type="backgroundElement" style={styles.item}>
+              <View style={styles.item}>
                 <StatusPedidoBadge status={item.status} />
                 <ThemedText type="smallBold">Pedido Nº {item.numero}</ThemedText>
                 <ThemedText themeColor="textSecondary">
                   {formatarReais(item.total)} · {FORMATADOR_DATA.format(new Date(item.criado_em))}
                 </ThemedText>
-              </ThemedView>
+              </View>
             </Pressable>
           )}
         />
@@ -46,8 +45,8 @@ export default function PedidosDoClienteScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
-  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half },
+  item: { borderRadius: 10, padding: Spacing.three, gap: Spacing.half, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
 });

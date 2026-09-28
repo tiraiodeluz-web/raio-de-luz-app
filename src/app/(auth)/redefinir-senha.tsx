@@ -50,7 +50,7 @@ export default function RedefinirSenhaScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.container}>
           <ThemedText style={styles.erro}>{erroLink}</ThemedText>
-          <Button titulo="Voltar ao login" onPress={() => router.replace('/(auth)/login')} />
+          <Button titulo="Voltar ao login" icone="arrow-back" onPress={() => router.replace('/(auth)/login')} />
         </ThemedView>
       </SafeAreaView>
     );
@@ -105,6 +105,7 @@ function FormularioNovaSenha() {
           </ThemedText>
           <Button
             titulo="Ir para o login"
+            icone="log-in-outline"
             onPress={async () => {
               await supabase.auth.signOut();
               router.replace('/(auth)/login');
@@ -121,17 +122,17 @@ function FormularioNovaSenha() {
         <ThemedText type="title" style={styles.titulo}>
           Nova senha
         </ThemedText>
-        <TextField rotulo="Nova senha" value={senha} onChangeText={setSenha} secureTextEntry />
-        <TextField rotulo="Confirmar nova senha" value={confirmar} onChangeText={setConfirmar} secureTextEntry />
+        <TextField rotulo="Nova senha" value={senha} onChangeText={setSenha} secureTextEntry icone="lock-closed-outline" />
+        <TextField rotulo="Confirmar nova senha" value={confirmar} onChangeText={setConfirmar} secureTextEntry icone="lock-closed-outline" />
         {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
-        <Button titulo="Salvar" onPress={salvar} carregando={enviando} />
+        <Button titulo="Salvar" icone="checkmark" onPress={salvar} carregando={enviando} />
       </ThemedView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
   titulo: { fontSize: 28, lineHeight: 34 },
   erro: { color: '#D64545' },

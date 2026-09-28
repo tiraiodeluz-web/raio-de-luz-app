@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
-import { useTheme } from '@/hooks/use-theme';
 import type { Href } from 'expo-router';
 
 type Props = {
@@ -28,7 +26,7 @@ const ITENS: { titulo: string; icone: keyof typeof Ionicons.glyphMap; href: Href
 // abandonados, Enviar notificação, Ver como usuário e Sair.
 export function AdminMenu({ visivel, onFechar }: Props) {
   const { sair } = useAuth();
-  const theme = useTheme();
+  const pathname = usePathname();
 
   function irPara(href: Href) {
     onFechar();
@@ -39,16 +37,19 @@ export function AdminMenu({ visivel, onFechar }: Props) {
     <Modal visible={visivel} animationType="slide" transparent onRequestClose={onFechar}>
       <Pressable style={styles.fundo} onPress={onFechar} />
       <SafeAreaView style={styles.painel}>
-        <ThemedView style={styles.conteudo}>
-          <ThemedText type="smallBold" style={styles.titulo}>
+        <View style={styles.conteudo}>
+          <ThemedText type="title" style={styles.titulo}>
             Administração
           </ThemedText>
-          {ITENS.map((item) => (
-            <Pressable key={item.titulo} style={styles.item} onPress={() => irPara(item.href)}>
-              <Ionicons name={item.icone} size={20} color={theme.text} />
-              <ThemedText style={styles.itemTexto}>{item.titulo}</ThemedText>
-            </Pressable>
-          ))}
+          {ITENS.map((item) => {
+            const ativo = pathname === item.href;
+            return (
+              <Pressable key={item.titulo} style={[styles.item, ativo && styles.itemAtivo]} onPress={() => irPara(item.href)}>
+                <Ionicons name={item.icone} size={20} color={ativo ? '#ffffff' : BrandColors.fundoEscuro} />
+                <ThemedText style={ativo ? styles.itemTextoAtivo : styles.itemTexto}>{item.titulo}</ThemedText>
+              </Pressable>
+            );
+          })}
 
           <View style={styles.separador} />
 
@@ -58,7 +59,7 @@ export function AdminMenu({ visivel, onFechar }: Props) {
               onFechar();
               router.replace('/(tabs)');
             }}>
-            <Ionicons name="person-outline" size={20} color={theme.text} />
+            <Ionicons name="person-outline" size={20} color={BrandColors.fundoEscuro} />
             <ThemedText style={styles.itemTexto}>Ver como usuário</ThemedText>
           </Pressable>
           <Pressable
@@ -67,10 +68,10 @@ export function AdminMenu({ visivel, onFechar }: Props) {
               onFechar();
               sair();
             }}>
-            <Ionicons name="log-out-outline" size={20} color={theme.text} />
-            <ThemedText style={styles.itemTexto}>Sair</ThemedText>
+            <Ionicons name="log-out-outline" size={20} color="#D64545" />
+            <ThemedText style={[styles.itemTexto, styles.sairTexto]}>Sair</ThemedText>
           </Pressable>
-        </ThemedView>
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -78,10 +79,13 @@ export function AdminMenu({ visivel, onFechar }: Props) {
 
 const styles = StyleSheet.create({
   fundo: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
-  painel: { position: 'absolute', top: 0, bottom: 0, left: 0, width: '78%' },
+  painel: { position: 'absolute', top: 0, bottom: 0, left: 0, width: '80%', backgroundColor: '#ffffff' },
   conteudo: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.half },
-  titulo: { marginBottom: Spacing.two },
-  item: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.two },
-  itemTexto: { flex: 1 },
+  titulo: { fontSize: 20, marginBottom: Spacing.two, color: BrandColors.fundoEscuro },
+  item: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.two, paddingVertical: Spacing.two, borderRadius: Radii.pilula },
+  itemAtivo: { backgroundColor: BrandColors.fundoEscuro },
+  itemTexto: { flex: 1, color: BrandColors.fundoEscuro },
+  itemTextoAtivo: { flex: 1, color: '#ffffff', fontWeight: '700' },
+  sairTexto: { color: '#D64545' },
   separador: { height: 1, backgroundColor: '#00000014', marginVertical: Spacing.two },
 });

@@ -8,8 +8,7 @@ import { Button } from '@/components/button';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { SeletorQuantidade } from '@/components/seletor-quantidade';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
@@ -61,24 +60,33 @@ export default function DetalheProdutoScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <CabecalhoVoltar titulo={produto.nome} />
+      <CabecalhoVoltar titulo="Detalhes do Produto" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <ThemedView type="backgroundElement" style={styles.fotoContainer}>
-          {foto ? <Image source={{ uri: foto }} style={styles.foto} contentFit="cover" /> : null}
-          {desconto > 0 ? (
-            <View style={styles.selo}>
-              <ThemedText type="small" style={styles.seloTexto}>
-                {desconto}% OFF
-              </ThemedText>
-            </View>
-          ) : null}
-        </ThemedView>
+        <View style={styles.fotoContainer}>
+          {foto ? <Image source={{ uri: foto }} style={styles.foto} contentFit="contain" /> : null}
+        </View>
+
+        {precisaEscolherSanto ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listaSantos}>
+            {santos.map((santo) => {
+              const selecionado = santo.id === santoEscolhido?.id;
+              return (
+                <Pressable
+                  key={santo.id}
+                  style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
+                  onPress={() => setSantoEscolhido(santo)}>
+                  {santo.fotoUrl ? <Image source={{ uri: santo.fotoUrl }} style={styles.santoFoto} contentFit="cover" /> : null}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        ) : null}
 
         <View style={styles.corpo}>
           <ThemedText type="title" style={styles.nome}>
             {produto.nome}
           </ThemedText>
-          <ThemedText themeColor="textSecondary">Embalagem com {produto.embalagem} unidades</ThemedText>
+          <ThemedText themeColor="textSecondary">Embalagem: {produto.embalagem}</ThemedText>
 
           <View style={styles.precos}>
             {desconto > 0 ? (
@@ -91,29 +99,16 @@ export default function DetalheProdutoScreen() {
             </ThemedText>
           </View>
 
-          {precisaEscolherSanto ? (
-            <View style={styles.secaoSantos}>
-              <ThemedText type="smallBold">Escolha o santo</ThemedText>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listaSantos}>
-                {santos.map((santo) => {
-                  const selecionado = santo.id === santoEscolhido?.id;
-                  return (
-                    <Pressable key={santo.id} style={styles.santoItem} onPress={() => setSantoEscolhido(santo)}>
-                      <ThemedView
-                        type="backgroundElement"
-                        style={[styles.santoFotoContainer, selecionado && styles.santoSelecionado]}>
-                        {santo.fotoUrl ? (
-                          <Image source={{ uri: santo.fotoUrl }} style={styles.santoFoto} contentFit="cover" />
-                        ) : null}
-                      </ThemedView>
-                      <ThemedText type="small" numberOfLines={1} style={styles.santoNome}>
-                        {santo.nome}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
+          {desconto > 0 ? (
+            <View style={styles.selo}>
+              <ThemedText type="small" style={styles.seloTexto}>
+                {desconto}% OFF
+              </ThemedText>
             </View>
+          ) : null}
+
+          {precisaEscolherSanto ? (
+            <ThemedText themeColor="textSecondary">Santo: {santoEscolhido?.nome ?? '—'}</ThemedText>
           ) : null}
 
           <View style={styles.secaoQuantidade}>
@@ -137,33 +132,28 @@ export default function DetalheProdutoScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
   scroll: { paddingBottom: Spacing.six },
-  fotoContainer: { aspectRatio: 1 },
+  fotoContainer: { aspectRatio: 1, backgroundColor: '#ffffff' },
   foto: { width: '100%', height: '100%' },
   selo: {
-    position: 'absolute',
-    top: Spacing.two,
-    left: Spacing.two,
-    backgroundColor: '#D64545',
+    alignSelf: 'flex-start',
+    backgroundColor: '#1E8E3E',
     borderRadius: 6,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.half,
   },
-  seloTexto: { color: '#ffffff' },
-  corpo: { padding: Spacing.three, gap: Spacing.three },
-  nome: { fontSize: 22, lineHeight: 28 },
+  seloTexto: { color: '#ffffff', fontWeight: '700' },
+  corpo: { padding: Spacing.three, gap: Spacing.two },
+  nome: { fontSize: 22, lineHeight: 28, color: BrandColors.fundoEscuro },
   precos: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
   precoRiscado: { textDecorationLine: 'line-through' },
-  precoAtual: { fontSize: 24, lineHeight: 30 },
-  secaoSantos: { gap: Spacing.two },
-  listaSantos: { gap: Spacing.two },
-  santoItem: { alignItems: 'center', width: 72, gap: Spacing.half },
-  santoFotoContainer: { width: 60, height: 60, borderRadius: 30, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
-  santoSelecionado: { borderColor: '#C9A227' },
+  precoAtual: { fontSize: 24, lineHeight: 30, color: BrandColors.fundoEscuro },
+  listaSantos: { paddingHorizontal: Spacing.three, gap: Spacing.two },
+  santoMiniatura: { width: 56, height: 56, borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: '#E5E6EC' },
+  santoSelecionado: { borderColor: BrandColors.fundoEscuro },
   santoFoto: { width: '100%', height: '100%' },
-  santoNome: { textAlign: 'center' },
   secaoQuantidade: { gap: Spacing.two },
   rodape: { padding: Spacing.three },
 });

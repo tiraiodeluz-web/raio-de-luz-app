@@ -4,19 +4,17 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AdminMenu } from '@/components/admin-menu';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 
 export function AdminCabecalho({ titulo }: { titulo: string }) {
   const [menuAberto, setMenuAberto] = useState(false);
-  const theme = useTheme();
 
   return (
     <View style={styles.container}>
       <Pressable onPress={() => setMenuAberto(true)} hitSlop={8}>
-        <Ionicons name="menu" size={26} color={theme.text} />
+        <Ionicons name="menu" size={26} color={BrandColors.fundoEscuro} />
       </Pressable>
-      <ThemedText type="smallBold" style={styles.titulo}>
+      <ThemedText type="title" style={styles.titulo}>
         {titulo}
       </ThemedText>
       <AdminMenu visivel={menuAberto} onFechar={() => setMenuAberto(false)} />
@@ -32,5 +30,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  titulo: { fontSize: 18 },
+  titulo: { fontSize: 20, color: BrandColors.fundoEscuro },
 });

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
@@ -8,9 +9,8 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { BrasilApiError, buscarCep } from '@/lib/brasil-api';
 import { calcularSubtotalCarrinho, useCriarPedido, useItensCarrinho, validarCupom, type CupomValidado } from '@/lib/carrinho';
 import { useEnderecoPrincipal, useSalvarEndereco } from '@/lib/enderecos';
@@ -155,7 +155,10 @@ export default function CheckoutScreen() {
       <CabecalhoVoltar titulo="Checkout" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={60}>
         <ScrollView contentContainerStyle={styles.scroll}>
-          <ThemedText type="smallBold">Endereço de entrega</ThemedText>
+          <View style={styles.secaoTitulo}>
+            <Ionicons name="location" size={18} color={BrandColors.fundoEscuro} />
+            <ThemedText type="smallBold">Endereço de Entrega</ThemedText>
+          </View>
           <TextField
             rotulo="CEP"
             value={mascararCep(cep)}
@@ -188,19 +191,20 @@ export default function CheckoutScreen() {
             </View>
           </View>
 
-          <ThemedText type="smallBold" style={styles.secaoEspacada}>
-            Pagamento e frete
-          </ThemedText>
-          <ThemedText themeColor="textSecondary">A combinar pelo WhatsApp após o pedido.</ThemedText>
-
-          <ThemedView type="backgroundElement" style={styles.resumo}>
+          <View style={styles.resumo}>
+            <ThemedText type="smallBold" style={styles.resumoTitulo}>
+              Resumo do Pedido
+            </ThemedText>
+            <LinhaResumo rotulo="Forma de pagamento" valor="A COMBINAR" destaqueDourado />
+            <LinhaResumo rotulo="Frete" valor="A COMBINAR" destaqueDourado />
+            <View style={styles.separador} />
             <LinhaResumo rotulo="Subtotal" valor={formatarReais(subtotal)} />
             {desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(desconto)}`} /> : null}
             <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
-          </ThemedView>
+          </View>
 
           {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
-          <Button titulo="Confirmar pedido" onPress={confirmarPedido} carregando={enviando} />
+          <Button titulo="Confirmar Pedido" icone="checkmark-done" onPress={confirmarPedido} carregando={enviando} />
         </ScrollView>
       </KeyboardAvoidingView>
       <WhatsAppFlutuante />
@@ -208,27 +212,49 @@ export default function CheckoutScreen() {
   );
 }
 
-function LinhaResumo({ rotulo, valor, destaque }: { rotulo: string; valor: string; destaque?: boolean }) {
+function LinhaResumo({
+  rotulo,
+  valor,
+  destaque,
+  destaqueDourado,
+}: {
+  rotulo: string;
+  valor: string;
+  destaque?: boolean;
+  destaqueDourado?: boolean;
+}) {
   return (
     <View style={styles.linhaResumo}>
       <ThemedText type={destaque ? 'smallBold' : 'small'} themeColor={destaque ? undefined : 'textSecondary'}>
         {rotulo}
       </ThemedText>
-      <ThemedText type={destaque ? 'smallBold' : 'small'}>{valor}</ThemedText>
+      <ThemedText type={destaque || destaqueDourado ? 'smallBold' : 'small'} style={destaqueDourado ? styles.valorDourado : undefined}>
+        {valor}
+      </ThemedText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   flex: { flex: 1 },
   scroll: { padding: Spacing.three, gap: Spacing.three, paddingBottom: Spacing.six },
+  secaoTitulo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   linha: { flexDirection: 'row', gap: Spacing.two },
   colunaCurta: { width: 110 },
   colunaLonga: { flex: 1 },
-  secaoEspacada: { marginTop: Spacing.two },
-  resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one },
+  resumo: {
+    borderRadius: 12,
+    padding: Spacing.three,
+    gap: Spacing.one,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E5E6EC',
+  },
+  resumoTitulo: { color: BrandColors.fundoEscuro, marginBottom: Spacing.one },
+  separador: { height: 1, backgroundColor: '#E5E6EC', marginVertical: Spacing.one },
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },
+  valorDourado: { color: BrandColors.dourado },
   erro: { color: '#D64545' },
   confirmacao: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
   tituloConfirmacao: { fontSize: 24, lineHeight: 30 },

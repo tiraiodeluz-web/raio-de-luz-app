@@ -1,10 +1,9 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 
 type Props = {
   id: string;
@@ -15,19 +14,27 @@ type Props = {
 export function CategoriaPill({ id, nome, fotoUrl }: Props) {
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/categoria/${id}`)}>
-      <ThemedView type="backgroundElement" style={styles.circulo}>
+      <View style={styles.circulo}>
         {fotoUrl ? <Image source={{ uri: fotoUrl }} style={styles.imagem} contentFit="cover" /> : null}
-      </ThemedView>
-      <ThemedText type="small" numberOfLines={1} style={styles.nome}>
-        {nome}
+      </View>
+      <ThemedText type="smallBold" numberOfLines={2} style={styles.nome}>
+        {nome.toUpperCase()}
       </ThemedText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', width: 76, gap: Spacing.half },
-  circulo: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden' },
+  container: { alignItems: 'center', width: 78, gap: Spacing.half },
+  circulo: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: BrandColors.fundoEscuro,
+    backgroundColor: '#F0F0F3',
+  },
   imagem: { width: '100%', height: '100%' },
-  nome: { textAlign: 'center' },
+  nome: { textAlign: 'center', fontSize: 11, lineHeight: 14 },
 });

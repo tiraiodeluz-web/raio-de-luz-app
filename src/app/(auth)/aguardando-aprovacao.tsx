@@ -20,14 +20,14 @@ export default function AguardandoAprovacaoScreen() {
           Seu cadastro está em análise e será aprovado em até 1 dia útil. Você recebe um aviso assim que
           liberarmos o seu acesso.
         </ThemedText>
-        <Button titulo="Entendi" onPress={sair} />
+        <Button titulo="Entendi" icone="checkmark" onPress={sair} />
       </ThemedView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
   container: {
     flex: 1,
     justifyContent: 'center',
