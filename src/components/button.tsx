@@ -1,15 +1,18 @@
-import { ActivityIndicator, Pressable, StyleSheet, type PressableProps } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BrandColors, Spacing } from '@/constants/theme';
+import { BrandColors, Radii, Spacing } from '@/constants/theme';
 
 type Props = Omit<PressableProps, 'style'> & {
   titulo: string;
   variante?: 'primario' | 'secundario' | 'texto';
   carregando?: boolean;
+  icone?: keyof typeof Ionicons.glyphMap;
+  corIcone?: string;
 };
 
-export function Button({ titulo, variante = 'primario', carregando, disabled, ...rest }: Props) {
+export function Button({ titulo, variante = 'primario', carregando, icone, corIcone, disabled, ...rest }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -26,12 +29,21 @@ export function Button({ titulo, variante = 'primario', carregando, disabled, ..
       {carregando ? (
         <ActivityIndicator color={variante === 'primario' ? '#fff' : BrandColors.fundoEscuro} />
       ) : (
-        <ThemedText
-          type="smallBold"
-          themeColor={variante === 'primario' ? undefined : 'text'}
-          style={variante === 'primario' ? styles.textoPrimario : undefined}>
-          {titulo}
-        </ThemedText>
+        <View style={styles.conteudo}>
+          {icone ? (
+            <Ionicons
+              name={icone}
+              size={20}
+              color={corIcone ?? (variante === 'primario' ? '#ffffff' : BrandColors.fundoEscuro)}
+            />
+          ) : null}
+          <ThemedText
+            type="smallBold"
+            themeColor={variante === 'primario' ? undefined : 'text'}
+            style={variante === 'primario' ? styles.textoPrimario : undefined}>
+            {titulo}
+          </ThemedText>
+        </View>
       )}
     </Pressable>
   );
@@ -39,16 +51,17 @@ export function Button({ titulo, variante = 'primario', carregando, disabled, ..
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
-    borderRadius: 10,
+    minHeight: 50,
+    borderRadius: Radii.pilula,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.four,
   },
+  conteudo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   primario: { backgroundColor: BrandColors.fundoEscuro },
   secundario: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: BrandColors.fundoEscuro,
   },
   texto: { backgroundColor: 'transparent', minHeight: 36 },

@@ -8,23 +8,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { mascararCnpj, mascararTelefone } from '@/lib/mascaras';
 import { supabase } from '@/lib/supabase';
-import { useTheme } from '@/hooks/use-theme';
 
 export default function ContaScreen() {
-  const { session, perfil, modoAcesso, escolherModo, sair } = useAuth();
+  const { session, perfil, escolherModo, sair } = useAuth();
   const [excluindo, setExcluindo] = useState(false);
-  const theme = useTheme();
 
   if (!session) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <ThemedText type="title" style={styles.titulo}>
-          Conta
+          Minha Conta
         </ThemedText>
         <EstadoVazio icone="log-in-outline" titulo="Faça login para ver sua conta" />
         <View style={styles.botaoEntrar}>
@@ -60,88 +57,93 @@ export default function ContaScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title" style={styles.titulo}>
-          Conta
+          Minha Conta
         </ThemedText>
 
-        <View style={styles.perfil}>
-          <ThemedView type="backgroundElement" style={styles.fotoContainer}>
+        <View style={styles.perfilCard}>
+          <View style={styles.fotoContainer}>
             {perfil?.foto_url ? (
               <Image source={{ uri: perfil.foto_url }} style={styles.foto} contentFit="cover" />
             ) : (
-              <Ionicons name="person" size={32} color={theme.textSecondary} />
+              <Ionicons name="person" size={28} color="#ffffff88" />
             )}
-          </ThemedView>
+          </View>
           <View style={styles.perfilTexto}>
-            <ThemedText type="smallBold">{perfil?.nome || session.user.email}</ThemedText>
-            {perfil?.telefone ? <ThemedText themeColor="textSecondary">{mascararTelefone(perfil.telefone)}</ThemedText> : null}
-            {perfil?.cnpj ? <ThemedText themeColor="textSecondary">{mascararCnpj(perfil.cnpj)}</ThemedText> : null}
+            <ThemedText style={styles.perfilNome}>{perfil?.nome || session.user.email}</ThemedText>
+            <ThemedText style={styles.perfilDado}>Telefone: {perfil?.telefone ? mascararTelefone(perfil.telefone) : '—'}</ThemedText>
+            <ThemedText style={styles.perfilDado}>Cnpj: {perfil?.cnpj ? mascararCnpj(perfil.cnpj) : '—'}</ThemedText>
           </View>
         </View>
 
         <View style={styles.menu}>
-          <ItemMenu icone="shield-checkmark-outline" titulo="Política de privacidade" onPress={() => router.push('/politica-privacidade')} />
-          <ItemMenu icone="information-circle-outline" titulo="Sobre o aplicativo" onPress={() => router.push('/sobre')} />
-          {perfil?.tipo === 'admin' ? (
-            <ItemMenu
-              icone="briefcase-outline"
-              titulo="Ver como admin"
-              onPress={() => {
-                escolherModo('admin');
-                router.push('/admin');
-              }}
-            />
-          ) : null}
-          <ItemMenu icone="log-out-outline" titulo="Sair" onPress={sair} />
+          <Button
+            titulo="Política de privacidade"
+            variante="secundario"
+            icone="lock-closed-outline"
+            onPress={() => router.push('/politica-privacidade')}
+          />
+          <Button
+            titulo="Sobre o aplicativo"
+            variante="secundario"
+            icone="information-circle"
+            onPress={() => router.push('/sobre')}
+          />
+          <Button
+            titulo="Sair da Conta"
+            variante="secundario"
+            icone="power"
+            corIcone="#D64545"
+            onPress={sair}
+          />
         </View>
+
+        {perfil?.tipo === 'admin' ? (
+          <Button
+            titulo="VER COMO ADMIN"
+            onPress={() => {
+              escolherModo('admin');
+              router.push('/admin');
+            }}
+          />
+        ) : null}
 
         <Pressable onPress={confirmarExclusao} disabled={excluindo} style={styles.excluirConta}>
           <ThemedText type="small" style={styles.excluirTexto}>
             {excluindo ? 'Excluindo...' : 'Excluir minha conta'}
           </ThemedText>
         </Pressable>
-
-        {perfil?.tipo === 'admin' && modoAcesso === 'admin' ? (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.modoAtual}>
-            Modo atual: administrador
-          </ThemedText>
-        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function ItemMenu({
-  icone,
-  titulo,
-  onPress,
-}: {
-  icone: keyof typeof Ionicons.glyphMap;
-  titulo: string;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable onPress={onPress} style={styles.itemMenu}>
-      <Ionicons name={icone} size={22} color={theme.text} />
-      <ThemedText style={styles.itemMenuTexto}>{titulo}</ThemedText>
-      <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  scroll: { padding: Spacing.three, gap: Spacing.four },
-  titulo: { fontSize: 22, lineHeight: 28 },
-  botaoEntrar: { paddingHorizontal: Spacing.one },
-  perfil: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  fotoContainer: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  scroll: { paddingBottom: Spacing.six, gap: Spacing.four },
+  titulo: { fontSize: 22, lineHeight: 28, paddingHorizontal: Spacing.three, paddingTop: Spacing.two },
+  botaoEntrar: { paddingHorizontal: Spacing.four },
+  perfilCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    backgroundColor: BrandColors.fundoEscuro,
+    padding: Spacing.three,
+  },
+  fotoContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffffff55',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   foto: { width: '100%', height: '100%' },
-  perfilTexto: { gap: Spacing.half },
-  menu: { gap: Spacing.half },
-  itemMenu: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.two },
-  itemMenuTexto: { flex: 1 },
+  perfilTexto: { gap: Spacing.half, flex: 1 },
+  perfilNome: { color: '#ffffff', fontSize: 17, fontWeight: '700' },
+  perfilDado: { color: '#ffffffcc' },
+  menu: { gap: Spacing.two, paddingHorizontal: Spacing.three },
   excluirConta: { alignItems: 'center', paddingVertical: Spacing.two },
   excluirTexto: { color: '#D64545' },
-  modoAtual: { textAlign: 'center' },
 });

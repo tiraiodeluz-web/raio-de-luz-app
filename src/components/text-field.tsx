@@ -1,34 +1,42 @@
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 type Props = TextInputProps & {
   rotulo: string;
   erro?: string;
+  icone?: keyof typeof Ionicons.glyphMap;
+  // Telas com fundo navy cheio (Login/Cadastro): rótulo em branco, campo
+  // sempre com fundo branco (não segue o tema claro/escuro do aparelho).
+  claro?: boolean;
 };
 
-export function TextField({ rotulo, erro, style, ...rest }: Props) {
+export function TextField({ rotulo, erro, icone, claro, style, ...rest }: Props) {
   const theme = useTheme();
   const scheme = useColorScheme();
-  const placeholderColor = Colors[scheme === 'unspecified' ? 'light' : scheme].textSecondary;
+  const placeholderColor = claro ? '#8A8D99' : Colors[scheme === 'unspecified' ? 'light' : scheme].textSecondary;
 
   return (
     <View style={styles.container}>
-      <ThemedText type="smallBold" themeColor="textSecondary">
+      <ThemedText type="smallBold" themeColor={claro ? undefined : 'textSecondary'} style={claro ? styles.rotuloClaro : undefined}>
         {rotulo}
       </ThemedText>
-      <TextInput
-        placeholderTextColor={placeholderColor}
+      <View
         style={[
-          styles.input,
-          { color: theme.text, borderColor: erro ? '#D64545' : theme.backgroundSelected },
-          style,
-        ]}
-        {...rest}
-      />
+          styles.pilula,
+          { backgroundColor: claro ? '#ffffff' : theme.background, borderColor: erro ? '#D64545' : claro ? 'transparent' : theme.backgroundSelected },
+        ]}>
+        {icone ? <Ionicons name={icone} size={18} color={claro ? '#4A4D5A' : theme.textSecondary} style={styles.icone} /> : null}
+        <TextInput
+          placeholderTextColor={placeholderColor}
+          style={[styles.input, { color: claro ? '#111318' : theme.text }, style]}
+          {...rest}
+        />
+      </View>
       {erro ? (
         <ThemedText type="small" style={styles.erro}>
           {erro}
@@ -40,12 +48,16 @@ export function TextField({ rotulo, erro, style, ...rest }: Props) {
 
 const styles = StyleSheet.create({
   container: { gap: Spacing.half },
-  input: {
-    minHeight: 48,
+  rotuloClaro: { color: '#ffffff' },
+  pilula: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 50,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: Radii.pilula,
     paddingHorizontal: Spacing.three,
-    fontSize: 16,
   },
+  icone: { marginRight: Spacing.one },
+  input: { flex: 1, fontSize: 16, paddingVertical: Spacing.two },
   erro: { color: '#D64545' },
 });

@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -7,8 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { BrandColors, Spacing } from '@/constants/theme';
+import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import { BrasilApiError, buscarCnpj } from '@/lib/brasil-api';
 import { apenasDigitos, cnpjValido, emailValido, mascararCnpj, mascararTelefone } from '@/lib/mascaras';
 import { supabase } from '@/lib/supabase';
@@ -26,7 +24,7 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={40}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Image source={require('@/assets/images/icon.png')} style={styles.logo} contentFit="contain" />
+          <LogoMarca />
 
           <View style={styles.segmentado}>
             <SegmentoBotao titulo="Entrar" ativo={aba === 'entrar'} onPress={() => setAba('entrar')} />
@@ -40,10 +38,23 @@ export default function LoginScreen() {
   );
 }
 
+// TODO: trocar por <Image> com o logo real (PNG transparente) quando o
+// arquivo chegar — por ora recria o texto do print em fontes do sistema.
+function LogoMarca() {
+  return (
+    <View style={styles.logoContainer}>
+      <ThemedText style={styles.logoTitulo}>RAIO DE LUZ</ThemedText>
+      <View style={styles.logoLinha} />
+      <ThemedText style={styles.logoSubtitulo}>RELIGIOSOS</ThemedText>
+      <ThemedText style={styles.logoSlogan}>Inspiração e Fé em cada detalhe!</ThemedText>
+    </View>
+  );
+}
+
 function SegmentoBotao({ titulo, ativo, onPress }: { titulo: string; ativo: boolean; onPress: () => void }) {
   return (
     <Pressable style={[styles.segmento, ativo && styles.segmentoAtivo]} onPress={onPress}>
-      <ThemedText type="smallBold" style={ativo ? styles.segmentoTextoAtivo : undefined}>
+      <ThemedText type="smallBold" style={ativo ? styles.segmentoTextoAtivo : styles.segmentoTextoInativo}>
         {titulo}
       </ThemedText>
     </Pressable>
@@ -73,22 +84,34 @@ function FormularioEntrar() {
   }
 
   return (
-    <ThemedView style={styles.formulario}>
+    <View style={styles.formulario}>
       <TextField
         rotulo="E-mail"
+        icone="mail-outline"
+        claro
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
         textContentType="emailAddress"
       />
-      <TextField rotulo="Senha" value={senha} onChangeText={setSenha} secureTextEntry textContentType="password" />
+      <TextField
+        rotulo="Senha"
+        icone="lock-closed-outline"
+        claro
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+        textContentType="password"
+      />
       {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
-      <Button titulo="Entrar" onPress={entrar} carregando={enviando} />
       <Link href="/(auth)/esqueci-senha" asChild>
-        <Button titulo="Esqueci minha senha" variante="texto" />
+        <Pressable style={styles.linkCentralizado}>
+          <ThemedText style={styles.linkClaro}>Esqueci minha senha</ThemedText>
+        </Pressable>
       </Link>
-    </ThemedView>
+      <Button titulo="Entrar" onPress={entrar} carregando={enviando} />
+    </View>
   );
 }
 
@@ -200,24 +223,31 @@ function FormularioCadastrar() {
   }
 
   return (
-    <ThemedView style={styles.formulario}>
-      <TextField rotulo="Nome" value={nome} onChangeText={setNome} erro={erros.nome} />
+    <View style={styles.formulario}>
+      <TextField rotulo="Nome" icone="person-outline" claro value={nome} onChangeText={setNome} erro={erros.nome} />
       <TextField
         rotulo="CNPJ"
+        icone="business-outline"
+        claro
         value={mascararCnpj(cnpj)}
         onChangeText={(v) => setCnpj(apenasDigitos(v))}
         keyboardType="number-pad"
+        placeholder="Somente números"
         erro={erros.cnpj}
       />
       <TextField
-        rotulo="Razão social"
+        rotulo="Razão Social"
+        icone="business-outline"
+        claro
         value={razaoSocial}
         onChangeText={setRazaoSocial}
-        placeholder={buscandoCnpj ? 'Consultando...' : 'Preenchida a partir do CNPJ'}
+        placeholder={buscandoCnpj ? 'Consultando...' : 'Digite a razão social da empresa'}
         editable={!buscandoCnpj}
       />
       <TextField
         rotulo="Celular"
+        icone="call-outline"
+        claro
         value={mascararTelefone(celular)}
         onChangeText={(v) => setCelular(apenasDigitos(v))}
         keyboardType="phone-pad"
@@ -225,15 +255,27 @@ function FormularioCadastrar() {
       />
       <TextField
         rotulo="E-mail"
+        icone="mail-outline"
+        claro
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
         erro={erros.email}
       />
-      <TextField rotulo="Senha" value={senha} onChangeText={setSenha} secureTextEntry erro={erros.senha} />
       <TextField
-        rotulo="Confirmar senha"
+        rotulo="Senha"
+        icone="lock-closed-outline"
+        claro
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+        erro={erros.senha}
+      />
+      <TextField
+        rotulo="Confirme sua senha"
+        icone="lock-closed-outline"
+        claro
         value={confirmarSenha}
         onChangeText={setConfirmarSenha}
         secureTextEntry
@@ -241,29 +283,34 @@ function FormularioCadastrar() {
       />
       {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
       {sucesso ? <ThemedText style={styles.sucesso}>{sucesso}</ThemedText> : null}
-      <Button titulo="Cadastrar" onPress={cadastrar} carregando={enviando} />
-    </ThemedView>
+      <Button titulo="Registrar" onPress={cadastrar} carregando={enviando} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: BrandColors.fundoEscuro },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, padding: Spacing.four, gap: Spacing.four },
-  logo: { width: 96, height: 96, alignSelf: 'center' },
-  segmentado: { flexDirection: 'row', gap: Spacing.two },
+  logoContainer: { alignItems: 'center', gap: Spacing.one, marginBottom: Spacing.two },
+  logoTitulo: { color: '#ffffff', fontSize: 30, fontWeight: '700', letterSpacing: 1 },
+  logoLinha: { width: 160, height: 1, backgroundColor: '#ffffff88', marginVertical: Spacing.half },
+  logoSubtitulo: { color: '#ffffff', fontSize: 16, fontWeight: '600', letterSpacing: 3 },
+  logoSlogan: { color: '#ffffffcc', fontStyle: 'italic', fontSize: 12, marginTop: Spacing.half },
+  segmentado: { flexDirection: 'row', backgroundColor: '#E4E5EA', borderRadius: Radii.pilula, padding: 4, gap: 4 },
   segmento: {
     flex: 1,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BrandColors.fundoEscuro,
+    borderRadius: Radii.pilula,
   },
   segmentoAtivo: { backgroundColor: BrandColors.fundoEscuro },
   segmentoTextoAtivo: { color: '#ffffff' },
-  formulario: { gap: Spacing.three },
-  erro: { color: '#D64545' },
-  sucesso: { color: '#1E8E3E' },
+  segmentoTextoInativo: { color: BrandColors.fundoEscuro },
+  formulario: { gap: Spacing.three, marginTop: Spacing.three },
+  linkCentralizado: { alignSelf: 'center', paddingVertical: Spacing.one },
+  linkClaro: { color: '#ffffff', textDecorationLine: 'underline' },
+  erro: { color: '#FF8A8A' },
+  sucesso: { color: '#8DE0A6' },
 });
