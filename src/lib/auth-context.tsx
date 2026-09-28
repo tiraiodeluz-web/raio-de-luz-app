@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { configurarNotificacoes, registrarDispositivoPush, removerDispositivoAtual } from '@/lib/notificacoes-push';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
@@ -34,6 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    configurarNotificacoes();
+  }, []);
+
+  useEffect(() => {
     let ativo = true;
 
     supabase.auth.getSession().then(async ({ data }) => {
@@ -48,6 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .update({ ultimo_acesso: new Date().toISOString() })
           .eq('id', data.session.user.id)
           .then(() => {});
+        // Etapa 8: registra o token de push. Mesmo cadastro pendente precisa
+        // estar registrado pra receber o push de "cadastro aprovado".
+        registrarDispositivoPush();
       }
       setCarregando(false);
     });
@@ -57,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(novaSessao);
       if (novaSessao) {
         await buscarPerfil(novaSessao.user.id);
+        registrarDispositivoPush();
       } else {
         setPerfil(null);
         setModoAcesso(null);
@@ -74,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session, buscarPerfil]);
 
   const sair = useCallback(async () => {
+    await removerDispositivoAtual();
     await supabase.auth.signOut();
   }, []);
 

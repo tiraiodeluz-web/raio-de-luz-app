@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,7 +20,9 @@ import { supabase } from '@/lib/supabase';
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
 export default function ClientesAdminScreen() {
-  const [aba, setAba] = useState<'aprovados' | 'aprovar'>('aprovados');
+  // Deep link do push "novo cadastro" abre direto na aba Aprovar (?aba=aprovar).
+  const { aba: abaParam } = useLocalSearchParams<{ aba?: string }>();
+  const [aba, setAba] = useState<'aprovados' | 'aprovar'>(abaParam === 'aprovar' ? 'aprovar' : 'aprovados');
   const [busca, setBusca] = useState('');
   const totais = useTotaisClientes();
   const clientes = useClientesAdmin(aba, busca);

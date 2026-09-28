@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, type Href } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
@@ -65,6 +66,19 @@ function GuardiaoDeRotas() {
       router.replace('/(tabs)');
     }
   }, [carregando, session, perfil, modoAcesso, segments, router]);
+
+  // Toque numa notificação (app em segundo plano ou fechado — "cold start")
+  // navega para a rota gravada em eventos_push.rota, já com os placeholders
+  // substituídos pelo banco (ex.: /pedido/<uuid>).
+  const resposta = Notifications.useLastNotificationResponse();
+  useEffect(() => {
+    if (carregando || !resposta) return;
+    const rota = resposta.notification.request.content.data?.rota;
+    Notifications.clearLastNotificationResponse();
+    if (typeof rota === 'string' && rota.length > 0) {
+      router.push(rota as Href);
+    }
+  }, [carregando, resposta, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

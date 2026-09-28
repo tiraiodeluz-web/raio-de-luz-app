@@ -112,8 +112,16 @@ Este repositório cobre:
   `src/lib/auth-context.tsx`); Carrinhos abandonados usa a RPC
   `carrinhos_abandonados`. `src/app/admin/_layout.tsx` bloqueia quem não
   é admin (a RLS já bloqueia os dados; isso só evita a tela vazia).
+- **Etapa 8** — push: registro de aparelho após o login
+  (`src/lib/notificacoes-push.ts`, chamado de `auth-context.tsx`), canal
+  Android criado em runtime (precisa bater com o `channelId: "padrao"`
+  que a Edge Function já usava desde a etapa 2), toque na notificação
+  navegando para a rota gravada no evento (`useLastNotificationResponse`
+  no guardião de rotas) e a tela `src/app/admin/eventos-push.tsx` pra
+  ligar/desligar cada evento (regra: "cada um desligável por
+  configuração").
 
-Ainda faltam as etapas 8 e 9 (push configurável e lojas/virada).
+Ainda falta a etapa 9 (lojas e virada).
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
@@ -145,6 +153,43 @@ WhatsApp via n8n não tem, hoje, uma URL de webhook configurada para esse
 evento em `privado.config` (só existe `n8n_carrinho_url`, do carrinho
 abandonado) — precisa ser adicionado se esse WhatsApp for necessário.
 
+### Correção na etapa 8: rotas de push não batiam com as telas reais
+
+As rotas em `eventos_push.rota` foram escritas na etapa 2, antes de as
+telas existirem, e não batiam com o app final. A migration
+`20260928195312_corrige_rotas_eventos_push.sql` corrige:
+
+| Evento | Rota errada (etapa 2) | Rota corrigida |
+|---|---|---|
+| `pedido_novo` (admin) | `/admin/pedidos/{pedido_id}` | `/admin/pedido/{pedido_id}` |
+| `pedido_status` (cliente) | `/pedidos/{pedido_id}` | `/pedido/{pedido_id}` |
+| `cadastro_aprovado` (cliente) | `/` (é a splash) | `/(tabs)` (Início de verdade) |
+| `cadastro_novo` (admin) | `/admin/clientes?aba=aprovar` | mesma — mas a tela ignorava o `?aba`, corrigido em `admin/clientes.tsx` |
+
+Sem essa correção, tocar numa notificação de pedido novo, status
+alterado ou cadastro aprovado abriria uma tela errada (ou a splash, no
+caso do cadastro aprovado).
+
+### ⚠️ Pendência que bloqueia testar push de verdade: projeto EAS
+
+`getExpoPushTokenAsync` exige um `projectId` do EAS
+(`Constants.expoConfig.extra.eas.projectId`), e isso só existe depois de
+rodar `eas init` com uma conta Expo — que este ambiente não tem como
+fazer (precisa de login interativo). Enquanto isso não for feito,
+`src/lib/notificacoes-push.ts` detecta a ausência do `projectId`, avisa
+no console e **não tenta buscar o token** (não trava o app, só não
+registra push). Depois de criar o projeto EAS (`npx eas init`), nada
+mais precisa mudar no código — o `projectId` passa a existir em
+`app.json`/`Constants` automaticamente.
+
+Duas outras limitações do ambiente de teste, para quem for validar isso:
+- **Push remoto não funciona no Expo Go** desde as versões recentes do
+  SDK — precisa de um development build (`eas build --profile
+  development` ou `npx expo run:android`/`run:ios`).
+- Emulador/simulador não recebe push de verdade
+  (`src/lib/notificacoes-push.ts` já pula o registro quando
+  `Device.isDevice` é falso) — o teste final precisa de aparelho físico.
+
 ### O que não pôde ser testado neste ambiente
 
 Sem simulador/dispositivo disponível aqui, a validação foi:
@@ -153,15 +198,25 @@ testadas direto no Postgres com `set role anon`; o fluxo de compra
 completo da etapa 5 (embalagem múltipla, `adicionar_ao_carrinho` somando
 quantidade em vez de duplicar, cupom, `criar_pedido` em transação,
 carrinho esvaziado, vendas incrementadas), a exclusão de conta da etapa 6
-(`excluir_minha_conta` apaga `auth.users` e `perfis` em cascata) e as
+(`excluir_minha_conta` apaga `auth.users` e `perfis` em cascata), as
 ações do admin na etapa 7 (`metricas_admin`, `carrinhos_abandonados`,
 aprovar cliente disparando o push automático, avançar status de pedido
-disparando o push automático, enviar notificação), todos testados
-simulando sessões autenticadas no Postgres (`request.jwt.claims`) com
-usuários e produtos de teste, removidos depois. O fluxo de login/
+disparando o push automático, enviar notificação) e, na etapa 8, o
+liga/desliga de cada evento (`eventos_push.ativo = false` de fato
+suprime a notificação; religar volta a disparar — confirmado nos dois
+sentidos) e as rotas gravadas em cada evento após a correção acima,
+todos testados simulando sessões autenticadas no Postgres
+(`request.jwt.claims`) com usuários e produtos de teste, removidos
+depois. O que a etapa 8 **não** testa — porque exige um aparelho físico
+e um projeto EAS que não existem aqui — é o caminho ponta a ponta real:
+pedir a permissão do sistema operacional, registrar o token Expo de
+verdade, a Edge Function `processar-fila-push` entregando pelo Expo
+Push Service, e o toque na notificação abrindo o app na tela certa. A
+lógica de cada etapa desse caminho foi conferida separadamente (a
+função do banco que gera a fila, a Edge Function já testada na etapa 2,
+e agora as rotas), mas o caminho completo só se prova num teste manual
+num aparelho real, depois de criar o projeto EAS. O fluxo de login/
 cadastro/redefinição de senha (etapa 3) só foi validado por leitura.
-Vale um teste manual completo num dispositivo real antes de seguir para
-a etapa 8.
 
 ### Texto provisório
 

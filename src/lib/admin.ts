@@ -233,3 +233,36 @@ export function useEnviarNotificacao() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notificacoes'] }),
   });
 }
+
+const ROTULO_EVENTO_PUSH: Record<string, string> = {
+  pedido_novo: 'Novo pedido recebido (admins)',
+  pedido_status: 'Status do pedido alterado (cliente)',
+  cadastro_novo: 'Novo cadastro aguardando aprovação (admins)',
+  cadastro_aprovado: 'Cadastro aprovado (cliente)',
+};
+
+export function rotuloEventoPush(chave: string) {
+  return ROTULO_EVENTO_PUSH[chave] ?? chave;
+}
+
+export function useEventosPush() {
+  return useQuery({
+    queryKey: ['admin', 'eventos-push'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('eventos_push').select('*').order('chave');
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useAlterarEventoPush() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ chave, ativo }: { chave: string; ativo: boolean }) => {
+      const { error } = await supabase.from('eventos_push').update({ ativo }).eq('chave', chave);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'eventos-push'] }),
+  });
+}

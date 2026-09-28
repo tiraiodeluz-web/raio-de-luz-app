@@ -40,7 +40,8 @@
       [
         "expo-notifications",
         {
-          "color": "#C9A227"
+          "color": "#C9A227",
+          "defaultChannel": "padrao"
         }
       ]
     ],
