@@ -68,15 +68,38 @@ não têm um valor padrão seguro):
   `EXPO_ACCESS_TOKEN` **apenas** se "Enhanced push security" estiver
   ligado no painel da Expo.
 
+### Configuração pendente no Supabase Auth
+
+Para o link de "Esqueci minha senha" (`redefinir-senha.tsx`) funcionar, em
+**Authentication → URL Configuration** do projeto Supabase, adicione
+`raiodeluz://redefinir-senha` à lista de Redirect URLs. Sem isso o Supabase
+recusa o link enviado por e-mail.
+
 ## Estado da migração
 
-Este repositório cobre a Etapa 1 (base do projeto) e a Etapa 2 (banco) do
-plano de execução. Ainda faltam as etapas 3 a 9 (acesso, vitrine, compra,
-cliente, admin, push, lojas e virada) — as 5 abas hoje são telas
-provisórias que apontam para a etapa que as substitui.
+Este repositório cobre:
+
+- **Etapa 1** — base do projeto Expo.
+- **Etapa 2** — banco (schema, RLS, funções, push) já aplicado no Supabase.
+- **Etapa 3** — acesso: splash (`src/app/index.tsx`), login/cadastro com
+  BrasilAPI (`src/app/(auth)/login.tsx`), aguardando aprovação, esqueci a
+  senha e redefinição de senha por deep link, e o "Ir para?" do admin
+  (`escolher-modo.tsx`). O guardião de rotas em `src/app/_layout.tsx`
+  decide para onde cada sessão vai.
+
+Ainda faltam as etapas 4 a 9 (vitrine, compra, cliente, admin, push, lojas
+e virada) — as 5 abas do cliente continuam como telas provisórias.
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
+
+### O que não pôde ser testado neste ambiente
+
+O fluxo de login/cadastro/redefinição de senha não pôde ser testado num
+dispositivo ou simulador aqui (ambiente sem esse acesso) — só validado por
+leitura e `tsc --noEmit`. Vale um teste manual completo (cadastro → e-mail
+de aprovação pendente → aprovar pelo Supabase Studio → login → "Esqueci
+minha senha" → link do e-mail → nova senha) antes de seguir para a etapa 4.
 
 ## Publicação (EAS)
 
