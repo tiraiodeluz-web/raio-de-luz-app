@@ -86,20 +86,38 @@ Este repositório cobre:
   senha e redefinição de senha por deep link, e o "Ir para?" do admin
   (`escolher-modo.tsx`). O guardião de rotas em `src/app/_layout.tsx`
   decide para onde cada sessão vai.
+- **Etapa 4** — vitrine: Início (`(tabs)/index.tsx`), Catálogos
+  (`(tabs)/catalogos.tsx`), busca, notificações, "ver todas" de categorias/
+  ofertas/mais vendidos, produtos por catálogo/categoria e o detalhe do
+  produto com seletor de santo (`src/app/produto/[id].tsx`). O botão
+  "Comprar" rápido (Home/ofertas) e "Adicionar ao carrinho" do detalhe já
+  chamam a função `adicionar_ao_carrinho` do banco — a aba Carrinho em si
+  (listar, editar, cupom, checkout) é a etapa 5.
 
-Ainda faltam as etapas 4 a 9 (vitrine, compra, cliente, admin, push, lojas
-e virada) — as 5 abas do cliente continuam como telas provisórias.
+Ainda faltam as etapas 5 a 9 (compra, cliente, admin, push, lojas e
+virada) — as abas Carrinho, Meus pedidos e Conta continuam provisórias.
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
 
+### Correção de RLS na etapa 4
+
+A migration `20260928180958_vitrine_publica.sql` corrige um problema nas
+políticas de `catalogos`, `categorias`, `santos`, `produtos`,
+`produto_santos` e `banners`: elas exigiam `pode_comprar()` (cadastro
+aprovado ou admin) até para leitura, o que quebrava a regra "sem login, o
+cliente navega pela Home e catálogos" — nem visitante anônimo nem cadastro
+pendente conseguiam ver produto nenhum. Agora a leitura é pública (só
+`ativo = true`); carrinho, cupom e pedido continuam exigindo aprovação.
+
 ### O que não pôde ser testado neste ambiente
 
-O fluxo de login/cadastro/redefinição de senha não pôde ser testado num
-dispositivo ou simulador aqui (ambiente sem esse acesso) — só validado por
-leitura e `tsc --noEmit`. Vale um teste manual completo (cadastro → e-mail
-de aprovação pendente → aprovar pelo Supabase Studio → login → "Esqueci
-minha senha" → link do e-mail → nova senha) antes de seguir para a etapa 4.
+Sem simulador/dispositivo disponível aqui, a validação foi:
+`tsc --noEmit` limpo em todo o app, e as consultas da vitrine (etapa 4)
+testadas direto no Postgres com `set role anon` contra dados de teste
+inseridos e depois removidos. O fluxo de login/cadastro/redefinição de
+senha (etapa 3) só foi validado por leitura. Vale um teste manual completo
+num dispositivo real antes de seguir para a etapa 5.
 
 ## Publicação (EAS)
 
