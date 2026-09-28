@@ -89,13 +89,16 @@ Este repositório cobre:
 - **Etapa 4** — vitrine: Início (`(tabs)/index.tsx`), Catálogos
   (`(tabs)/catalogos.tsx`), busca, notificações, "ver todas" de categorias/
   ofertas/mais vendidos, produtos por catálogo/categoria e o detalhe do
-  produto com seletor de santo (`src/app/produto/[id].tsx`). O botão
-  "Comprar" rápido (Home/ofertas) e "Adicionar ao carrinho" do detalhe já
-  chamam a função `adicionar_ao_carrinho` do banco — a aba Carrinho em si
-  (listar, editar, cupom, checkout) é a etapa 5.
+  produto com seletor de santo (`src/app/produto/[id].tsx`).
+- **Etapa 5** — compra: aba Carrinho (`(tabs)/carrinho.tsx`) com
+  quantidade, remover item e cupom, e `src/app/checkout.tsx` com endereço
+  (CEP pela BrasilAPI, sugerindo o endereço salvo — regra 9), resumo e
+  "Confirmar pedido". Ao confirmar, chama `criar_pedido` (transação no
+  banco) e abre o WhatsApp com "Oi acabei de realizar o pedido N° X"
+  (regra 13).
 
-Ainda faltam as etapas 5 a 9 (compra, cliente, admin, push, lojas e
-virada) — as abas Carrinho, Meus pedidos e Conta continuam provisórias.
+Ainda faltam as etapas 6 a 9 (cliente, admin, push, lojas e virada) — as
+abas Meus pedidos e Conta continuam provisórias.
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
@@ -113,11 +116,15 @@ pendente conseguiam ver produto nenhum. Agora a leitura é pública (só
 ### O que não pôde ser testado neste ambiente
 
 Sem simulador/dispositivo disponível aqui, a validação foi:
-`tsc --noEmit` limpo em todo o app, e as consultas da vitrine (etapa 4)
-testadas direto no Postgres com `set role anon` contra dados de teste
-inseridos e depois removidos. O fluxo de login/cadastro/redefinição de
-senha (etapa 3) só foi validado por leitura. Vale um teste manual completo
-num dispositivo real antes de seguir para a etapa 5.
+`tsc --noEmit` limpo em todo o app; as consultas da vitrine (etapa 4)
+testadas direto no Postgres com `set role anon`; e o fluxo de compra
+completo da etapa 5 (embalagem múltipla, `adicionar_ao_carrinho` somando
+quantidade em vez de duplicar, cupom, `criar_pedido` em transação,
+carrinho esvaziado, vendas incrementadas) testado simulando uma sessão
+autenticada no Postgres (`request.jwt.claims`) com um usuário e produtos
+de teste, todos removidos depois. O fluxo de login/cadastro/redefinição
+de senha (etapa 3) só foi validado por leitura. Vale um teste manual
+completo num dispositivo real antes de seguir para a etapa 6.
 
 ## Publicação (EAS)
 
