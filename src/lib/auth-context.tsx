@@ -39,7 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!ativo) return;
       setSession(data.session);
-      if (data.session) await buscarPerfil(data.session.user.id);
+      if (data.session) {
+        await buscarPerfil(data.session.user.id);
+        // Regra 12: o último acesso é atualizado ao abrir o app (define quem
+        // está "online" para a tela Clientes do admin).
+        supabase
+          .from('perfis')
+          .update({ ultimo_acesso: new Date().toISOString() })
+          .eq('id', data.session.user.id)
+          .then(() => {});
+      }
       setCarregando(false);
     });
 

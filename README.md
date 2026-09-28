@@ -101,10 +101,19 @@ Este repositório cobre:
   (`src/app/pedido/[id].tsx`); Conta (`(tabs)/conta.tsx`) com foto, nome,
   telefone, CNPJ, política de privacidade, sobre o app, "Ver como admin"
   (para admins) e exclusão de conta (exigência das lojas).
+- **Etapa 7** — admin: `src/app/admin/` com menu lateral (Métricas,
+  Pedidos, Clientes, Carrinhos abandonados, Enviar notificação, Ver como
+  usuário, Sair). Métricas usa a RPC `metricas_admin`; Pedidos tem busca
+  por número e filtro por status, com o detalhe avançando o status
+  (Aguardando Pagamento → Pago → Em Separação → Em Produção → Enviado →
+  Entregue) ou cancelando; Clientes tem abas Aprovados/Aprovar, busca por
+  código, total gasto e indicador "online" (regra 12 — por isso
+  `perfis.ultimo_acesso` agora é atualizado ao abrir o app, em
+  `src/lib/auth-context.tsx`); Carrinhos abandonados usa a RPC
+  `carrinhos_abandonados`. `src/app/admin/_layout.tsx` bloqueia quem não
+  é admin (a RLS já bloqueia os dados; isso só evita a tela vazia).
 
-Ainda faltam as etapas 7 a 9 (admin, push, lojas e virada) — a área
-administrativa (métricas, pedidos, clientes, carrinhos abandonados,
-notificações) ainda não existe; "Ver como admin" mostra um aviso.
+Ainda faltam as etapas 8 e 9 (push configurável e lojas/virada).
 
 A carga de ensaio a partir do Bubble depende de liberar a Data API no
 Bubble e gerar um token (Settings → API); isso ainda não foi feito.
@@ -119,6 +128,23 @@ cliente navega pela Home e catálogos" — nem visitante anônimo nem cadastro
 pendente conseguiam ver produto nenhum. Agora a leitura é pública (só
 `ativo = true`); carrinho, cupom e pedido continuam exigindo aprovação.
 
+### Correção na etapa 7: código do cliente nunca era gerado
+
+A migration `20260928194546_codigo_cliente_sequencial.sql` corrige outro
+gap: a tela de admin "Clientes" busca e mostra `perfis.codigo`, mas nada
+preenchia essa coluna desde o cadastro (etapa 3) — ficava sempre `null`.
+Agora um gatilho gera um código sequencial (`C0001`, `C0002`...) no
+cadastro, como já existia para o número do pedido.
+
+### Gap conhecido: WhatsApp de cadastro aprovado
+
+O levantamento da migração diz que aprovar um cliente "envia push... e
+dispara mensagem de WhatsApp pelo n8n". O push já funciona (evento
+`cadastro_aprovado` → fila de push, testado nesta etapa). O disparo de
+WhatsApp via n8n não tem, hoje, uma URL de webhook configurada para esse
+evento em `privado.config` (só existe `n8n_carrinho_url`, do carrinho
+abandonado) — precisa ser adicionado se esse WhatsApp for necessário.
+
 ### O que não pôde ser testado neste ambiente
 
 Sem simulador/dispositivo disponível aqui, a validação foi:
@@ -126,13 +152,16 @@ Sem simulador/dispositivo disponível aqui, a validação foi:
 testadas direto no Postgres com `set role anon`; o fluxo de compra
 completo da etapa 5 (embalagem múltipla, `adicionar_ao_carrinho` somando
 quantidade em vez de duplicar, cupom, `criar_pedido` em transação,
-carrinho esvaziado, vendas incrementadas) e a exclusão de conta da etapa 6
-(`excluir_minha_conta` apaga `auth.users` e `perfis` em cascata), todos
-testados simulando uma sessão autenticada no Postgres
-(`request.jwt.claims`) com usuários e produtos de teste, removidos
-depois. O fluxo de login/cadastro/redefinição de senha (etapa 3) só foi
-validado por leitura. Vale um teste manual completo num dispositivo real
-antes de seguir para a etapa 7.
+carrinho esvaziado, vendas incrementadas), a exclusão de conta da etapa 6
+(`excluir_minha_conta` apaga `auth.users` e `perfis` em cascata) e as
+ações do admin na etapa 7 (`metricas_admin`, `carrinhos_abandonados`,
+aprovar cliente disparando o push automático, avançar status de pedido
+disparando o push automático, enviar notificação), todos testados
+simulando sessões autenticadas no Postgres (`request.jwt.claims`) com
+usuários e produtos de teste, removidos depois. O fluxo de login/
+cadastro/redefinição de senha (etapa 3) só foi validado por leitura.
+Vale um teste manual completo num dispositivo real antes de seguir para
+a etapa 8.
 
 ### Texto provisório
 

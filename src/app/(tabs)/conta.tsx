@@ -87,7 +87,7 @@ export default function ContaScreen() {
               titulo="Ver como admin"
               onPress={() => {
                 escolherModo('admin');
-                Alert.alert('Área do admin', 'O painel do administrador ainda está sendo construído.');
+                router.push('/admin');
               }}
             />
           ) : null}
