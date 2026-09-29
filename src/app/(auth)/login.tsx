@@ -102,6 +102,8 @@ function FormularioEntrar() {
         value={senha}
         onChangeText={setSenha}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         textContentType="password"
       />
       {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
@@ -270,6 +272,8 @@ function FormularioCadastrar() {
         value={senha}
         onChangeText={setSenha}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         erro={erros.senha}
       />
       <TextField
@@ -279,6 +283,8 @@ function FormularioCadastrar() {
         value={confirmarSenha}
         onChangeText={setConfirmarSenha}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         erro={erros.confirmarSenha}
       />
       {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}

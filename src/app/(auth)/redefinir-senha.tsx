@@ -122,8 +122,24 @@ function FormularioNovaSenha() {
         <ThemedText type="title" style={styles.titulo}>
           Nova senha
         </ThemedText>
-        <TextField rotulo="Nova senha" value={senha} onChangeText={setSenha} secureTextEntry icone="lock-closed-outline" />
-        <TextField rotulo="Confirmar nova senha" value={confirmar} onChangeText={setConfirmar} secureTextEntry icone="lock-closed-outline" />
+        <TextField
+          rotulo="Nova senha"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          icone="lock-closed-outline"
+        />
+        <TextField
+          rotulo="Confirmar nova senha"
+          value={confirmar}
+          onChangeText={setConfirmar}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          icone="lock-closed-outline"
+        />
         {erro ? <ThemedText style={styles.erro}>{erro}</ThemedText> : null}
         <Button titulo="Salvar" icone="checkmark" onPress={salvar} carregando={enviando} />
       </ThemedView>
