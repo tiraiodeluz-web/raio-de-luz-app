@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: Spacing.half,
+    minWidth: 144,
     maxWidth: '48%',
     backgroundColor: '#ffffff',
     borderWidth: 1,

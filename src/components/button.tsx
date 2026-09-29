@@ -39,8 +39,9 @@ export function Button({ titulo, variante = 'primario', carregando, icone, corIc
           ) : null}
           <ThemedText
             type="smallBold"
+            numberOfLines={1}
             themeColor={variante === 'primario' ? undefined : 'text'}
-            style={variante === 'primario' ? styles.textoPrimario : undefined}>
+            style={[styles.textoBase, variante === 'primario' && styles.textoPrimario]}>
             {titulo}
           </ThemedText>
         </View>
@@ -57,7 +58,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.four,
   },
-  conteudo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  conteudo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, flexShrink: 1 },
+  textoBase: { flexShrink: 1 },
   primario: { backgroundColor: BrandColors.fundoEscuro },
   secundario: {
     backgroundColor: 'transparent',

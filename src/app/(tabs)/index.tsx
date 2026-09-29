@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   secao: { gap: Spacing.two },
   listaHorizontal: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   carregandoHorizontal: { marginVertical: Spacing.three },
-  cardHorizontal: { width: 160 },
+  cardHorizontal: { width: 148 },
   grade2Colunas: {
     flexDirection: 'row',
     flexWrap: 'wrap',

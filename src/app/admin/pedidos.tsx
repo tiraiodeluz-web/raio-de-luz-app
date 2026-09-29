@@ -43,7 +43,7 @@ export default function PedidosAdminScreen() {
           const ativo = filtro.valor === status;
           return (
             <Pressable key={filtro.valor} style={[styles.filtro, ativo && styles.filtroAtivo]} onPress={() => setStatus(filtro.valor)}>
-              <ThemedText type="small" style={ativo ? styles.filtroTextoAtivo : undefined}>
+              <ThemedText type="small" numberOfLines={1} style={ativo ? styles.filtroTextoAtivo : undefined}>
                 {filtro.rotulo}
               </ThemedText>
             </Pressable>
@@ -84,8 +84,15 @@ export default function PedidosAdminScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
   campoBusca: { paddingHorizontal: Spacing.three },
-  filtros: { paddingHorizontal: Spacing.three, gap: Spacing.one, paddingVertical: Spacing.two },
-  filtro: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one, borderRadius: Radii.pilula, borderWidth: 1, borderColor: BrandColors.fundoEscuro },
+  filtros: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingVertical: Spacing.two },
+  filtro: {
+    paddingHorizontal: Spacing.three,
+    minHeight: 36,
+    justifyContent: 'center',
+    borderRadius: Radii.pilula,
+    borderWidth: 1,
+    borderColor: BrandColors.fundoEscuro,
+  },
   filtroAtivo: { backgroundColor: BrandColors.fundoEscuro },
   filtroTextoAtivo: { color: '#ffffff' },
   carregando: { marginTop: Spacing.five },
