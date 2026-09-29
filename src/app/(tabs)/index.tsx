@@ -170,8 +170,9 @@ const styles = StyleSheet.create({
   grade2Colunas: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.three,
-    gap: Spacing.three,
+    rowGap: Spacing.three,
   },
   colunaGrade: { width: '48%' },
 });
