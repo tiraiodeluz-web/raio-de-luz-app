@@ -218,6 +218,36 @@ e agora as rotas), mas o caminho completo só se prova num teste manual
 num aparelho real, depois de criar o projeto EAS. O fluxo de login/
 cadastro/redefinição de senha (etapa 3) só foi validado por leitura.
 
+### Listas de produtos: filtros e "Ver mais" (28/09/2026)
+
+Pedido do cliente: toda tela com vários produtos carrega aos poucos e tem
+filtro cruzado.
+
+- Todas as listas (catálogo, categoria, ofertas, mais vendidos, busca)
+  trazem **20 produtos por vez**: carregam mais ao rolar e, como garantia,
+  pelo botão **"Ver mais"** no fim (`src/components/grade-produtos.tsx`).
+- Dentro de um **catálogo**, chips com as **categorias** que existem nele;
+  dentro de uma **categoria**, chips com os **catálogos**
+  (`src/components/filtro-chips.tsx`). As opções vêm das RPCs
+  `categorias_do_catalogo` / `catalogos_da_categoria`, que só listam o que
+  tem produto ativo com foto — o filtro nunca leva a uma lista vazia. A
+  migration `20260929012705_filtros_listas_publicos.sql` libera essas RPCs
+  também para visitante sem login (a vitrine é pública).
+
+### Cabeçalho da Home igual ao Bubble
+
+Faixa azul-escura com o logo, busca branca e sino em círculo branco, como
+no print da Home. O logo (`assets/images/logo-cabecalho.png`) é um
+**recorte provisório do print** — trocar pelo arquivo original em alta
+resolução, junto com ícone e splash (ainda são os padrões do Expo).
+
+### Variáveis do Supabase nos builds da nuvem
+
+`.env` não vai para o Git, então os builds do EAS não o enxergam. Sem as
+variáveis o app fecha ao abrir. Por isso `eas.json` repete
+`EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_ANON_KEY` em cada perfil
+(são valores públicos, feitos para ir no app).
+
 ### Texto provisório
 
 `src/app/politica-privacidade.tsx` tem um texto genérico gerado na

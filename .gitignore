@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# .env local (os builds na nuvem leem as mesmas variáveis do eas.json)
+.env

@@ -5,7 +5,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, 
 import type * as NotificationsType from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
@@ -82,7 +82,10 @@ function GuardiaoDeRotas() {
           do app, então montar/desmontar este componente condicionalmente
           aqui é seguro (nunca alterna, não quebra a ordem dos hooks), e é
           o que evita o require() do módulo problemático no Expo Go. */}
-      {!RODANDO_NO_EXPO_GO ? <TratadorDeNotificacoes carregando={carregando} router={router} /> : null}
+      {/* Na web (usada só para pré-visualizar telas) não existe push. */}
+      {!RODANDO_NO_EXPO_GO && Platform.OS !== 'web' ? (
+        <TratadorDeNotificacoes carregando={carregando} router={router} />
+      ) : null}
     </>
   );
 }

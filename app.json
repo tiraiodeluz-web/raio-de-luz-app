@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Raio de Luz Religiosos",
-    "slug": "raio-de-luz-religiosos",
+    "slug": "raio-de-luz-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -48,6 +48,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "tiraiodeluzs-team",
+    "extra": {
+      "eas": {
+        "projectId": "41e9a84f-4016-4b3c-ab74-e0b335dc343a"
+      }
     }
   }
 }
