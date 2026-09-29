@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomTabInset, BrandColors, Spacing } from '@/constants/theme';
+import { BrandColors, Spacing } from '@/constants/theme';
 
 type ToastContextValue = {
   mostrarToast: (mensagem: string) => void;
@@ -22,6 +23,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [mensagem, setMensagem] = useState<string | null>(null);
   const opacidade = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insets = useSafeAreaInsets();
 
   const mostrarToast = useCallback(
     (texto: string) => {
@@ -40,7 +42,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ mostrarToast }}>
       {children}
       {mensagem ? (
-        <Animated.View pointerEvents="none" style={[styles.container, { opacity: opacidade }]}>
+        <Animated.View pointerEvents="none" style={[styles.container, { top: insets.top + Spacing.two, opacity: opacidade }]}>
           <Text style={styles.texto}>{mensagem}</Text>
         </Animated.View>
       ) : null}
@@ -51,9 +53,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: Spacing.four,
-    right: Spacing.four,
-    bottom: BottomTabInset + Spacing.four,
+    right: Spacing.three,
+    maxWidth: '70%',
     backgroundColor: BrandColors.fundoEscuro,
     borderRadius: 12,
     paddingVertical: Spacing.two,
