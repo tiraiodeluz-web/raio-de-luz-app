@@ -13,16 +13,17 @@ import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import { useProdutoDetalhe, type SantoDoProduto } from '@/lib/produtos';
+import { useToast } from '@/lib/toast-context';
 
 export default function DetalheProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
   const { data, isLoading } = useProdutoDetalhe(id);
   const adicionar = useAdicionarAoCarrinho();
+  const { mostrarToast } = useToast();
 
   const [santoEscolhido, setSantoEscolhido] = useState<SantoDoProduto | null>(null);
   const [quantidade, setQuantidade] = useState(1);
-  const [adicionado, setAdicionado] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -54,7 +55,7 @@ export default function DetalheProdutoScreen() {
     }
     adicionar.mutate(
       { produtoId: produto.id, quantidade, santoId: santoEscolhido?.id ?? null },
-      { onSuccess: () => setAdicionado(true) },
+      { onSuccess: () => mostrarToast('Adicionado ao carrinho!') },
     );
   }
 
@@ -122,7 +123,8 @@ export default function DetalheProdutoScreen() {
 
       <View style={styles.rodape}>
         <Button
-          titulo={adicionado ? 'Adicionado ao carrinho!' : 'Adicionar ao carrinho'}
+          titulo="Adicionar ao carrinho"
+          icone="cart"
           onPress={adicionarAoCarrinho}
           carregando={adicionar.isPending}
         />

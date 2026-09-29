@@ -80,13 +80,19 @@ export default function InicioScreen() {
           {maisVendidos.isLoading ? (
             <ActivityIndicator style={styles.carregandoHorizontal} />
           ) : maisVendidos.data && maisVendidos.data.length > 0 ? (
-            <View style={styles.grade2Colunas}>
-              {maisVendidos.data.map((produto) => (
-                <View key={produto.id} style={styles.colunaGrade}>
-                  <ProdutoCard produto={produto} mostrarComprar onComprar={setProdutoParaComprar} />
+            <FlatList
+              data={maisVendidos.data}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.linhaGrade}
+              contentContainerStyle={styles.grade2Colunas}
+              renderItem={({ item }) => (
+                <View style={styles.colunaGrade}>
+                  <ProdutoCard produto={item} mostrarComprar onComprar={setProdutoParaComprar} />
                 </View>
-              ))}
-            </View>
+              )}
+            />
           ) : (
             <EstadoVazio titulo="Ainda sem vendas" />
           )}
@@ -167,12 +173,7 @@ const styles = StyleSheet.create({
   listaHorizontal: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   carregandoHorizontal: { marginVertical: Spacing.three },
   cardHorizontal: { width: 162 },
-  grade2Colunas: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    rowGap: Spacing.three,
-  },
-  colunaGrade: { width: '48%' },
+  grade2Colunas: { paddingHorizontal: Spacing.three, gap: Spacing.three },
+  linhaGrade: { gap: Spacing.three },
+  colunaGrade: { flex: 1, maxWidth: '48%' },
 });

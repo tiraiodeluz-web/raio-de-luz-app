@@ -9,6 +9,7 @@ import { Platform, useColorScheme } from 'react-native';
 
 import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { ToastProvider } from '@/lib/toast-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,7 +26,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <GuardiaoDeRotas />
+          <ToastProvider>
+            <GuardiaoDeRotas />
+          </ToastProvider>
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>

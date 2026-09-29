@@ -5,6 +5,7 @@ import { SeletorSantoSheet } from '@/components/seletor-santo-sheet';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { useProdutoDetalhe, type ProdutoResumo } from '@/lib/produtos';
+import { useToast } from '@/lib/toast-context';
 
 type Props = {
   produto: ProdutoResumo;
@@ -18,6 +19,7 @@ export function ComprarRapido({ produto, onFechar }: Props) {
   const { session } = useAuth();
   const { data } = useProdutoDetalhe(produto.id);
   const adicionar = useAdicionarAoCarrinho();
+  const { mostrarToast } = useToast();
   const semPersonalizacao = !!data && (!data.produto.personalizavel || data.santos.length === 0);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function ComprarRapido({ produto, onFechar }: Props) {
 
   useEffect(() => {
     if (session && semPersonalizacao) {
-      adicionar.mutate({ produtoId: produto.id });
+      adicionar.mutate({ produtoId: produto.id }, { onSuccess: () => mostrarToast('Adicionado ao carrinho!') });
       onFechar();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,7 +47,10 @@ export function ComprarRapido({ produto, onFechar }: Props) {
       carregando={adicionar.isPending}
       onFechar={onFechar}
       onSelecionar={(santo) => {
-        adicionar.mutate({ produtoId: produto.id, santoId: santo.id });
+        adicionar.mutate(
+          { produtoId: produto.id, santoId: santo.id },
+          { onSuccess: () => mostrarToast('Adicionado ao carrinho!') },
+        );
         onFechar();
       }}
     />
