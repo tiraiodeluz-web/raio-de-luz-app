@@ -97,17 +97,19 @@ export function useProdutosMaisVendidosResumo(limite: number) {
 }
 
 export type FiltroProdutos =
-  | { tipo: 'catalogo'; id: string }
-  | { tipo: 'categoria'; id: string }
+  | { tipo: 'catalogo'; id: string; categoriaId?: string | null }
+  | { tipo: 'categoria'; id: string; catalogoId?: string | null }
   | { tipo: 'destaque' }
   | { tipo: 'mais-vendidos' }
   | { tipo: 'busca'; termo: string };
 
+// 20 por vez em todas as listas: carrega mais ao rolar e, como garantia,
+// pelo botão "Ver mais" no fim da lista (pedido do cliente em 28/09/2026).
 const TAMANHO_PAGINA: Record<FiltroProdutos['tipo'], number> = {
-  catalogo: 30,
-  categoria: 30,
-  destaque: 30,
-  'mais-vendidos': 30,
+  catalogo: 20,
+  categoria: 20,
+  destaque: 20,
+  'mais-vendidos': 20,
   busca: 20,
 };
 
@@ -128,10 +130,14 @@ export function useProdutos(filtro: FiltroProdutos) {
 
       switch (filtro.tipo) {
         case 'catalogo':
-          query = query.eq('catalogo_id', filtro.id).order('nome', { ascending: true });
+          query = query.eq('catalogo_id', filtro.id);
+          if (filtro.categoriaId) query = query.eq('categoria_id', filtro.categoriaId);
+          query = query.order('nome', { ascending: true });
           break;
         case 'categoria':
-          query = query.eq('categoria_id', filtro.id).order('nome', { ascending: true });
+          query = query.eq('categoria_id', filtro.id);
+          if (filtro.catalogoId) query = query.eq('catalogo_id', filtro.catalogoId);
+          query = query.order('nome', { ascending: true });
           break;
         case 'destaque':
           query = query.eq('destaque', true).order('preco_efetivo', { ascending: true });
@@ -213,6 +219,25 @@ export function useNotificacoes() {
         .limit(50);
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+export type OpcaoFiltro = { id: string; nome: string; qtd: number };
+
+// Chips de filtro: no catálogo, as categorias que têm produto nele; na
+// categoria, os catálogos que têm produto nela (nunca oferece filtro vazio).
+export function useOpcoesFiltro(origem: 'catalogo' | 'categoria', id: string | undefined) {
+  return useQuery({
+    queryKey: ['produtos', 'opcoes-filtro', origem, id],
+    enabled: !!id,
+    queryFn: async (): Promise<OpcaoFiltro[]> => {
+      const { data, error } =
+        origem === 'catalogo'
+          ? await supabase.rpc('categorias_do_catalogo', { p_catalogo_id: id as string })
+          : await supabase.rpc('catalogos_da_categoria', { p_categoria_id: id as string });
+      if (error) throw error;
+      return (data ?? []).map((o) => ({ id: o.id, nome: o.nome, qtd: Number(o.qtd) }));
     },
   });
 }

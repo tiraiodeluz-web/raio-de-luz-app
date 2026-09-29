@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 
+import { Button } from '@/components/button';
 import { ComprarRapido } from '@/components/comprar-rapido';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ProdutoCard } from '@/components/produto-card';
@@ -15,10 +16,12 @@ type Props = {
   mostrarContagem?: boolean;
   mostrarComprar?: boolean;
   mensagemVazio?: string;
+  // Filtros (chips) fixos no topo da lista; continuam visíveis ao rolar.
+  filtros?: ReactNode;
 };
 
 // Lista completa paginada (catálogo, categoria, busca, ofertas, mais vendidos).
-export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagemVazio }: Props) {
+export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagemVazio, filtros }: Props) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = query;
   const itens = data?.pages.flatMap((pagina) => pagina.itens) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -26,11 +29,17 @@ export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagem
   const [produtoParaComprar, setProdutoParaComprar] = useState<ProdutoResumo | null>(null);
 
   if (isLoading) {
-    return <ActivityIndicator style={styles.carregando} />;
+    return (
+      <>
+        {filtros}
+        <ActivityIndicator style={styles.carregando} />
+      </>
+    );
   }
 
   return (
     <>
+      {filtros}
       <FlatList
         data={itens}
         keyExtractor={(item) => item.id}
@@ -54,7 +63,17 @@ export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagem
         onEndReached={() => {
           if (hasNextPage) fetchNextPage();
         }}
-        ListFooterComponent={isFetchingNextPage ? <ActivityIndicator style={styles.rodape} /> : null}
+        // Carrega sozinho ao chegar perto do fim; o botão fica como garantia
+        // (ex.: lista curta que não rola, ou rolagem rápida demais).
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator style={styles.rodape} />
+          ) : hasNextPage ? (
+            <View style={styles.rodape}>
+              <Button titulo="Ver mais" variante="secundario" onPress={() => fetchNextPage()} />
+            </View>
+          ) : null
+        }
       />
       {produtoParaComprar ? (
         <ComprarRapido produto={produtoParaComprar} onFechar={() => setProdutoParaComprar(null)} />

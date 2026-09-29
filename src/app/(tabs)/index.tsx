@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -99,25 +100,31 @@ export default function InicioScreen() {
   );
 }
 
+// Igual ao Bubble (print da Home de 28/09/2026): faixa azul-escura com o
+// logo, campo de busca branco e o sino num círculo branco.
+// O logo é um recorte provisório do print — trocar pelo arquivo original.
 function Cabecalho() {
   return (
     <View style={styles.cabecalho}>
-      <View style={styles.cabecalhoLogo}>
-        <ThemedText style={styles.logoTitulo} numberOfLines={1}>
-          RAIO DE LUZ
-        </ThemedText>
-        <ThemedText style={styles.logoSubtitulo} numberOfLines={1}>
-          RELIGIOSOS
-        </ThemedText>
-      </View>
-      <Pressable style={styles.busca} onPress={() => router.push('/busca')}>
-        <Ionicons name="search" size={18} color="#8A8D99" />
-        <ThemedText type="small" themeColor="textSecondary">
+      <Image
+        source={require('@/assets/images/logo-cabecalho.png')}
+        style={styles.logo}
+        contentFit="contain"
+        accessibilityLabel="Raio de Luz Religiosos"
+      />
+      <Pressable style={styles.busca} onPress={() => router.push('/busca')} accessibilityRole="search">
+        <Ionicons name="search" size={18} color={BrandColors.fundoEscuro} />
+        <ThemedText type="small" style={styles.buscaTexto} numberOfLines={1}>
           Buscar produtos...
         </ThemedText>
       </Pressable>
-      <Pressable style={styles.sino} onPress={() => router.push('/notificacoes')} hitSlop={8}>
-        <Ionicons name="notifications-outline" size={20} color="#ffffff" />
+      <Pressable
+        style={styles.sino}
+        onPress={() => router.push('/notificacoes')}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Notificações">
+        <Ionicons name="notifications-outline" size={20} color={BrandColors.fundoEscuro} />
       </Pressable>
     </View>
   );
@@ -131,27 +138,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingVertical: Spacing.three,
+    backgroundColor: BrandColors.fundoEscuro,
   },
-  cabecalhoLogo: { gap: 0 },
-  logoTitulo: { color: BrandColors.fundoEscuro, fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  logoSubtitulo: { color: BrandColors.fundoEscuro, fontSize: 9, fontWeight: '600', letterSpacing: 1 },
+  logo: { width: 112, height: 41 },
   busca: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.one,
     minHeight: 40,
-    borderRadius: Radii.pilula,
-    borderWidth: 1,
-    borderColor: '#E5E6EC',
-    paddingHorizontal: Spacing.three,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: Spacing.two,
   },
+  buscaTexto: { color: '#9A9CA8', flexShrink: 1 },
   sino: {
     width: 40,
     height: 40,
     borderRadius: Radii.pilula,
-    backgroundColor: BrandColors.fundoEscuro,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
