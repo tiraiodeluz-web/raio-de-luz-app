@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AdminCabecalho } from '@/components/admin-cabecalho';
@@ -38,7 +38,7 @@ export default function PedidosAdminScreen() {
         <TextField value={busca} onChangeText={setBusca} keyboardType="number-pad" placeholder="Buscar por número" icone="search" />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtros}>
+      <View style={styles.filtros}>
         {FILTROS.map((filtro) => {
           const ativo = filtro.valor === status;
           return (
@@ -49,7 +49,7 @@ export default function PedidosAdminScreen() {
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
       {isLoading ? (
         <ActivityIndicator style={styles.carregando} />
@@ -84,10 +84,18 @@ export default function PedidosAdminScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
   campoBusca: { paddingHorizontal: Spacing.three },
-  filtros: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingVertical: Spacing.two },
+  filtros: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    paddingHorizontal: Spacing.three,
+    gap: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
   filtro: {
     paddingHorizontal: Spacing.three,
     minHeight: 36,
+    alignSelf: 'flex-start',
     justifyContent: 'center',
     borderRadius: Radii.pilula,
     borderWidth: 1,

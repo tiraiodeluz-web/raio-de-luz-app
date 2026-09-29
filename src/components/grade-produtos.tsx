@@ -57,7 +57,9 @@ export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagem
           <EstadoVazio icone="pricetags-outline" titulo={mensagemVazio ?? 'Nenhum produto encontrado'} />
         }
         renderItem={({ item }) => (
-          <ProdutoCard produto={item} mostrarComprar={mostrarComprar} onComprar={setProdutoParaComprar} />
+          <View style={styles.coluna}>
+            <ProdutoCard produto={item} mostrarComprar={mostrarComprar} onComprar={setProdutoParaComprar} />
+          </View>
         )}
         onEndReachedThreshold={0.4}
         onEndReached={() => {
@@ -86,6 +88,7 @@ const styles = StyleSheet.create({
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.three },
   linha: { gap: Spacing.three },
+  coluna: { flex: 1, maxWidth: '48%' },
   contagem: { marginBottom: Spacing.two },
   rodape: { marginVertical: Spacing.three },
 });

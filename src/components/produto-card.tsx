@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radii, Spacing } from '@/constants/theme';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import type { ProdutoResumo } from '@/lib/produtos';
 
@@ -47,7 +47,9 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
         </ThemedText>
       </View>
 
-      {mostrarComprar ? <Button titulo="Comprar" icone="cart" onPress={() => onComprar?.(produto)} /> : null}
+      {mostrarComprar ? (
+        <Button titulo="Comprar" icone="cart" arredondamento={Radii.cartao} onPress={() => onComprar?.(produto)} />
+      ) : null}
     </Pressable>
   );
 }
@@ -57,7 +59,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: Spacing.half,
     minWidth: 144,
-    maxWidth: '48%',
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#E5E6EC',
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.one,
     left: Spacing.one,
-    backgroundColor: '#D64545',
+    backgroundColor: '#1E8E3E',
     borderRadius: 6,
     paddingHorizontal: Spacing.one,
     paddingVertical: 2,

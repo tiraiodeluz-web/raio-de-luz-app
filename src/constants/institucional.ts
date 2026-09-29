@@ -1,7 +1,5 @@
-// Links de contato mostrados em "Sobre o aplicativo". O levantamento da
-// migração não trouxe as URLs reais do site/Instagram nem um e-mail de
-// contato — fica null até alguém preencher (a tela esconde o que for null
-// em vez de mostrar um link inventado).
+// Links de contato mostrados em "Sobre o aplicativo", confirmados pelo
+// Carlos em 29/09/2026 a partir da tela oficial do Bubble.
 export const LINKS_INSTITUCIONAIS: {
   site: string | null;
   instagram: string | null;
@@ -10,6 +8,16 @@ export const LINKS_INSTITUCIONAIS: {
 } = {
   site: null,
   instagram: null,
-  whatsapp: 'https://wa.me/5543999636907',
+  // Mesmo número usado no WhatsApp de pedidos (lib/whatsapp.ts) — confirma
+  // com o Carlos se é este mesmo ou outro, os visíveis no print estavam
+  // cortados ("rádiodeluzreligiosos.co...", "@raiodeluzartigosreligio...",
+  // "contato@raiodeluzreligi...").
+  whatsapp: 'https://wa.me/5543996081065',
   email: null,
+};
+
+// Rodapé "Desenvolvido por" da tela Sobre, visível por completo no print.
+export const DESENVOLVIDO_POR = {
+  nome: '@CA_APPS',
+  instagram: 'https://instagram.com/ca_apps',
 };

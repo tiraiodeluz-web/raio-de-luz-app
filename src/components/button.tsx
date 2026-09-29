@@ -10,9 +10,21 @@ type Props = Omit<PressableProps, 'style'> & {
   carregando?: boolean;
   icone?: keyof typeof Ionicons.glyphMap;
   corIcone?: string;
+  // Sobrescreve o arredondamento padrão (pílula) — usado em botões dentro de
+  // cartões estreitos, onde o visual do Bubble é menos arredondado.
+  arredondamento?: number;
 };
 
-export function Button({ titulo, variante = 'primario', carregando, icone, corIcone, disabled, ...rest }: Props) {
+export function Button({
+  titulo,
+  variante = 'primario',
+  carregando,
+  icone,
+  corIcone,
+  arredondamento,
+  disabled,
+  ...rest
+}: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -22,6 +34,7 @@ export function Button({ titulo, variante = 'primario', carregando, icone, corIc
         variante === 'primario' && styles.primario,
         variante === 'secundario' && styles.secundario,
         variante === 'texto' && styles.texto,
+        arredondamento !== undefined && { borderRadius: arredondamento },
         (disabled || carregando) && styles.desabilitado,
         pressed && styles.pressionado,
       ]}

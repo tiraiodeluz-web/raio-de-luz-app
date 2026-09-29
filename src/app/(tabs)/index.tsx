@@ -82,7 +82,9 @@ export default function InicioScreen() {
           ) : maisVendidos.data && maisVendidos.data.length > 0 ? (
             <View style={styles.grade2Colunas}>
               {maisVendidos.data.map((produto) => (
-                <ProdutoCard key={produto.id} produto={produto} mostrarComprar onComprar={setProdutoParaComprar} />
+                <View key={produto.id} style={styles.colunaGrade}>
+                  <ProdutoCard produto={produto} mostrarComprar onComprar={setProdutoParaComprar} />
+                </View>
               ))}
             </View>
           ) : (
@@ -164,11 +166,12 @@ const styles = StyleSheet.create({
   secao: { gap: Spacing.two },
   listaHorizontal: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   carregandoHorizontal: { marginVertical: Spacing.three },
-  cardHorizontal: { width: 148 },
+  cardHorizontal: { width: 162 },
   grade2Colunas: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: Spacing.three,
     gap: Spacing.three,
   },
+  colunaGrade: { width: '48%' },
 });
