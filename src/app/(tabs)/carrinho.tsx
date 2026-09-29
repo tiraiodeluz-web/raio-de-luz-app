@@ -161,7 +161,7 @@ function ItemLinha({
 
   return (
     <View style={styles.item}>
-      <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+      <Image source={{ uri: item.fotoUrl ?? undefined }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
           {item.produto.nome}

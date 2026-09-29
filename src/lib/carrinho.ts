@@ -46,6 +46,9 @@ export type ItemCarrinho = {
     ativo: boolean;
   };
   santo: { id: string; nome: string } | null;
+  // Foto do santo escolhido (produto_santos.foto_url), quando existir —
+  // sem isso, o carrinho mostrava a mesma foto principal pra todo santo.
+  fotoUrl: string | null;
 };
 
 // Itens do carrinho do usuário logado, com o produto e o santo escolhido.
@@ -59,21 +62,35 @@ export function useItensCarrinho() {
       const { data, error } = await supabase
         .from('carrinho_itens')
         .select(
-          `id, quantidade,
+          `id, quantidade, produto_id, santo_id,
            produtos ( id, nome, sku, preco, preco_promocional, imagem_principal, embalagem, ativo ),
            santos ( id, nome )`,
         )
         .order('criado_em', { ascending: true });
       if (error) throw error;
 
-      return (data ?? [])
-        .map((linha) => {
-          const produto = linha.produtos as ItemCarrinho['produto'] | null;
-          if (!produto) return null;
-          const santo = linha.santos as ItemCarrinho['santo'];
-          return { id: linha.id, quantidade: linha.quantidade, produto, santo };
-        })
-        .filter((item): item is ItemCarrinho => item !== null);
+      const linhas = (data ?? []).filter((linha) => linha.produtos !== null);
+
+      const produtoIds = [...new Set(linhas.filter((l) => l.santo_id).map((l) => l.produto_id))];
+      const fotosPorSanto = new Map<string, string>();
+      if (produtoIds.length > 0) {
+        const { data: variantes, error: erroVariantes } = await supabase
+          .from('produto_santos')
+          .select('produto_id, santo_id, foto_url')
+          .in('produto_id', produtoIds)
+          .not('foto_url', 'is', null);
+        if (erroVariantes) throw erroVariantes;
+        for (const v of variantes ?? []) {
+          if (v.foto_url) fotosPorSanto.set(`${v.produto_id}|${v.santo_id}`, v.foto_url);
+        }
+      }
+
+      return linhas.map((linha) => {
+        const produto = linha.produtos as ItemCarrinho['produto'];
+        const santo = linha.santos as ItemCarrinho['santo'];
+        const fotoUrl = (santo && fotosPorSanto.get(`${linha.produto_id}|${santo.id}`)) || produto.imagem_principal;
+        return { id: linha.id, quantidade: linha.quantidade, produto, santo, fotoUrl };
+      });
     },
   });
 }
