@@ -6,14 +6,10 @@ export const LINKS_INSTITUCIONAIS: {
   whatsapp: string;
   email: string | null;
 } = {
-  site: null,
-  instagram: null,
-  // Mesmo número usado no WhatsApp de pedidos (lib/whatsapp.ts) — confirma
-  // com o Carlos se é este mesmo ou outro, os visíveis no print estavam
-  // cortados ("rádiodeluzreligiosos.co...", "@raiodeluzartigosreligio...",
-  // "contato@raiodeluzreligi...").
+  site: 'raiodeluzreligiosos.com.br',
+  instagram: 'raiodeluzartigosreligiosos',
   whatsapp: 'https://wa.me/5543996081065',
-  email: null,
+  email: 'contato@raiodeluzreligiosos.com.br',
 };
 
 // Rodapé "Desenvolvido por" da tela Sobre, visível por completo no print.
