@@ -15,6 +15,7 @@
     },
     "android": {
       "package": "com.raiodeluzreligiosos.mobile",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#010534",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
