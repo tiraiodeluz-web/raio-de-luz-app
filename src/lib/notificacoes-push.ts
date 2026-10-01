@@ -15,9 +15,12 @@ function carregarNotifications(): typeof NotificationsType {
 }
 
 // Canal Android usado pela Edge Function processar-fila-push (channelId:
-// "padrao"). Sem criar o canal aqui, o Android não sabe como notificar
+// "padrao-v2"). Sem criar o canal aqui, o Android não sabe como notificar
 // (nem toca som) numa mensagem "data-only" via FCM.
-const CANAL_ANDROID = 'padrao';
+// "-v2": uma vez criado, o Android trava a importância do canal — mudar
+// pra MAX aqui não afeta quem já tinha o canal "padrao" criado com
+// DEFAULT. Trocar o id força a criação de um canal novo, já com MAX.
+const CANAL_ANDROID = 'padrao-v2';
 
 export async function configurarNotificacoes() {
   if (RODANDO_NO_EXPO_GO) return;

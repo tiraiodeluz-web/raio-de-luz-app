@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
         title: n.titulo,
         body: n.corpo,
         sound: "default",
-        channelId: "padrao",
+        channelId: "padrao-v2",
         priority: "high",
         data: { notificacao_id: n.id, rota },
         ...(n.imagem_url ? { richContent: { image: n.imagem_url } } : {}),
