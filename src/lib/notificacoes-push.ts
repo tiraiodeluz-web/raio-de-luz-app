@@ -33,9 +33,11 @@ export async function configurarNotificacoes() {
   });
 
   if (Platform.OS === 'android') {
+    // MAX (não DEFAULT): é o que faz o Android mostrar o banner/heads-up e
+    // acender a tela — com DEFAULT a notificação só aparecia na gaveta.
     await Notifications.setNotificationChannelAsync(CANAL_ANDROID, {
       name: 'Raio de Luz',
-      importance: Notifications.AndroidImportance.DEFAULT,
+      importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
     });
   }

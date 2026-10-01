@@ -29,6 +29,9 @@ type Mensagem = {
   body: string;
   sound: "default";
   channelId: string;
+  // Sem isso o FCM entrega como mensagem "normal" (só gaveta, sem acender
+  // tela nem banner) — precisa de "high" pra virar heads-up de verdade.
+  priority: "high";
   data: Record<string, unknown>;
   richContent?: { image: string };
 };
@@ -71,6 +74,7 @@ Deno.serve(async (req) => {
         body: n.corpo,
         sound: "default",
         channelId: "padrao",
+        priority: "high",
         data: { notificacao_id: n.id, rota },
         ...(n.imagem_url ? { richContent: { image: n.imagem_url } } : {}),
       }));
