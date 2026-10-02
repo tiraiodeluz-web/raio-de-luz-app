@@ -1,18 +1,20 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
+import { ProdutoCard } from '@/components/produto-card';
+import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { SeletorQuantidade } from '@/components/seletor-quantidade';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
-import { useProdutoDetalhe, type SantoDoProduto } from '@/lib/produtos';
+import { useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 
 export default function DetalheProdutoScreen() {
@@ -21,6 +23,8 @@ export default function DetalheProdutoScreen() {
   const { data, isLoading } = useProdutoDetalhe(id);
   const adicionar = useAdicionarAoCarrinho();
   const { mostrarToast } = useToast();
+
+  const recomendados = useProdutosRecomendados(id);
 
   const [santoEscolhido, setSantoEscolhido] = useState<SantoDoProduto | null>(null);
   const [quantidade, setQuantidade] = useState(1);
@@ -119,6 +123,24 @@ export default function DetalheProdutoScreen() {
 
           {produto.descricao ? <ThemedText themeColor="textSecondary">{produto.descricao}</ThemedText> : null}
         </View>
+
+        {recomendados.data && recomendados.data.length > 0 ? (
+          <View style={styles.secaoRecomendados}>
+            <SecaoCabecalho titulo="Recomendados" />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={recomendados.data}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listaRecomendados}
+              renderItem={({ item }) => (
+                <View style={styles.cardRecomendado}>
+                  <ProdutoCard produto={item} />
+                </View>
+              )}
+            />
+          </View>
+        ) : null}
       </ScrollView>
 
       <View style={styles.rodape}>
@@ -157,5 +179,8 @@ const styles = StyleSheet.create({
   santoSelecionado: { borderColor: BrandColors.fundoEscuro },
   santoFoto: { width: '100%', height: '100%' },
   secaoQuantidade: { gap: Spacing.two },
+  secaoRecomendados: { gap: Spacing.two, marginTop: Spacing.four },
+  listaRecomendados: { paddingHorizontal: Spacing.three, gap: Spacing.three },
+  cardRecomendado: { width: 162 },
   rodape: { padding: Spacing.three },
 });

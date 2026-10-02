@@ -208,6 +208,21 @@ export function useProdutoDetalhe(id: string | undefined) {
   });
 }
 
+// Regra: produtos com o mesmo "prefixo" de SKU (ex.: AD020-1/-2/-3) são
+// variações do mesmo item — a função no banco prioriza esses e completa com
+// produtos da mesma categoria até ter pelo menos 10.
+export function useProdutosRecomendados(produtoId: string | undefined) {
+  return useQuery({
+    queryKey: ['produtos', 'recomendados', produtoId],
+    enabled: !!produtoId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('produtos_recomendados', { p_produto_id: produtoId as string });
+      if (error) throw error;
+      return (data ?? []) as ProdutoResumo[];
+    },
+  });
+}
+
 export function useNotificacoes() {
   return useQuery({
     queryKey: ['notificacoes'],
