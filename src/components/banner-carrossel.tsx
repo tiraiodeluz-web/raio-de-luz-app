@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
-import { useEffect, useRef, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { router } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { Dimensions, Linking, Pressable, ScrollView, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -10,7 +11,17 @@ const LARGURA_BANNER = LARGURA_TELA - Spacing.three * 2;
 const PASSO = LARGURA_BANNER + Spacing.two;
 const INTERVALO_MS = 4000;
 
-type Banner = { id: string; titulo: string | null; foto_url: string };
+type Banner = { id: string; titulo: string | null; foto_url: string; link: string | null };
+
+// Link do banner pode ser uma rota interna (ex.: "/catalogo/<id>") ou uma
+// URL externa (ex.: "https://..."), igual ao rota_destino das notificações.
+function abrirLink(link: string) {
+  if (link.startsWith('http://') || link.startsWith('https://')) {
+    Linking.openURL(link);
+  } else {
+    router.push(link as never);
+  }
+}
 
 export function BannerCarrossel({ banners }: { banners: Banner[] }) {
   const scrollRef = useRef<ScrollView>(null);
@@ -46,9 +57,15 @@ export function BannerCarrossel({ banners }: { banners: Banner[] }) {
       decelerationRate="fast"
       onMomentumScrollEnd={aoParar}>
       {banners.map((banner) => (
-        <ThemedView key={banner.id} type="backgroundElement" style={styles.banner}>
-          <Image source={{ uri: banner.foto_url }} style={styles.imagem} contentFit="cover" />
-        </ThemedView>
+        <Pressable
+          key={banner.id}
+          disabled={!banner.link}
+          onPress={() => banner.link && abrirLink(banner.link)}
+          style={styles.banner}>
+          <ThemedView type="backgroundElement" style={styles.banner}>
+            <Image source={{ uri: banner.foto_url }} style={styles.imagem} contentFit="cover" />
+          </ThemedView>
+        </Pressable>
       ))}
     </ScrollView>
   );

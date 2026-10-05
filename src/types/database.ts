@@ -24,6 +24,7 @@ export type Database = {
           data_envio: string | null
           foto_url: string
           id: string
+          link: string | null
           ordem: number
           titulo: string | null
         }
@@ -36,6 +37,7 @@ export type Database = {
           data_envio?: string | null
           foto_url: string
           id?: string
+          link?: string | null
           ordem?: number
           titulo?: string | null
         }
@@ -48,6 +50,7 @@ export type Database = {
           data_envio?: string | null
           foto_url?: string
           id?: string
+          link?: string | null
           ordem?: number
           titulo?: string | null
         }

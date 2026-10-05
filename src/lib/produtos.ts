@@ -19,7 +19,7 @@ export function useBanners() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('banners')
-        .select('id,titulo,foto_url,ordem')
+        .select('id,titulo,foto_url,link,ordem')
         .eq('ativo', true)
         .order('ordem', { ascending: true });
       if (error) throw error;
