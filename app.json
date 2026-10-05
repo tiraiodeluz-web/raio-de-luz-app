@@ -44,6 +44,12 @@
           "color": "#C9A227",
           "defaultChannel": "padrao-v2"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O app acessa suas fotos para anexar imagens em notificações."
+        }
       ]
     ],
     "experiments": {

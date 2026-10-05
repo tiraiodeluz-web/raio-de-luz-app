@@ -219,12 +219,23 @@ export function useCarrinhoDoCliente(clienteId: string | undefined) {
 export function useEnviarNotificacao() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ titulo, legenda, corpo }: { titulo: string; legenda: string; corpo: string }) => {
+    mutationFn: async ({
+      titulo,
+      legenda,
+      corpo,
+      imagemUrl,
+    }: {
+      titulo: string;
+      legenda: string;
+      corpo: string;
+      imagemUrl?: string | null;
+    }) => {
       const { data: sessao } = await supabase.auth.getUser();
       const { error } = await supabase.from('notificacoes').insert({
         titulo,
         legenda: legenda || null,
         corpo,
+        imagem_url: imagemUrl || null,
         destinatario_id: null,
         criado_por: sessao.user?.id,
       });
