@@ -121,6 +121,26 @@ export function useProdutos(filtro: FiltroProdutos) {
     queryKey: ['produtos', 'lista', filtro],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
+      // Busca usa uma função à parte: prioriza sku exato/começa-com antes do
+      // nome, porque o cliente B2B decora o código do catálogo ("CH.032") e
+      // espera achar na hora — um ilike comum ordenado por nome não garante isso.
+      if (filtro.tipo === 'busca') {
+        const { data, error } = await supabase.rpc('produtos_busca', {
+          p_termo: filtro.termo.trim(),
+          p_offset: pageParam,
+          p_limite: tamanho,
+        });
+        if (error) throw error;
+        const linhas = data ?? [];
+        const itens = linhas.map(({ total: _total, ...resto }) => resto) as ProdutoResumo[];
+        const total = linhas[0]?.total ?? 0;
+        return {
+          itens,
+          total,
+          proximaPagina: itens.length === tamanho ? pageParam + tamanho : undefined,
+        };
+      }
+
       let query = supabase
         .from('produtos')
         .select(COLUNAS_RESUMO, { count: 'exact' })
@@ -144,9 +164,6 @@ export function useProdutos(filtro: FiltroProdutos) {
           break;
         case 'mais-vendidos':
           query = query.order('vendas', { ascending: false });
-          break;
-        case 'busca':
-          query = query.ilike('busca', `%${filtro.termo.trim().toLowerCase()}%`).order('nome', { ascending: true });
           break;
       }
 

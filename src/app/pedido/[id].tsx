@@ -1,14 +1,15 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Alert, ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { formatarReais } from '@/lib/formatacao';
-import { usePedidoDetalhe } from '@/lib/pedidos';
+import { usePedidoDetalhe, useRepetirPedido } from '@/lib/pedidos';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -25,6 +26,25 @@ type Endereco = {
 export default function DetalhePedidoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = usePedidoDetalhe(id);
+  const repetir = useRepetirPedido();
+
+  async function pedirDeNovo() {
+    if (!id) return;
+    try {
+      const { adicionados, indisponiveis } = await repetir.mutateAsync(id);
+      if (adicionados === 0) {
+        Alert.alert('Nada pra adicionar', 'Nenhum item deste pedido está disponível no catálogo agora.');
+        return;
+      }
+      const aviso = indisponiveis > 0 ? `\n\n${indisponiveis} item(ns) não puderam ser adicionados (produto saiu de linha ou santo indisponível).` : '';
+      Alert.alert('Adicionado ao carrinho', `${adicionados} item(ns) foram pro seu carrinho.${aviso}`, [
+        { text: 'Continuar vendo', style: 'cancel' },
+        { text: 'Ir para o carrinho', onPress: () => router.push('/(tabs)/carrinho') },
+      ]);
+    } catch (e) {
+      Alert.alert('Não foi possível', e instanceof Error ? e.message : 'Tente novamente.');
+    }
+  }
 
   if (isLoading || !data) {
     return (
@@ -103,6 +123,8 @@ export default function DetalhePedidoScreen() {
             <ThemedText themeColor="textSecondary">{pedido.observacoes}</ThemedText>
           </View>
         ) : null}
+
+        <Button titulo="Pedir de novo" icone="repeat" onPress={pedirDeNovo} carregando={repetir.isPending} />
       </ScrollView>
     </SafeAreaView>
   );

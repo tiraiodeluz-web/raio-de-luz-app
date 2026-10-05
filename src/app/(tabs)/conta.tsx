@@ -77,6 +77,12 @@ export default function ContaScreen() {
 
         <View style={styles.menu}>
           <Button
+            titulo="Meus favoritos"
+            variante="secundario"
+            icone="heart-outline"
+            onPress={() => router.push('/favoritos')}
+          />
+          <Button
             titulo="Política de privacidade"
             variante="secundario"
             icone="lock-closed-outline"

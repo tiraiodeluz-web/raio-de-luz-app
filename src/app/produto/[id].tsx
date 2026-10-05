@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
+import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import { useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
@@ -23,6 +25,8 @@ export default function DetalheProdutoScreen() {
   const { data, isLoading } = useProdutoDetalhe(id);
   const adicionar = useAdicionarAoCarrinho();
   const { mostrarToast } = useToast();
+  const { data: favoritosIds } = useFavoritosIds();
+  const alternarFavorito = useAlternarFavorito();
 
   const recomendados = useProdutosRecomendados(id);
 
@@ -63,6 +67,15 @@ export default function DetalheProdutoScreen() {
     );
   }
 
+  const favoritado = favoritosIds?.has(produto.id) ?? false;
+  function tocarFavorito() {
+    if (!session) {
+      router.push('/(auth)/login');
+      return;
+    }
+    alternarFavorito.mutate({ produtoId: produto.id, favoritado });
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <CabecalhoVoltar titulo="Detalhes do Produto" />
@@ -88,9 +101,14 @@ export default function DetalheProdutoScreen() {
         ) : null}
 
         <View style={styles.corpo}>
-          <ThemedText type="title" style={styles.nome}>
-            {produto.nome}
-          </ThemedText>
+          <View style={styles.linhaNome}>
+            <ThemedText type="title" style={styles.nomeFlex}>
+              {produto.nome}
+            </ThemedText>
+            <Pressable onPress={tocarFavorito} hitSlop={8}>
+              <Ionicons name={favoritado ? 'heart' : 'heart-outline'} size={26} color={favoritado ? '#D64545' : BrandColors.fundoEscuro} />
+            </Pressable>
+          </View>
           <ThemedText themeColor="textSecondary">Embalagem: {produto.embalagem}</ThemedText>
 
           <View style={styles.precos}>
@@ -170,7 +188,8 @@ const styles = StyleSheet.create({
   },
   seloTexto: { color: '#ffffff', fontWeight: '700' },
   corpo: { padding: Spacing.three, gap: Spacing.two },
-  nome: { fontSize: 22, lineHeight: 28, color: BrandColors.fundoEscuro },
+  linhaNome: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  nomeFlex: { flex: 1, fontSize: 22, lineHeight: 28, color: BrandColors.fundoEscuro },
   precos: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
   precoRiscado: { textDecorationLine: 'line-through' },
   precoAtual: { fontSize: 24, lineHeight: 30, color: BrandColors.fundoEscuro },

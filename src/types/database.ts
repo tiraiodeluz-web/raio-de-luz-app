@@ -325,6 +325,39 @@ export type Database = {
         }
         Relationships: []
       }
+      favoritos: {
+        Row: {
+          criado_em: string
+          produto_id: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          produto_id: string
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          produto_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favoritos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favoritos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fila_push: {
         Row: {
           criado_em: string
@@ -857,6 +890,32 @@ export type Database = {
       formatar_reais: { Args: { v: number }; Returns: string }
       metricas_admin: { Args: never; Returns: Json }
       pode_comprar: { Args: never; Returns: boolean }
+      produtos_busca: {
+        Args: { p_limite?: number; p_offset?: number; p_termo: string }
+        Returns: {
+          embalagem: number
+          id: string
+          imagem_principal: string
+          nome: string
+          preco: number
+          preco_efetivo: number
+          preco_promocional: number
+          sku: string
+          total: number
+        }[]
+      }
+      produtos_por_codigos: {
+        Args: { p_skus: string[] }
+        Returns: {
+          ativo: boolean
+          embalagem: number
+          id: string
+          nome: string
+          personalizavel: boolean
+          sku: string
+          termo_buscado: string
+        }[]
+      }
       produtos_recomendados: {
         Args: { p_minimo?: number; p_produto_id: string }
         Returns: {
@@ -896,6 +955,13 @@ export type Database = {
         Returns: undefined
       }
       remover_dispositivo: { Args: { p_token: string }; Returns: undefined }
+      repetir_pedido: {
+        Args: { p_pedido_id: string }
+        Returns: {
+          itens_adicionados: number
+          itens_indisponiveis: number
+        }[]
+      }
       reservar_fila_push: {
         Args: { p_limite?: number }
         Returns: {

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -61,5 +61,22 @@ export function usePedidoDetalhe(id: string | undefined) {
 
       return { pedido, itens: itens ?? [] };
     },
+  });
+}
+
+// "Pedir de novo": repõe os itens de um pedido já feito no carrinho. Pula
+// produtos desativados ou cujo santo não está mais disponível (ver função no
+// banco) e devolve quantos entraram e quantos ficaram de fora, pra avisar o
+// cliente sem travar o fluxo.
+export function useRepetirPedido() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (pedidoId: string) => {
+      const { data, error } = await supabase.rpc('repetir_pedido', { p_pedido_id: pedidoId });
+      if (error) throw error;
+      const linha = data?.[0];
+      return { adicionados: linha?.itens_adicionados ?? 0, indisponiveis: linha?.itens_indisponiveis ?? 0 };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['carrinho'] }),
   });
 }

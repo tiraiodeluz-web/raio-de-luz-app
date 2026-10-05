@@ -32,6 +32,77 @@ export function useAdicionarAoCarrinho() {
   });
 }
 
+type LinhaCodigo = { sku: string; quantidade: number | null };
+
+// Um código por linha, quantidade opcional só via "x" ("AD.025 x3" ou
+// "AD.025x3") — de propósito SEM aceitar vírgula como separador de item ou
+// de quantidade: um número solto depois do código ("CH.032 2") é ambíguo
+// (seria outro código? a quantidade?), então só conta se vier com "x".
+// Sem quantidade, usa a embalagem padrão do produto (mesma regra de
+// adicionar ao carrinho pela página do produto).
+function parseCodigos(texto: string): LinhaCodigo[] {
+  return texto
+    .split('\n')
+    .map((linha) => linha.trim())
+    .filter((linha) => linha.length > 0)
+    .map((linha): LinhaCodigo => {
+      const comQuantidade = linha.match(/^(\S+)\s*[xX]\s*(\d+)$/);
+      if (comQuantidade) return { sku: comQuantidade[1], quantidade: parseInt(comQuantidade[2], 10) };
+      const primeiroToken = linha.split(/\s+/)[0];
+      return { sku: primeiroToken, quantidade: null };
+    });
+}
+
+type ResultadoAdicionarPorCodigos = {
+  adicionados: number;
+  naoEncontrados: string[];
+  personalizaveis: string[];
+};
+
+// "Adicionar por código": pra quem já tem a lista de SKUs anotada (WhatsApp,
+// papel, catálogo impresso) e não quer navegar produto por produto. Produtos
+// personalizáveis não dá pra resolver só pelo código — precisam de escolher
+// o santo na página do produto, então ficam de fora com aviso.
+export function useAdicionarPorCodigos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (texto: string): Promise<ResultadoAdicionarPorCodigos> => {
+      const linhas = parseCodigos(texto);
+      if (linhas.length === 0) return { adicionados: 0, naoEncontrados: [], personalizaveis: [] };
+
+      const skus = linhas.map((l) => l.sku);
+      const { data: encontrados, error } = await supabase.rpc('produtos_por_codigos', { p_skus: skus });
+      if (error) throw error;
+
+      const porTermo = new Map((encontrados ?? []).map((p) => [p.termo_buscado.toLowerCase(), p]));
+      const naoEncontrados: string[] = [];
+      const personalizaveis: string[] = [];
+      let adicionados = 0;
+
+      for (const linha of linhas) {
+        const produto = porTermo.get(linha.sku.toLowerCase());
+        if (!produto || !produto.id) {
+          naoEncontrados.push(linha.sku);
+          continue;
+        }
+        if (produto.personalizavel) {
+          personalizaveis.push(produto.sku);
+          continue;
+        }
+        const { error: erroAdd } = await supabase.rpc('adicionar_ao_carrinho', {
+          p_produto_id: produto.id,
+          p_quantidade: linha.quantidade ?? undefined,
+        });
+        if (erroAdd) throw erroAdd;
+        adicionados += 1;
+      }
+
+      return { adicionados, naoEncontrados, personalizaveis };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['carrinho'] }),
+  });
+}
+
 export type ItemCarrinho = {
   id: string;
   quantidade: number;

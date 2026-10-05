@@ -90,7 +90,15 @@ export default function CarrinhoScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ThemedText style={styles.titulo}>Carrinho</ThemedText>
+      <View style={styles.cabecalho}>
+        <ThemedText style={styles.titulo}>Carrinho</ThemedText>
+        <Pressable onPress={() => router.push('/pedir-por-codigo')} style={styles.porCodigo} hitSlop={8}>
+          <Ionicons name="barcode-outline" size={18} color={BrandColors.fundoEscuro} />
+          <ThemedText type="smallBold" style={styles.porCodigoTexto}>
+            Por código
+          </ThemedText>
+        </Pressable>
+      </View>
 
       <FlatList
         data={listaItens}
@@ -203,7 +211,16 @@ function LinhaResumo({ rotulo, valor, destaque }: { rotulo: string; valor: strin
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
-  titulo: { fontSize: 20, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three },
+  cabecalho: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
+  },
+  titulo: { fontSize: 20 },
+  porCodigo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.half },
+  porCodigoTexto: { color: BrandColors.fundoEscuro },
   carregando: { marginTop: Spacing.five },
   botaoEntrar: { paddingHorizontal: Spacing.four },
   lista: { padding: Spacing.three, gap: Spacing.two, flexGrow: 1 },
