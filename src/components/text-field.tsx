@@ -2,8 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Colors, Radii, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type Props = TextInputProps & {
@@ -17,8 +16,7 @@ type Props = TextInputProps & {
 
 export function TextField({ rotulo, erro, icone, claro, style, ...rest }: Props) {
   const theme = useTheme();
-  const scheme = useColorScheme();
-  const placeholderColor = claro ? '#8A8D99' : Colors[scheme === 'unspecified' ? 'light' : scheme].textSecondary;
+  const placeholderColor = claro ? '#8A8D99' : theme.textSecondary;
 
   return (
     <View style={styles.container}>

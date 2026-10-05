@@ -1,14 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, type Href } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, type Href } from 'expo-router';
 // Import só de tipos — não gera um require() real no bundle (ver
 // src/lib/ambiente.ts e notificacoes-push.ts para o porquê).
 import type * as NotificationsType from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { Platform } from 'react-native';
 
 import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { useSincronizarCarrinhoOffline } from '@/lib/carrinho-offline';
 import { ToastProvider } from '@/lib/toast-context';
 
 SplashScreen.preventAutoHideAsync();
@@ -16,8 +17,6 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
@@ -25,7 +24,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        {/* O app não tem dark mode de verdade (fundo branco fixo em quase
+            toda tela) — forçar DefaultTheme evita header/tab bar do sistema
+            virarem escuros e descasarem do resto da UI quando o celular
+            está em modo escuro. */}
+        <ThemeProvider value={DefaultTheme}>
           <ToastProvider>
             <GuardiaoDeRotas />
           </ToastProvider>
@@ -46,6 +49,8 @@ function GuardiaoDeRotas() {
   // precisamos ler os dois primeiros segmentos como texto de qualquer rota.
   const segments = useSegments() as string[];
   const router = useRouter();
+
+  useSincronizarCarrinhoOffline(!!session);
 
   useEffect(() => {
     if (carregando) return;

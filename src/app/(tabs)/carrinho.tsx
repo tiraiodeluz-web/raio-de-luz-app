@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -21,11 +22,16 @@ import {
   type CupomValidado,
   type ItemCarrinho,
 } from '@/lib/carrinho';
+import { alterarQuantidadeOffline, itensOfflineParaExibicao, removerItemOffline, useFilaCarrinhoOffline } from '@/lib/carrinho-offline';
 import { formatarReais } from '@/lib/formatacao';
+
+type LinhaCarrinho = ItemCarrinho & { pendente?: boolean };
 
 export default function CarrinhoScreen() {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
   const { data: itens, isLoading } = useItensCarrinho();
+  const { data: filaOffline } = useFilaCarrinhoOffline();
   const alterarQuantidade = useAlterarQuantidadeCarrinho();
   const removerItem = useRemoverDoCarrinho();
 
@@ -60,10 +66,44 @@ export default function CarrinhoScreen() {
     );
   }
 
-  const listaItens = itens ?? [];
+  const itensPendentes: LinhaCarrinho[] = itensOfflineParaExibicao(filaOffline ?? []).map((item) => ({
+    id: item.id,
+    quantidade: item.quantidade,
+    produto: {
+      id: item.produtoId,
+      nome: item.produto.nome,
+      sku: item.produto.sku,
+      preco: item.produto.preco,
+      preco_promocional: item.produto.preco_promocional,
+      imagem_principal: item.produto.imagem_principal,
+      embalagem: item.produto.embalagem,
+      ativo: true,
+    },
+    santo: item.santoId ? { id: item.santoId, nome: item.santoNome ?? '' } : null,
+    fotoUrl: item.fotoUrl,
+    pendente: true,
+  }));
+
+  const listaItens: LinhaCarrinho[] = [...(itens ?? []), ...itensPendentes];
   const subtotal = calcularSubtotalCarrinho(listaItens);
   const desconto = cupom ? Math.min(cupom.valor, subtotal) : 0;
   const total = subtotal - desconto;
+
+  function alterarQuantidadeLinha(item: LinhaCarrinho, quantidade: number) {
+    if (item.pendente) {
+      alterarQuantidadeOffline(queryClient, item.id, quantidade);
+    } else {
+      alterarQuantidade.mutate({ id: item.id, quantidade });
+    }
+  }
+
+  function removerLinha(item: LinhaCarrinho) {
+    if (item.pendente) {
+      removerItemOffline(queryClient, item.id);
+    } else {
+      removerItem.mutate(item.id);
+    }
+  }
 
   async function aplicarCupom() {
     setErroCupom(null);
@@ -85,6 +125,16 @@ export default function CarrinhoScreen() {
   }
 
   function finalizarCompra() {
+    // Item pendente só existe no aparelho — o pedido é criado a partir do
+    // carrinho salvo no banco, então sem sincronizar antes ele ficaria de
+    // fora do pedido sem o cliente perceber.
+    if (itensPendentes.length > 0) {
+      Alert.alert(
+        'Sem conexão',
+        'Alguns itens foram adicionados sem internet e ainda não foram enviados. Conecte-se à internet antes de finalizar a compra.',
+      );
+      return;
+    }
     router.push({ pathname: '/checkout', params: cupom ? { cupom: cupom.codigo } : {} });
   }
 
@@ -92,12 +142,6 @@ export default function CarrinhoScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.cabecalho}>
         <ThemedText style={styles.titulo}>Carrinho</ThemedText>
-        <Pressable onPress={() => router.push('/pedir-por-codigo')} style={styles.porCodigo} hitSlop={8}>
-          <Ionicons name="barcode-outline" size={18} color={BrandColors.fundoEscuro} />
-          <ThemedText type="smallBold" style={styles.porCodigoTexto}>
-            Por código
-          </ThemedText>
-        </Pressable>
       </View>
 
       <FlatList
@@ -110,8 +154,8 @@ export default function CarrinhoScreen() {
         renderItem={({ item }) => (
           <ItemLinha
             item={item}
-            onAlterarQuantidade={(quantidade) => alterarQuantidade.mutate({ id: item.id, quantidade })}
-            onRemover={() => removerItem.mutate(item.id)}
+            onAlterarQuantidade={(quantidade) => alterarQuantidadeLinha(item, quantidade)}
+            onRemover={() => removerLinha(item)}
           />
         )}
         ListFooterComponent={
@@ -161,7 +205,7 @@ function ItemLinha({
   onAlterarQuantidade,
   onRemover,
 }: {
-  item: ItemCarrinho;
+  item: LinhaCarrinho;
   onAlterarQuantidade: (quantidade: number) => void;
   onRemover: () => void;
 }) {
@@ -182,6 +226,14 @@ function ItemLinha({
         <ThemedText type="small" themeColor="textSecondary">
           Embalagem: {item.produto.embalagem} un.
         </ThemedText>
+        {item.pendente ? (
+          <View style={styles.pendenteAviso}>
+            <Ionicons name="cloud-offline-outline" size={14} color="#B07B13" />
+            <ThemedText type="small" style={styles.pendenteTexto}>
+              Sem internet — será enviado ao conectar
+            </ThemedText>
+          </View>
+        ) : null}
         <View style={styles.itemLinhaBaixo}>
           <SeletorQuantidade
             quantidade={item.quantidade}
@@ -219,8 +271,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
   },
   titulo: { fontSize: 20 },
-  porCodigo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.half },
-  porCodigoTexto: { color: BrandColors.fundoEscuro },
   carregando: { marginTop: Spacing.five },
   botaoEntrar: { paddingHorizontal: Spacing.four },
   lista: { padding: Spacing.three, gap: Spacing.two, flexGrow: 1 },
@@ -235,6 +285,8 @@ const styles = StyleSheet.create({
   },
   itemImagem: { width: 72, height: 72, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
+  pendenteAviso: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pendenteTexto: { color: '#B07B13' },
   itemLinhaBaixo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.one },
   itemRemover: { padding: Spacing.half },
   rodapeLista: { gap: Spacing.two, marginTop: Spacing.two },

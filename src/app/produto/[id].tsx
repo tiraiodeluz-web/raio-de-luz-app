@@ -62,8 +62,27 @@ export default function DetalheProdutoScreen() {
       return;
     }
     adicionar.mutate(
-      { produtoId: produto.id, quantidade, santoId: santoEscolhido?.id ?? null },
-      { onSuccess: () => mostrarToast('Adicionado ao carrinho!') },
+      {
+        produtoId: produto.id,
+        quantidade,
+        santoId: santoEscolhido?.id ?? null,
+        santoNome: santoEscolhido?.nome ?? null,
+        fotoUrl: foto,
+        produtoSnapshot: {
+          nome: produto.nome,
+          sku: produto.sku,
+          preco: produto.preco,
+          preco_promocional: produto.preco_promocional,
+          imagem_principal: produto.imagem_principal,
+          embalagem: produto.embalagem,
+        },
+      },
+      {
+        onSuccess: (resultado) =>
+          mostrarToast(
+            resultado.offline ? 'Sem internet: vai ser enviado ao carrinho quando a conexão voltar.' : 'Adicionado ao carrinho!',
+          ),
+      },
     );
   }
 

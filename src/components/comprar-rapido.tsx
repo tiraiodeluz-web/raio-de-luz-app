@@ -30,9 +30,25 @@ export function ComprarRapido({ produto, onFechar }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
+  const snapshotProduto = {
+    nome: produto.nome,
+    sku: produto.sku,
+    preco: produto.preco,
+    preco_promocional: produto.preco_promocional,
+    imagem_principal: produto.imagem_principal,
+    embalagem: produto.embalagem,
+  };
+
+  function aoAdicionar(resultado: { offline: boolean }) {
+    mostrarToast(resultado.offline ? 'Sem internet: vai ser enviado ao carrinho quando a conexão voltar.' : 'Adicionado ao carrinho!');
+  }
+
   useEffect(() => {
     if (session && semPersonalizacao) {
-      adicionar.mutate({ produtoId: produto.id }, { onSuccess: () => mostrarToast('Adicionado ao carrinho!') });
+      adicionar.mutate(
+        { produtoId: produto.id, produtoSnapshot: snapshotProduto },
+        { onSuccess: aoAdicionar },
+      );
       onFechar();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,8 +64,14 @@ export function ComprarRapido({ produto, onFechar }: Props) {
       onFechar={onFechar}
       onSelecionar={(santo) => {
         adicionar.mutate(
-          { produtoId: produto.id, santoId: santo.id },
-          { onSuccess: () => mostrarToast('Adicionado ao carrinho!') },
+          {
+            produtoId: produto.id,
+            santoId: santo.id,
+            santoNome: santo.nome,
+            fotoUrl: santo.fotoUrl,
+            produtoSnapshot: snapshotProduto,
+          },
+          { onSuccess: aoAdicionar },
         );
         onFechar();
       }}
