@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { BrasilApiError, buscarCep } from '@/lib/brasil-api';
+import { useAuth } from '@/lib/auth-context';
 import { calcularSubtotalCarrinho, useCriarPedido, useItensCarrinho, validarCupom, type CupomValidado } from '@/lib/carrinho';
 import { useEnderecoPrincipal, useSalvarEndereco } from '@/lib/enderecos';
 import { formatarReais } from '@/lib/formatacao';
@@ -20,6 +21,7 @@ import { abrirWhatsAppPedido } from '@/lib/whatsapp';
 
 export default function CheckoutScreen() {
   const { cupom: cupomParam } = useLocalSearchParams<{ cupom?: string }>();
+  const { perfil } = useAuth();
   const { data: itens, isLoading: carregandoCarrinho } = useItensCarrinho();
   const enderecoPrincipal = useEnderecoPrincipal();
   const salvarEndereco = useSalvarEndereco();
@@ -203,6 +205,21 @@ export default function CheckoutScreen() {
             <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
           </View>
 
+          {perfil?.limite_credito != null ? (
+            <View style={styles.resumo}>
+              <ThemedText type="smallBold" style={styles.resumoTitulo}>
+                Condição comercial
+              </ThemedText>
+              <LinhaResumo rotulo="Limite disponível" valor={formatarReais(perfil.limite_credito)} />
+              <LinhaResumo rotulo="Pedido atual" valor={formatarReais(total)} />
+              {total > perfil.limite_credito ? (
+                <ThemedText type="small" style={styles.avisoLimite}>
+                  Esse pedido passa do seu limite — nosso vendedor vai combinar com você pelo WhatsApp depois de enviado.
+                </ThemedText>
+              ) : null}
+            </View>
+          ) : null}
+
           {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
           <Button titulo="Confirmar Pedido" icone="checkmark-done" onPress={confirmarPedido} carregando={enviando} />
         </ScrollView>
@@ -256,6 +273,7 @@ const styles = StyleSheet.create({
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },
   valorDourado: { color: BrandColors.dourado },
   erro: { color: '#D64545' },
+  avisoLimite: { color: '#B07B13' },
   confirmacao: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
   tituloConfirmacao: { fontSize: 24, lineHeight: 30 },
   textoConfirmacao: { marginBottom: Spacing.two },

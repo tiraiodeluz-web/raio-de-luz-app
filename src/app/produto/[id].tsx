@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
+import { compartilharProduto } from '@/lib/compartilhar';
 import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import { useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
@@ -97,7 +98,14 @@ export default function DetalheProdutoScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <CabecalhoVoltar titulo="Detalhes do Produto" />
+      <CabecalhoVoltar
+        titulo="Detalhes do Produto"
+        acao={
+          <Pressable onPress={() => compartilharProduto(produto.id, produto.nome)} hitSlop={8} style={styles.compartilhar}>
+            <Ionicons name="share-social-outline" size={22} color={BrandColors.fundoEscuro} />
+          </Pressable>
+        }
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.fotoContainer}>
           {foto ? <Image source={{ uri: foto }} style={styles.foto} contentFit="contain" /> : null}
@@ -195,6 +203,7 @@ export default function DetalheProdutoScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
   carregando: { marginTop: Spacing.five },
+  compartilhar: { marginLeft: 'auto', padding: Spacing.half },
   scroll: { paddingBottom: Spacing.six },
   fotoContainer: { aspectRatio: 1, backgroundColor: '#ffffff' },
   foto: { width: '100%', height: '100%' },

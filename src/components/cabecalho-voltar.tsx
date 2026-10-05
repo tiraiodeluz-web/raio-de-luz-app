@@ -7,11 +7,12 @@ import { BrandColors, Spacing } from '@/constants/theme';
 
 type Props = {
   titulo?: string;
+  acao?: React.ReactNode;
 };
 
 // O Stack raiz fica com headerShown: false (visual próprio em vez do header
 // nativo); as telas fora das abas usam este cabeçalho.
-export function CabecalhoVoltar({ titulo }: Props) {
+export function CabecalhoVoltar({ titulo, acao }: Props) {
   return (
     <View style={styles.container}>
       <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar}>
@@ -22,6 +23,7 @@ export function CabecalhoVoltar({ titulo }: Props) {
           {titulo}
         </ThemedText>
       ) : null}
+      {acao}
     </View>
   );
 }

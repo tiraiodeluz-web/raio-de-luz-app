@@ -146,16 +146,53 @@ export function useTotaisClientes() {
   });
 }
 
+// Regra comercial: limite de crédito é opcional na aprovação (null = sem
+// limite definido) e pode ser alterado depois a qualquer momento — ver
+// useAlterarLimiteCredito. Pedido que passe do limite não é bloqueado aqui
+// (checkout só avisa o cliente); a negociação é feita pelo vendedor via WhatsApp.
 export function useAprovarCliente() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (clienteId: string) => {
-      const { error } = await supabase.from('perfis').update({ cadastro_aprovado: true }).eq('id', clienteId);
+    mutationFn: async ({ clienteId, limiteCredito }: { clienteId: string; limiteCredito: number | null }) => {
+      const { error } = await supabase
+        .from('perfis')
+        .update({ cadastro_aprovado: true, limite_credito: limiteCredito })
+        .eq('id', clienteId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'clientes'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+    },
+  });
+}
+
+export function useClienteAdmin(clienteId: string | undefined) {
+  return useQuery({
+    queryKey: ['admin', 'cliente', clienteId],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('perfis')
+        .select('id,nome,razao_social,limite_credito')
+        .eq('id', clienteId as string)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useAlterarLimiteCredito() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ clienteId, limiteCredito }: { clienteId: string; limiteCredito: number | null }) => {
+      const { error } = await supabase.from('perfis').update({ limite_credito: limiteCredito }).eq('id', clienteId);
+      if (error) throw error;
+    },
+    onSuccess: (_dados, variaveis) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'cliente', variaveis.clienteId] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'clientes'] });
     },
   });
 }

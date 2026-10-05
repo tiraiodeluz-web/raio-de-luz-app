@@ -108,6 +108,35 @@ export type Database = {
           },
         ]
       }
+      carrinhos_compartilhados: {
+        Row: {
+          criado_em: string
+          criado_por: string
+          id: string
+          itens: Json
+        }
+        Insert: {
+          criado_em?: string
+          criado_por: string
+          id?: string
+          itens: Json
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string
+          id?: string
+          itens?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carrinhos_compartilhados_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogos: {
         Row: {
           ativo: boolean
@@ -601,6 +630,7 @@ export type Database = {
           criado_em: string
           foto_url: string | null
           id: string
+          limite_credito: number | null
           nome: string
           razao_social: string | null
           telefone: string | null
@@ -623,6 +653,7 @@ export type Database = {
           criado_em?: string
           foto_url?: string | null
           id: string
+          limite_credito?: number | null
           nome?: string
           razao_social?: string | null
           telefone?: string | null
@@ -645,6 +676,7 @@ export type Database = {
           criado_em?: string
           foto_url?: string | null
           id?: string
+          limite_credito?: number | null
           nome?: string
           razao_social?: string | null
           telefone?: string | null
@@ -841,6 +873,21 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      carrinho_compartilhado_itens: {
+        Args: { p_id: string }
+        Returns: {
+          embalagem: number
+          imagem_principal: string
+          nome: string
+          preco: number
+          preco_promocional: number
+          produto_id: string
+          quantidade: number
+          santo_id: string
+          santo_nome: string
+          sku: string
+        }[]
+      }
       carrinhos_abandonados: {
         Args: never
         Returns: {
@@ -873,6 +920,7 @@ export type Database = {
         }[]
       }
       cnpj_disponivel: { Args: { p_cnpj: string }; Returns: boolean }
+      compartilhar_carrinho: { Args: never; Returns: string }
       criar_pedido: {
         Args: {
           p_cupom?: string

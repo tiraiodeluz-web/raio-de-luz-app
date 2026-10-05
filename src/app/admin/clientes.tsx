@@ -75,7 +75,7 @@ export default function ClientesAdminScreen() {
               cliente={item}
               gasto={gastos[item.id] ?? 0}
               aba={aba}
-              onAprovar={() => aprovar.mutate(item.id)}
+              onAprovar={(limiteCredito) => aprovar.mutate({ clienteId: item.id, limiteCredito })}
               aprovando={aprovar.isPending}
             />
           )}
@@ -95,10 +95,11 @@ function CardCliente({
   cliente: ClienteAdmin;
   gasto: number;
   aba: 'aprovados' | 'aprovar';
-  onAprovar: () => void;
+  onAprovar: (limiteCredito: number | null) => void;
   aprovando: boolean;
 }) {
   const online = clienteOnline(cliente.ultimo_acesso);
+  const [limite, setLimite] = useState('');
 
   return (
     <Pressable onPress={() => router.push(`/admin/cliente/${cliente.id}`)}>
@@ -127,7 +128,22 @@ function CardCliente({
             Último Acesso: {cliente.ultimo_acesso ? FORMATADOR_DATA.format(new Date(cliente.ultimo_acesso)) : '—'}
           </ThemedText>
         )}
-        {aba === 'aprovar' ? <Button titulo="Aprovar" onPress={onAprovar} carregando={aprovando} /> : null}
+        {aba === 'aprovar' ? (
+          <>
+            <TextField
+              rotulo="Limite de crédito (opcional)"
+              value={limite}
+              onChangeText={setLimite}
+              keyboardType="decimal-pad"
+              placeholder="Ex.: 5000"
+            />
+            <Button
+              titulo="Aprovar"
+              onPress={() => onAprovar(limite.trim() ? Number(limite.replace(',', '.')) : null)}
+              carregando={aprovando}
+            />
+          </>
+        ) : null}
       </View>
     </Pressable>
   );

@@ -23,6 +23,7 @@ import {
   type ItemCarrinho,
 } from '@/lib/carrinho';
 import { alterarQuantidadeOffline, itensOfflineParaExibicao, removerItemOffline, useFilaCarrinhoOffline } from '@/lib/carrinho-offline';
+import { useCompartilharCarrinho } from '@/lib/compartilhar';
 import { formatarReais } from '@/lib/formatacao';
 
 type LinhaCarrinho = ItemCarrinho & { pendente?: boolean };
@@ -34,6 +35,7 @@ export default function CarrinhoScreen() {
   const { data: filaOffline } = useFilaCarrinhoOffline();
   const alterarQuantidade = useAlterarQuantidadeCarrinho();
   const removerItem = useRemoverDoCarrinho();
+  const compartilharCarrinho = useCompartilharCarrinho();
 
   const [codigoCupom, setCodigoCupom] = useState('');
   const [cupom, setCupom] = useState<CupomValidado | null>(null);
@@ -138,10 +140,31 @@ export default function CarrinhoScreen() {
     router.push({ pathname: '/checkout', params: cupom ? { cupom: cupom.codigo } : {} });
   }
 
+  function compartilhar() {
+    if (listaItens.length === 0) return;
+    // O link de compartilhamento copia o carrinho salvo no banco — item
+    // ainda pendente (offline) ficaria de fora sem o cliente notar.
+    if (itensPendentes.length > 0) {
+      Alert.alert('Sem conexão', 'Espere os itens pendentes serem enviados antes de compartilhar o carrinho.');
+      return;
+    }
+    compartilharCarrinho.mutate(listaItens.length, {
+      onError: () => Alert.alert('Não foi possível', 'Não deu pra gerar o link agora. Tente de novo.'),
+    });
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.cabecalho}>
         <ThemedText style={styles.titulo}>Carrinho</ThemedText>
+        {listaItens.length > 0 ? (
+          <Pressable onPress={compartilhar} style={styles.compartilhar} hitSlop={8} disabled={compartilharCarrinho.isPending}>
+            <Ionicons name="share-social-outline" size={18} color={BrandColors.fundoEscuro} />
+            <ThemedText type="smallBold" style={styles.compartilharTexto}>
+              Compartilhar
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </View>
 
       <FlatList
@@ -271,6 +294,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
   },
   titulo: { fontSize: 20 },
+  compartilhar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.half },
+  compartilharTexto: { color: BrandColors.fundoEscuro },
   carregando: { marginTop: Spacing.five },
   botaoEntrar: { paddingHorizontal: Spacing.four },
   lista: { padding: Spacing.three, gap: Spacing.two, flexGrow: 1 },
