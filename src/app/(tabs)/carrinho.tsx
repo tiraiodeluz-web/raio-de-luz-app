@@ -83,6 +83,7 @@ export default function CarrinhoScreen() {
     },
     santo: item.santoId ? { id: item.santoId, nome: item.santoNome ?? '' } : null,
     fotoUrl: item.fotoUrl,
+    personalizacao: item.personalizacao,
     pendente: true,
   }));
 
@@ -244,6 +245,11 @@ function ItemLinha({
         {item.santo ? (
           <ThemedText type="small" themeColor="textSecondary">
             Santo: {item.santo.nome}
+          </ThemedText>
+        ) : null}
+        {item.personalizacao ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Personalização: {item.personalizacao}
           </ThemedText>
         ) : null}
         <ThemedText type="small" themeColor="textSecondary">

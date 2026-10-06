@@ -95,6 +95,11 @@ function ItemLinha({ item }: { item: ItemCarrinhoCompartilhado }) {
             Santo: {item.santo_nome}
           </ThemedText>
         ) : null}
+        {item.personalizacao ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Personalização: {item.personalizacao}
+          </ThemedText>
+        ) : null}
         <ThemedText type="small" themeColor="textSecondary">
           Quantidade: {item.quantidade}
         </ThemedText>

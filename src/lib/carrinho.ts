@@ -12,6 +12,9 @@ type AdicionarAoCarrinhoParams = {
   santoId?: string | null;
   santoNome?: string | null;
   fotoUrl?: string | null;
+  // Texto digitado pelo cliente quando o santo escolhido é "Personalizado"
+  // (codigo 15) — a função do banco exige isso pra esse santo e recusa sem.
+  personalizacao?: string | null;
   // Dados do produto já em mãos na tela (detalhe ou compra rápida) — usados
   // só se precisar guardar o item offline, pra mostrar no carrinho sem
   // precisar de rede.
@@ -50,6 +53,7 @@ export function useAdicionarAoCarrinho() {
       santoId,
       santoNome,
       fotoUrl,
+      personalizacao,
       produtoSnapshot,
     }: AdicionarAoCarrinhoParams): Promise<ResultadoAdicionarAoCarrinho> => {
       const salvarOffline = () =>
@@ -59,6 +63,7 @@ export function useAdicionarAoCarrinho() {
           santoId: santoId ?? null,
           santoNome: santoNome ?? null,
           fotoUrl: fotoUrl ?? produtoSnapshot?.imagem_principal ?? null,
+          personalizacao: personalizacao ?? null,
           produto: produtoSnapshot ?? {
             nome: 'Produto',
             sku: '',
@@ -81,10 +86,15 @@ export function useAdicionarAoCarrinho() {
       // (sinal instável, DNS bloqueado etc.) — sem este fallback, isso
       // travava a adição sem avisar nada pro cliente.
       try {
+        // p_personalizacao sempre vai no payload (mesmo null): o banco tem
+        // duas versões da função (antes e depois da personalização) e só
+        // informar esse parâmetro garante que o Postgres resolva pra versão
+        // nova sem ambiguidade entre as duas assinaturas.
         const { error } = await supabase.rpc('adicionar_ao_carrinho', {
           p_produto_id: produtoId,
           p_quantidade: quantidade,
           p_santo_id: santoId ?? undefined,
+          p_personalizacao: personalizacao ?? null,
         });
         if (error) throw error;
         return { offline: false };
@@ -118,6 +128,7 @@ export type ItemCarrinho = {
   // Foto do santo escolhido (produto_santos.foto_url), quando existir —
   // sem isso, o carrinho mostrava a mesma foto principal pra todo santo.
   fotoUrl: string | null;
+  personalizacao: string | null;
 };
 
 // Itens do carrinho do usuário logado, com o produto e o santo escolhido.
@@ -131,7 +142,7 @@ export function useItensCarrinho() {
       const { data, error } = await supabase
         .from('carrinho_itens')
         .select(
-          `id, quantidade, produto_id, santo_id,
+          `id, quantidade, produto_id, santo_id, personalizacao,
            produtos ( id, nome, sku, preco, preco_promocional, imagem_principal, embalagem, ativo ),
            santos ( id, nome )`,
         )
@@ -158,7 +169,7 @@ export function useItensCarrinho() {
         const produto = linha.produtos as ItemCarrinho['produto'];
         const santo = linha.santos as ItemCarrinho['santo'];
         const fotoUrl = (santo && fotosPorSanto.get(`${linha.produto_id}|${santo.id}`)) || produto.imagem_principal;
-        return { id: linha.id, quantidade: linha.quantidade, produto, santo, fotoUrl };
+        return { id: linha.id, quantidade: linha.quantidade, produto, santo, fotoUrl, personalizacao: linha.personalizacao };
       });
     },
   });

@@ -24,6 +24,7 @@ export type ItemCarrinhoOffline = {
   santoId: string | null;
   santoNome: string | null;
   fotoUrl: string | null;
+  personalizacao: string | null;
   produto: ProdutoSnapshotOffline;
   criadoEm: string;
   tentativas: number;
@@ -104,6 +105,7 @@ export async function sincronizarCarrinhoOffline(queryClient: QueryClient) {
         p_produto_id: item.produtoId,
         p_quantidade: item.quantidade,
         p_santo_id: item.santoId ?? undefined,
+        p_personalizacao: item.personalizacao ?? null,
       });
       if (!error) {
         algumSincronizado = true;
@@ -131,7 +133,9 @@ export async function sincronizarCarrinhoOffline(queryClient: QueryClient) {
 export function itensOfflineParaExibicao(fila: ItemCarrinhoOffline[]) {
   const porChave = new Map<string, ItemCarrinhoOffline>();
   for (const item of fila) {
-    const chave = `${item.produtoId}|${item.santoId ?? ''}`;
+    // Personalização entra na chave: cada texto é único, nunca deve somar
+    // quantidade com outro item igual mas com personalização diferente.
+    const chave = `${item.produtoId}|${item.santoId ?? ''}|${item.personalizacao ?? ''}`;
     const existente = porChave.get(chave);
     if (existente) {
       porChave.set(chave, { ...existente, quantidade: existente.quantidade + item.quantidade });

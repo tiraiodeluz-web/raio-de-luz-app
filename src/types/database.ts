@@ -61,6 +61,7 @@ export type Database = {
           atualizado_em: string
           criado_em: string
           id: string
+          personalizacao: string | null
           produto_id: string
           quantidade: number
           santo_id: string | null
@@ -70,6 +71,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           id?: string
+          personalizacao?: string | null
           produto_id: string
           quantidade: number
           santo_id?: string | null
@@ -79,6 +81,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           id?: string
+          personalizacao?: string | null
           produto_id?: string
           quantidade?: number
           santo_id?: string | null
@@ -494,6 +497,7 @@ export type Database = {
           id: string
           imagem_url: string | null
           pedido_id: string
+          personalizacao: string | null
           preco_unitario: number
           produto_id: string | null
           produto_nome: string
@@ -507,6 +511,7 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           pedido_id: string
+          personalizacao?: string | null
           preco_unitario: number
           produto_id?: string | null
           produto_nome: string
@@ -520,6 +525,7 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           pedido_id?: string
+          personalizacao?: string | null
           preco_unitario?: number
           produto_id?: string | null
           produto_nome?: string
@@ -853,6 +859,7 @@ export type Database = {
     Functions: {
       adicionar_ao_carrinho: {
         Args: {
+          p_personalizacao?: string | null
           p_produto_id: string
           p_quantidade?: number
           p_santo_id?: string
@@ -861,6 +868,7 @@ export type Database = {
           atualizado_em: string
           criado_em: string
           id: string
+          personalizacao: string | null
           produto_id: string
           quantidade: number
           santo_id: string | null
@@ -879,6 +887,22 @@ export type Database = {
           embalagem: number
           imagem_principal: string
           nome: string
+          preco: number
+          preco_promocional: number
+          produto_id: string
+          quantidade: number
+          santo_id: string
+          santo_nome: string
+          sku: string
+        }[]
+      }
+      carrinho_compartilhado_itens_v2: {
+        Args: { p_id: string }
+        Returns: {
+          embalagem: number
+          imagem_principal: string
+          nome: string
+          personalizacao: string
           preco: number
           preco_promocional: number
           produto_id: string
@@ -937,6 +961,16 @@ export type Database = {
       excluir_minha_conta: { Args: never; Returns: undefined }
       formatar_reais: { Args: { v: number }; Returns: string }
       metricas_admin: { Args: never; Returns: Json }
+      pedido_atualizar_vendas: { Args: { p_uid: string }; Returns: undefined }
+      pedido_copiar_itens: {
+        Args: { p_pedido_id: string; p_uid: string }
+        Returns: undefined
+      }
+      pedido_limpar_carrinho: { Args: { p_uid: string }; Returns: undefined }
+      pedido_resetar_avisos_carrinho: {
+        Args: { p_uid: string }
+        Returns: undefined
+      }
       pode_comprar: { Args: never; Returns: boolean }
       produtos_busca: {
         Args: { p_limite?: number; p_offset?: number; p_termo: string }

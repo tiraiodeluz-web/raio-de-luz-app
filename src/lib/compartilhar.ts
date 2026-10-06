@@ -43,14 +43,14 @@ export function useCompartilharCarrinho() {
   });
 }
 
-export type ItemCarrinhoCompartilhado = Database['public']['Functions']['carrinho_compartilhado_itens']['Returns'][number];
+export type ItemCarrinhoCompartilhado = Database['public']['Functions']['carrinho_compartilhado_itens_v2']['Returns'][number];
 
 export function useCarrinhoCompartilhado(id: string | undefined) {
   return useQuery({
     queryKey: ['carrinho-compartilhado', id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('carrinho_compartilhado_itens', { p_id: id as string });
+      const { data, error } = await supabase.rpc('carrinho_compartilhado_itens_v2', { p_id: id as string });
       if (error) throw error;
       return data;
     },
@@ -70,6 +70,7 @@ export function useAdicionarCarrinhoCompartilhado() {
           p_produto_id: item.produto_id,
           p_quantidade: item.quantidade,
           p_santo_id: item.santo_id ?? undefined,
+          p_personalizacao: item.personalizacao ?? null,
         });
         if (!error) adicionados += 1;
       }

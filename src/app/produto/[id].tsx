@@ -10,6 +10,7 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { ProdutoCard } from '@/components/produto-card';
 import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { SeletorQuantidade } from '@/components/seletor-quantidade';
+import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
@@ -17,7 +18,7 @@ import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { compartilharProduto } from '@/lib/compartilhar';
 import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
-import { useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
+import { ehSantoPersonalizado, useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 
 export default function DetalheProdutoScreen() {
@@ -33,6 +34,8 @@ export default function DetalheProdutoScreen() {
 
   const [santoEscolhido, setSantoEscolhido] = useState<SantoDoProduto | null>(null);
   const [quantidade, setQuantidade] = useState(1);
+  const [textoPersonalizacao, setTextoPersonalizacao] = useState('');
+  const [erroPersonalizacao, setErroPersonalizacao] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -40,6 +43,13 @@ export default function DetalheProdutoScreen() {
       setSantoEscolhido(data.santos[0] ?? null);
     }
   }, [data]);
+
+  // Trocar de santo limpa o texto digitado — personalização é por variação
+  // escolhida, não faz sentido carregar texto de outro santo.
+  useEffect(() => {
+    setTextoPersonalizacao('');
+    setErroPersonalizacao(false);
+  }, [santoEscolhido?.id]);
 
   if (isLoading || !data) {
     return (
@@ -52,6 +62,7 @@ export default function DetalheProdutoScreen() {
 
   const { produto, santos } = data;
   const precisaEscolherSanto = produto.personalizavel && santos.length > 0;
+  const precisaPersonalizar = ehSantoPersonalizado(santoEscolhido);
   const foto = (precisaEscolherSanto && santoEscolhido?.fotoUrl) || produto.imagem_principal;
   const preco = precoExibido(produto.preco, produto.preco_promocional);
   const desconto = percentualDesconto(produto.preco, produto.preco_promocional);
@@ -62,6 +73,10 @@ export default function DetalheProdutoScreen() {
       router.push('/(auth)/login');
       return;
     }
+    if (precisaPersonalizar && !textoPersonalizacao.trim()) {
+      setErroPersonalizacao(true);
+      return;
+    }
     adicionar.mutate(
       {
         produtoId: produto.id,
@@ -69,6 +84,7 @@ export default function DetalheProdutoScreen() {
         santoId: santoEscolhido?.id ?? null,
         santoNome: santoEscolhido?.nome ?? null,
         fotoUrl: foto,
+        personalizacao: precisaPersonalizar ? textoPersonalizacao.trim() : null,
         produtoSnapshot: {
           nome: produto.nome,
           sku: produto.sku,
@@ -79,10 +95,12 @@ export default function DetalheProdutoScreen() {
         },
       },
       {
-        onSuccess: (resultado) =>
+        onSuccess: (resultado) => {
+          setTextoPersonalizacao('');
           mostrarToast(
             resultado.offline ? 'Sem internet: vai ser enviado ao carrinho quando a conexão voltar.' : 'Adicionado ao carrinho!',
-          ),
+          );
+        },
         onError: (erro) => mostrarToast(erro instanceof Error ? erro.message : 'Não foi possível adicionar ao carrinho.'),
       },
     );
@@ -160,6 +178,20 @@ export default function DetalheProdutoScreen() {
 
           {precisaEscolherSanto ? (
             <ThemedText themeColor="textSecondary">Santo: {santoEscolhido?.nome ?? '—'}</ThemedText>
+          ) : null}
+
+          {precisaPersonalizar ? (
+            <TextField
+              rotulo="Como você quer a personalização?"
+              value={textoPersonalizacao}
+              onChangeText={(texto) => {
+                setTextoPersonalizacao(texto);
+                if (erroPersonalizacao) setErroPersonalizacao(false);
+              }}
+              placeholder="Ex.: nome, frase, data..."
+              multiline
+              erro={erroPersonalizacao ? 'Informe como você quer a personalização.' : undefined}
+            />
           ) : null}
 
           <View style={styles.secaoQuantidade}>

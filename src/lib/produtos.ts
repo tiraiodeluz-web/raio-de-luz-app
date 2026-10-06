@@ -181,7 +181,13 @@ export function useProdutos(filtro: FiltroProdutos) {
   });
 }
 
-export type SantoDoProduto = { id: string; nome: string; fotoUrl: string | null };
+export type SantoDoProduto = { id: string; nome: string; fotoUrl: string | null; codigo: string | null };
+
+// Santo "Personalizado" (codigo 15, cadastrado no banco) — quem escolhe
+// precisa digitar como quer a personalização, em vez de só selecionar.
+export function ehSantoPersonalizado(santo: Pick<SantoDoProduto, 'codigo'> | null | undefined): boolean {
+  return santo?.codigo === '15';
+}
 
 export type ProdutoDetalhe = {
   produto: Tables<'produtos'>;
@@ -206,18 +212,18 @@ export function useProdutoDetalhe(id: string | undefined) {
       if (produto.personalizavel) {
         const { data: linhas, error: erroSantos } = await supabase
           .from('produto_santos')
-          .select('foto_url, santos ( id, nome, foto_url, ordem )')
+          .select('foto_url, santos ( id, nome, codigo, foto_url, ordem )')
           .eq('produto_id', produto.id);
         if (erroSantos) throw erroSantos;
         santos = (linhas ?? [])
           .map((linha) => {
-            const santo = linha.santos as { id: string; nome: string; foto_url: string | null; ordem: number } | null;
+            const santo = linha.santos as { id: string; nome: string; codigo: string | null; foto_url: string | null; ordem: number } | null;
             if (!santo) return null;
-            return { id: santo.id, nome: santo.nome, fotoUrl: linha.foto_url ?? santo.foto_url, ordem: santo.ordem };
+            return { id: santo.id, nome: santo.nome, codigo: santo.codigo, fotoUrl: linha.foto_url ?? santo.foto_url, ordem: santo.ordem };
           })
           .filter((s): s is SantoDoProduto & { ordem: number } => s !== null)
           .sort((a, b) => a.ordem - b.ordem)
-          .map(({ id: santoId, nome, fotoUrl }) => ({ id: santoId, nome, fotoUrl }));
+          .map(({ id: santoId, nome, codigo, fotoUrl }) => ({ id: santoId, nome, codigo, fotoUrl }));
       }
 
       return { produto, santos } satisfies ProdutoDetalhe;

@@ -97,6 +97,11 @@ export default function DetalhePedidoScreen() {
                     Santo: {item.santo_nome}
                   </ThemedText>
                 ) : null}
+                {item.personalizacao ? (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Personalização: {item.personalizacao}
+                  </ThemedText>
+                ) : null}
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.quantidade} × {formatarReais(item.preco_unitario)}
                 </ThemedText>

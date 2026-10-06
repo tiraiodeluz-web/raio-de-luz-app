@@ -94,6 +94,11 @@ export default function DetalhePedidoAdminScreen() {
                     Santo: {item.santo_nome}
                   </ThemedText>
                 ) : null}
+                {item.personalizacao ? (
+                  <ThemedText type="smallBold" style={styles.personalizacao}>
+                    Personalização: {item.personalizacao}
+                  </ThemedText>
+                ) : null}
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.quantidade} × {formatarReais(item.preco_unitario)}
                 </ThemedText>
@@ -161,6 +166,7 @@ const styles = StyleSheet.create({
   },
   itemImagem: { width: 56, height: 56, borderRadius: 8 },
   itemInfo: { flex: 1, gap: Spacing.half },
+  personalizacao: { color: '#B07B13' },
   resumo: { borderRadius: 10, padding: Spacing.three, gap: Spacing.one, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#E5E6EC' },
   resumoTitulo: { marginBottom: Spacing.one, color: BrandColors.fundoEscuro },
   linhaResumo: { flexDirection: 'row', justifyContent: 'space-between' },

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { SeletorSantoSheet } from '@/components/seletor-santo-sheet';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarAoCarrinho } from '@/lib/carrinho';
-import { useProdutoDetalhe, type ProdutoResumo } from '@/lib/produtos';
+import { ehSantoPersonalizado, useProdutoDetalhe, type ProdutoResumo } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 
 type Props = {
@@ -67,6 +67,14 @@ export function ComprarRapido({ produto, onFechar }: Props) {
       carregando={adicionar.isPending}
       onFechar={onFechar}
       onSelecionar={(santo) => {
+        onFechar();
+        // Personalização precisa de um campo de texto que a compra rápida
+        // não tem espaço pra mostrar — manda pra tela do produto, que já
+        // cuida disso.
+        if (ehSantoPersonalizado(santo)) {
+          router.push(`/produto/${produto.id}`);
+          return;
+        }
         adicionar.mutate(
           {
             produtoId: produto.id,
@@ -77,7 +85,6 @@ export function ComprarRapido({ produto, onFechar }: Props) {
           },
           { onSuccess: aoAdicionar, onError: aoFalhar },
         );
-        onFechar();
       }}
     />
   );
