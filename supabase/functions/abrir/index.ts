@@ -2,10 +2,14 @@
 //
 // Link https clicável que abre uma tela do app. WhatsApp (e a maioria dos
 // apps) só transforma em link azul/clicável endereços http(s) — um link
-// com esquema customizado (raiodeluz://...) nunca fica clicável lá. Essa
-// função serve uma página https real que, ao ser aberta, redireciona na
-// hora pro esquema do app (raiodeluz://<rota>), com um botão manual pra
-// quem o navegador não redirecionar automaticamente.
+// com esquema customizado (raiodeluz://...) nunca fica clicável lá.
+//
+// Importante: Edge Functions do Supabase não servem HTML — toda resposta
+// GET com Content-Type text/html é reescrita pra text/plain pela própria
+// plataforma (ver docs "Routing" > "HTML content is not supported"). Por
+// isso essa função NÃO devolve uma página; ela devolve um redirecionamento
+// HTTP (302) direto pro esquema do app, que o navegador do celular segue
+// sozinho — sem precisar de HTML nem JavaScript no meio do caminho.
 //
 // Uso: https://<projeto>.supabase.co/functions/v1/abrir/produto/<id>
 //      https://<projeto>.supabase.co/functions/v1/abrir/carrinho-compartilhado/<id>
@@ -23,29 +27,8 @@ Deno.serve((req) => {
 
   const linkApp = ESQUEMA + rota;
 
-  const html = `<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Raio de Luz Religiosos</title>
-<style>
-  body { font-family: -apple-system, system-ui, sans-serif; background: #010534; color: #fff;
-         display: flex; flex-direction: column; align-items: center; justify-content: center;
-         height: 100vh; margin: 0; text-align: center; padding: 24px; box-sizing: border-box; }
-  a.botao { margin-top: 24px; background: #C9A227; color: #010534; text-decoration: none;
-            padding: 14px 28px; border-radius: 999px; font-weight: 700; }
-  p { opacity: 0.85; max-width: 320px; }
-</style>
-</head>
-<body>
-  <p>Abrindo no app Raio de Luz Religiosos…</p>
-  <a class="botao" href="${linkApp}">Toque aqui se não abrir automaticamente</a>
-  <script>
-    location.replace(${JSON.stringify(linkApp)});
-  </script>
-</body>
-</html>`;
-
-  return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+  return new Response(null, {
+    status: 302,
+    headers: { Location: linkApp },
+  });
 });
