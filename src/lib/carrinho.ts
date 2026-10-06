@@ -20,6 +20,22 @@ type AdicionarAoCarrinhoParams = {
 
 export type ResultadoAdicionarAoCarrinho = { offline: boolean };
 
+// Erro de rede de verdade (sem servidor pra responder) é diferente de erro
+// de negócio (ex.: quantidade inválida) — só o primeiro deve cair pro
+// carrinho offline; o segundo precisa aparecer pro cliente. supabase-js
+// não lança excessão nesses casos, só devolve `error` sem "code" (erro de
+// negócio vindo do Postgres sempre tem um code, ex. P0001/22003).
+function pareceErroDeRede(erro: unknown): boolean {
+  if (erro instanceof TypeError) return true;
+  // O erro do supabase-js (rede ou de negócio) é um objeto simples
+  // ({message, code, ...}), não uma instância de Error — por isso lemos
+  // "message" direto em vez de confiar em erro.message/String(erro).
+  const comoObjeto = erro as { message?: unknown; code?: unknown } | null;
+  if (comoObjeto?.code) return false;
+  const mensagem = typeof comoObjeto?.message === 'string' ? comoObjeto.message : String(erro);
+  return /network|fetch|timeout|internet|conex/i.test(mensagem);
+}
+
 // Chama a função do banco (adicionar_ao_carrinho): ela valida quantidade
 // múltipla da embalagem, se o produto aceita santo e soma quantidade quando
 // o item (produto + santo) já está no carrinho — regra 7. Sem internet, cai
@@ -36,11 +52,8 @@ export function useAdicionarAoCarrinho() {
       fotoUrl,
       produtoSnapshot,
     }: AdicionarAoCarrinhoParams): Promise<ResultadoAdicionarAoCarrinho> => {
-      const estadoRede = await NetInfo.fetch();
-      const online = estadoRede.isConnected !== false && estadoRede.isInternetReachable !== false;
-
-      if (!online) {
-        await adicionarItemOffline(queryClient, {
+      const salvarOffline = () =>
+        adicionarItemOffline(queryClient, {
           produtoId,
           quantidade: quantidade ?? produtoSnapshot?.embalagem ?? 1,
           santoId: santoId ?? null,
@@ -55,16 +68,31 @@ export function useAdicionarAoCarrinho() {
             embalagem: 1,
           },
         });
+
+      const estadoRede = await NetInfo.fetch();
+      const online = estadoRede.isConnected !== false && estadoRede.isInternetReachable !== false;
+
+      if (!online) {
+        await salvarOffline();
         return { offline: true };
       }
 
-      const { error } = await supabase.rpc('adicionar_ao_carrinho', {
-        p_produto_id: produtoId,
-        p_quantidade: quantidade,
-        p_santo_id: santoId ?? undefined,
-      });
-      if (error) throw error;
-      return { offline: false };
+      // O sensor de rede pode dizer "online" e a conexão falhar mesmo assim
+      // (sinal instável, DNS bloqueado etc.) — sem este fallback, isso
+      // travava a adição sem avisar nada pro cliente.
+      try {
+        const { error } = await supabase.rpc('adicionar_ao_carrinho', {
+          p_produto_id: produtoId,
+          p_quantidade: quantidade,
+          p_santo_id: santoId ?? undefined,
+        });
+        if (error) throw error;
+        return { offline: false };
+      } catch (erro) {
+        if (!pareceErroDeRede(erro)) throw erro;
+        await salvarOffline();
+        return { offline: true };
+      }
     },
     onSuccess: (resultado) => {
       queryClient.invalidateQueries({ queryKey: ['carrinho'] });

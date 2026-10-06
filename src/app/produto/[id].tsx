@@ -83,6 +83,7 @@ export default function DetalheProdutoScreen() {
           mostrarToast(
             resultado.offline ? 'Sem internet: vai ser enviado ao carrinho quando a conexão voltar.' : 'Adicionado ao carrinho!',
           ),
+        onError: (erro) => mostrarToast(erro instanceof Error ? erro.message : 'Não foi possível adicionar ao carrinho.'),
       },
     );
   }

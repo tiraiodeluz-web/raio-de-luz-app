@@ -43,11 +43,15 @@ export function ComprarRapido({ produto, onFechar }: Props) {
     mostrarToast(resultado.offline ? 'Sem internet: vai ser enviado ao carrinho quando a conexão voltar.' : 'Adicionado ao carrinho!');
   }
 
+  function aoFalhar(erro: unknown) {
+    mostrarToast(erro instanceof Error ? erro.message : 'Não foi possível adicionar ao carrinho.');
+  }
+
   useEffect(() => {
     if (session && semPersonalizacao) {
       adicionar.mutate(
         { produtoId: produto.id, produtoSnapshot: snapshotProduto },
-        { onSuccess: aoAdicionar },
+        { onSuccess: aoAdicionar, onError: aoFalhar },
       );
       onFechar();
     }
@@ -71,7 +75,7 @@ export function ComprarRapido({ produto, onFechar }: Props) {
             fotoUrl: santo.fotoUrl,
             produtoSnapshot: snapshotProduto,
           },
-          { onSuccess: aoAdicionar },
+          { onSuccess: aoAdicionar, onError: aoFalhar },
         );
         onFechar();
       }}

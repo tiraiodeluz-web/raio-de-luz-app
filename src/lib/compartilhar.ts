@@ -4,17 +4,21 @@ import { Share } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
-// Esquema do app (app.json "scheme": "raiodeluz") — Expo Router já resolve
-// esse link direto pra rota de arquivo correspondente (ex.: /produto/<id>),
-// sem precisar de configuração extra de linking.
-const ESQUEMA = 'raiodeluz://';
+// O esquema do app (app.json "scheme": "raiodeluz") sozinho não funciona
+// pra compartilhar: WhatsApp (e a maioria dos apps) só deixa clicável um
+// link que comece com http(s) — um "raiodeluz://..." nunca fica azul lá.
+// Por isso o link compartilhado é https, pra uma Edge Function
+// (supabase/functions/abrir) que devolve uma página que redireciona na
+// hora pro esquema do app. Expo Router resolve o "raiodeluz://<rota>"
+// final direto pra rota de arquivo correspondente (ex.: /produto/<id>).
+const BASE_ABRIR = 'https://zjkhlvomxhtafajbzbjb.supabase.co/functions/v1/abrir';
 
 export function linkProduto(produtoId: string) {
-  return `${ESQUEMA}produto/${produtoId}`;
+  return `${BASE_ABRIR}/produto/${produtoId}`;
 }
 
 export function linkCarrinhoCompartilhado(id: string) {
-  return `${ESQUEMA}carrinho-compartilhado/${id}`;
+  return `${BASE_ABRIR}/carrinho-compartilhado/${id}`;
 }
 
 export async function compartilharProduto(produtoId: string, nome: string) {
