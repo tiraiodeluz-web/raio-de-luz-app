@@ -40,7 +40,10 @@ export default function DetalheProdutoScreen() {
   useEffect(() => {
     if (data) {
       setQuantidade(data.produto.embalagem);
-      setSantoEscolhido(data.santos[0] ?? null);
+      // Prioriza um santo com foto pra já abrir com a miniatura selecionada
+      // visível; sem nenhuma foto, cai pro primeiro da lista mesmo.
+      const padrao = data.santos.find((santo) => santo.fotoUrl || ehSantoPersonalizado(santo)) ?? data.santos[0] ?? null;
+      setSantoEscolhido(padrao);
     }
   }, [data]);
 
@@ -132,17 +135,25 @@ export default function DetalheProdutoScreen() {
 
         {precisaEscolherSanto ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listaSantos}>
-            {santos.map((santo) => {
-              const selecionado = santo.id === santoEscolhido?.id;
-              return (
-                <Pressable
-                  key={santo.id}
-                  style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
-                  onPress={() => setSantoEscolhido(santo)}>
-                  {santo.fotoUrl ? <Image source={{ uri: santo.fotoUrl }} style={styles.santoFoto} contentFit="cover" /> : null}
-                </Pressable>
-              );
-            })}
+            {santos
+              .filter((santo) => santo.fotoUrl || ehSantoPersonalizado(santo))
+              .map((santo) => {
+                const selecionado = santo.id === santoEscolhido?.id;
+                return (
+                  <Pressable
+                    key={santo.id}
+                    style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
+                    onPress={() => setSantoEscolhido(santo)}>
+                    {santo.fotoUrl ? (
+                      <Image source={{ uri: santo.fotoUrl }} style={styles.santoFoto} contentFit="cover" />
+                    ) : (
+                      <View style={styles.santoSemFoto}>
+                        <Ionicons name="create-outline" size={22} color={BrandColors.fundoEscuro} />
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
           </ScrollView>
         ) : null}
 
@@ -258,6 +269,7 @@ const styles = StyleSheet.create({
   santoMiniatura: { width: 56, height: 56, borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: '#E5E6EC' },
   santoSelecionado: { borderColor: BrandColors.fundoEscuro },
   santoFoto: { width: '100%', height: '100%' },
+  santoSemFoto: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3F1EB' },
   secaoQuantidade: { gap: Spacing.two },
   secaoRecomendados: { gap: Spacing.two, marginTop: Spacing.four },
   listaRecomendados: { paddingHorizontal: Spacing.three, gap: Spacing.three },
