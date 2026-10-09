@@ -16,11 +16,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+// Na exportação estática da web (renderização no Node) não existe `window`,
+// e o AsyncStorage da web depende dele — sem sessão persistida nesse caso.
+const temJanela = typeof window !== 'undefined';
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
+    storage: temJanela ? AsyncStorage : undefined,
+    autoRefreshToken: temJanela,
+    persistSession: temJanela,
     detectSessionInUrl: false,
   },
 });
