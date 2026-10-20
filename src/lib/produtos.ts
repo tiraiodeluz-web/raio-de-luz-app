@@ -196,38 +196,36 @@ export type ProdutoDetalhe = {
 
 // Regra 15 (bug corrigido): só mostra santos com variação ativa para este
 // produto (join em produto_santos), nunca a tabela santos inteira.
+export async function buscarProdutoDetalhe(id: string): Promise<ProdutoDetalhe> {
+  const { data: produto, error } = await supabase.from('produtos').select('*').eq('id', id).single();
+  if (error) throw error;
+
+  let santos: SantoDoProduto[] = [];
+  if (produto.personalizavel) {
+    const { data: linhas, error: erroSantos } = await supabase
+      .from('produto_santos')
+      .select('foto_url, santos ( id, nome, codigo, foto_url, ordem )')
+      .eq('produto_id', produto.id);
+    if (erroSantos) throw erroSantos;
+    santos = (linhas ?? [])
+      .map((linha) => {
+        const santo = linha.santos as { id: string; nome: string; codigo: string | null; foto_url: string | null; ordem: number } | null;
+        if (!santo) return null;
+        return { id: santo.id, nome: santo.nome, codigo: santo.codigo, fotoUrl: linha.foto_url ?? santo.foto_url, ordem: santo.ordem };
+      })
+      .filter((s): s is SantoDoProduto & { ordem: number } => s !== null)
+      .sort((a, b) => a.ordem - b.ordem)
+      .map(({ id: santoId, nome, codigo, fotoUrl }) => ({ id: santoId, nome, codigo, fotoUrl }));
+  }
+
+  return { produto, santos };
+}
+
 export function useProdutoDetalhe(id: string | undefined) {
   return useQuery({
     queryKey: ['produtos', 'detalhe', id],
     enabled: !!id,
-    queryFn: async () => {
-      const { data: produto, error } = await supabase
-        .from('produtos')
-        .select('*')
-        .eq('id', id as string)
-        .single();
-      if (error) throw error;
-
-      let santos: SantoDoProduto[] = [];
-      if (produto.personalizavel) {
-        const { data: linhas, error: erroSantos } = await supabase
-          .from('produto_santos')
-          .select('foto_url, santos ( id, nome, codigo, foto_url, ordem )')
-          .eq('produto_id', produto.id);
-        if (erroSantos) throw erroSantos;
-        santos = (linhas ?? [])
-          .map((linha) => {
-            const santo = linha.santos as { id: string; nome: string; codigo: string | null; foto_url: string | null; ordem: number } | null;
-            if (!santo) return null;
-            return { id: santo.id, nome: santo.nome, codigo: santo.codigo, fotoUrl: linha.foto_url ?? santo.foto_url, ordem: santo.ordem };
-          })
-          .filter((s): s is SantoDoProduto & { ordem: number } => s !== null)
-          .sort((a, b) => a.ordem - b.ordem)
-          .map(({ id: santoId, nome, codigo, fotoUrl }) => ({ id: santoId, nome, codigo, fotoUrl }));
-      }
-
-      return { produto, santos } satisfies ProdutoDetalhe;
-    },
+    queryFn: () => buscarProdutoDetalhe(id as string),
   });
 }
 

@@ -17,6 +17,7 @@ const ITENS: { titulo: string; icone: keyof typeof Ionicons.glyphMap; href: Href
   { titulo: 'Métricas', icone: 'stats-chart-outline', href: '/admin' },
   { titulo: 'Pedidos', icone: 'receipt-outline', href: '/admin/pedidos' },
   { titulo: 'Clientes', icone: 'people-outline', href: '/admin/clientes' },
+  { titulo: 'Kits', icone: 'gift-outline', href: '/admin/kits' },
   { titulo: 'Carrinhos abandonados', icone: 'cart-outline', href: '/admin/carrinhos-abandonados' },
   { titulo: 'Enviar notificação', icone: 'megaphone-outline', href: '/admin/notificacao' },
   { titulo: 'Eventos de push', icone: 'notifications-outline', href: '/admin/eventos-push' },

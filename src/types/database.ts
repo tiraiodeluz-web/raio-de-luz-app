@@ -428,6 +428,85 @@ export type Database = {
           },
         ]
       }
+      kit_itens: {
+        Row: {
+          id: string
+          kit_id: string
+          ordem: number
+          produto_id: string
+          quantidade: number
+          santo_id: string | null
+        }
+        Insert: {
+          id?: string
+          kit_id: string
+          ordem?: number
+          produto_id: string
+          quantidade: number
+          santo_id?: string | null
+        }
+        Update: {
+          id?: string
+          kit_id?: string
+          ordem?: number
+          produto_id?: string
+          quantidade?: number
+          santo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kit_itens_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kit_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kit_itens_santo_id_fkey"
+            columns: ["santo_id"]
+            isOneToOne: false
+            referencedRelation: "santos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kits: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          id: string
+          imagem_url: string | null
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+        }
+        Relationships: []
+      }
       notificacoes: {
         Row: {
           catalogo_destino_id: string | null
@@ -880,6 +959,24 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      adicionar_kit_ao_carrinho: {
+        Args: { p_kit_id: string }
+        Returns: {
+          itens_adicionados: number
+          itens_indisponiveis: number
+        }[]
+      }
+      admin_salvar_kit: {
+        Args: {
+          p_ativo: boolean
+          p_descricao: string | null
+          p_id: string | null
+          p_imagem_url: string | null
+          p_itens: Json
+          p_nome: string
+        }
+        Returns: string
       }
       carrinho_compartilhado_itens: {
         Args: { p_id: string }

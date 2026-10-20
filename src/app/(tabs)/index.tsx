@@ -9,11 +9,13 @@ import { BannerCarrossel } from '@/components/banner-carrossel';
 import { CategoriaPill } from '@/components/categoria-pill';
 import { ComprarRapido } from '@/components/comprar-rapido';
 import { EstadoVazio } from '@/components/estado-vazio';
+import { KitCard } from '@/components/kit-card';
 import { ProdutoCard } from '@/components/produto-card';
 import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { ThemedText } from '@/components/themed-text';
 import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { BrandColors, Radii, Spacing } from '@/constants/theme';
+import { useKits } from '@/lib/kits';
 import {
   useBanners,
   useCategorias,
@@ -27,6 +29,7 @@ export default function InicioScreen() {
   const categorias = useCategorias(10);
   const destaque = useProdutosDestaque(10);
   const maisVendidos = useProdutosMaisVendidosResumo(10);
+  const kits = useKits();
   const [produtoParaComprar, setProdutoParaComprar] = useState<ProdutoResumo | null>(null);
 
   return (
@@ -52,6 +55,24 @@ export default function InicioScreen() {
             />
           )}
         </View>
+
+        {kits.data && kits.data.length > 0 ? (
+          <View style={styles.secao}>
+            <SecaoCabecalho titulo="Kits" icone="gift" corIcone={BrandColors.dourado} />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={kits.data}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listaHorizontal}
+              renderItem={({ item }) => (
+                <View style={styles.cardHorizontal}>
+                  <KitCard kit={item} />
+                </View>
+              )}
+            />
+          </View>
+        ) : null}
 
         <View style={styles.secao}>
           <SecaoCabecalho titulo="Em oferta" verMaisHref="/ofertas" icone="flame" corIcone="#E85D3A" />
