@@ -1,6 +1,11 @@
 # Ideia guardada: assistente de compras com IA (estilo "Meli")
 
-Status: **guardado para depois** (conversa de 20/10/2026). Nada implementado ainda.
+Status: **MVP implementado em 20/10/2026** — Edge Function `supabase/functions/assistente`,
+tela `src/app/assistente.tsx` (botão ✨ no topo da Home), busca
+`assistente_buscar_produtos` e controle de uso `assistente_uso` (limite diário
+por cliente + tokens gastos). Falta só cadastrar o secret `ANTHROPIC_API_KEY`
+no Supabase. Fora do MVP: entrada por voz (o microfone do teclado já funciona),
+histórico salvo entre aberturas da tela, tela de custo no admin.
 
 ## O que é
 Uma tela "Assistente" com chat: o lojista escreve ou fala o que quer

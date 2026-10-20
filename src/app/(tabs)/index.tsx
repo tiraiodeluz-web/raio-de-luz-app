@@ -149,6 +149,14 @@ function Cabecalho() {
       </Pressable>
       <Pressable
         style={styles.sino}
+        onPress={() => router.push('/assistente')}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Assistente de compras">
+        <Ionicons name="sparkles" size={20} color={BrandColors.dourado} />
+      </Pressable>
+      <Pressable
+        style={styles.sino}
         onPress={() => router.push('/notificacoes')}
         hitSlop={8}
         accessibilityRole="button"
