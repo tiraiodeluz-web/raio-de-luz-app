@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -22,7 +25,7 @@ import { KitCard } from '@/components/kit-card';
 import { ProdutoCard } from '@/components/produto-card';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Radii, Spacing } from '@/constants/theme';
-import { useEnviarAoAssistente, type MensagemChat } from '@/lib/assistente';
+import { prepararFoto, useEnviarAoAssistente, type MensagemChat } from '@/lib/assistente';
 import { useAuth } from '@/lib/auth-context';
 import { useKits, type Kit } from '@/lib/kits';
 import type { ProdutoResumo } from '@/lib/produtos';
@@ -30,7 +33,7 @@ import type { ProdutoResumo } from '@/lib/produtos';
 const BOAS_VINDAS: MensagemChat = {
   id: 'boas-vindas',
   papel: 'assistente',
-  texto: 'Oi! Sou o assistente da Raio de Luz. Me diga o que você procura ou o que quer pedir, do seu jeito. Ex.: "quero 12 chaveiros de São Bento".',
+  texto: 'Oi! Sou o assistente da Raio de Luz. Me diga o que você procura ou o que quer pedir, do seu jeito. Ex.: "quero 12 chaveiros de São Bento". Também dá pra mandar foto de um produto ou da sua lista de pedido.',
   sugestoes: ['Repetir meu último pedido', 'Ver os kits', 'Produtos em oferta'],
 };
 
@@ -44,6 +47,8 @@ export default function AssistenteScreen() {
   const { session, perfil } = useAuth();
   const [mensagens, setMensagens] = useState<MensagemChat[]>([BOAS_VINDAS]);
   const [texto, setTexto] = useState('');
+  const [foto, setFoto] = useState<{ uri: string; base64: string } | null>(null);
+  const [preparandoFoto, setPreparandoFoto] = useState(false);
   const [produtoParaComprar, setProdutoParaComprar] = useState<ProdutoResumo | null>(null);
   const enviar = useEnviarAoAssistente();
   const kits = useKits();
@@ -77,13 +82,47 @@ export default function AssistenteScreen() {
     );
   }
 
-  function mandar(conteudo: string) {
+  async function escolherFoto(origem: 'camera' | 'galeria') {
+    const permissao =
+      origem === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissao.granted) {
+      Alert.alert('Permissão necessária', origem === 'camera' ? 'Autorize a câmera para tirar a foto.' : 'Autorize o acesso às fotos.');
+      return;
+    }
+    const opcoes: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
+    const resultado = origem === 'camera' ? await ImagePicker.launchCameraAsync(opcoes) : await ImagePicker.launchImageLibraryAsync(opcoes);
+    if (resultado.canceled) return;
+    setPreparandoFoto(true);
+    try {
+      setFoto(await prepararFoto(resultado.assets[0]));
+    } catch {
+      Alert.alert('Foto', 'Não foi possível usar essa foto. Tente outra.');
+    } finally {
+      setPreparandoFoto(false);
+    }
+  }
+
+  function perguntarOrigemDaFoto() {
+    Alert.alert('Enviar foto', 'Mande a foto de um produto ou da sua lista de pedido.', [
+      { text: 'Tirar foto', onPress: () => escolherFoto('camera') },
+      { text: 'Escolher da galeria', onPress: () => escolherFoto('galeria') },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  }
+
+  function mandar(conteudo: string, fotoAnexada: { uri: string; base64: string } | null = null) {
     const limpo = conteudo.trim();
-    if (!limpo || enviar.isPending) return;
-    const doCliente: MensagemChat = { id: novoId(), papel: 'cliente', texto: limpo };
+    if ((!limpo && !fotoAnexada) || enviar.isPending) return;
+    const doCliente: MensagemChat = {
+      id: novoId(),
+      papel: 'cliente',
+      texto: limpo || 'O que é isso? Vocês têm?',
+      foto: fotoAnexada ?? undefined,
+    };
     const conversa = [...mensagens, doCliente];
     setMensagens(conversa);
     setTexto('');
+    setFoto(null);
     listaRef.current?.scrollToOffset({ offset: 0, animated: true });
     enviar.mutate(conversa, {
       onSuccess: (resposta) =>
@@ -110,7 +149,10 @@ export default function AssistenteScreen() {
   function novaConversa() {
     setMensagens([BOAS_VINDAS]);
     setTexto('');
+    setFoto(null);
   }
+
+  const podeEnviar = (!!texto.trim() || !!foto) && !enviar.isPending && !preparandoFoto;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -138,13 +180,35 @@ export default function AssistenteScreen() {
               mensagem={item}
               kits={(item.kitIds ?? []).map((id) => kitsPorId.get(id)).filter((k): k is Kit => !!k)}
               mostrarSugestoes={item.id === ultimaDoAssistente?.id && !enviar.isPending}
-              onSugestao={mandar}
+              onSugestao={(sugestao) => mandar(sugestao, foto)}
               onComprar={setProdutoParaComprar}
             />
           )}
         />
 
+        {foto || preparandoFoto ? (
+          <View style={styles.anexo}>
+            {foto ? <Image source={{ uri: foto.uri }} style={styles.anexoImagem} contentFit="cover" /> : <ActivityIndicator />}
+            <ThemedText type="small" themeColor="textSecondary" style={styles.flex}>
+              {foto ? 'Foto pronta. Escreva algo se quiser e envie.' : 'Preparando a foto...'}
+            </ThemedText>
+            {foto ? (
+              <Pressable onPress={() => setFoto(null)} hitSlop={8} accessibilityLabel="Remover foto">
+                <Ionicons name="close-circle" size={22} color="#8A8D99" />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
         <View style={styles.entrada}>
+          <Pressable
+            onPress={perguntarOrigemDaFoto}
+            disabled={enviar.isPending || preparandoFoto}
+            style={styles.botaoFoto}
+            hitSlop={6}
+            accessibilityLabel="Enviar foto">
+            <Ionicons name="camera-outline" size={24} color={BrandColors.fundoEscuro} />
+          </Pressable>
           <TextInput
             value={texto}
             onChangeText={setTexto}
@@ -155,9 +219,9 @@ export default function AssistenteScreen() {
             maxLength={500}
           />
           <Pressable
-            onPress={() => mandar(texto)}
-            disabled={!texto.trim() || enviar.isPending}
-            style={[styles.enviar, (!texto.trim() || enviar.isPending) && styles.enviarDesabilitado]}
+            onPress={() => mandar(texto, foto)}
+            disabled={!podeEnviar}
+            style={[styles.enviar, !podeEnviar && styles.enviarDesabilitado]}
             accessibilityLabel="Enviar">
             <Ionicons name="send" size={18} color="#ffffff" />
           </Pressable>
@@ -185,6 +249,7 @@ function Bolha({
   if (mensagem.papel === 'cliente') {
     return (
       <View style={[styles.bolha, styles.bolhaCliente]}>
+        {mensagem.foto ? <Image source={{ uri: mensagem.foto.uri }} style={styles.fotoNaBolha} contentFit="cover" /> : null}
         <ThemedText style={styles.textoCliente}>{mensagem.texto}</ThemedText>
       </View>
     );
@@ -259,6 +324,7 @@ const styles = StyleSheet.create({
   bolha: { maxWidth: '85%', borderRadius: 16, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   bolhaCliente: { alignSelf: 'flex-end', backgroundColor: BrandColors.fundoEscuro, borderBottomRightRadius: 4 },
   textoCliente: { color: '#ffffff' },
+  fotoNaBolha: { width: 200, height: 200, borderRadius: 10, marginBottom: Spacing.one },
   blocoAssistente: { gap: Spacing.two },
   bolhaAssistente: { alignSelf: 'flex-start', backgroundColor: '#F1F2F6', borderBottomLeftRadius: 4 },
   bolhaErro: { backgroundColor: '#FDECEC' },
@@ -315,4 +381,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   enviarDesabilitado: { opacity: 0.4 },
+  botaoFoto: { width: 40, height: 44, alignItems: 'center', justifyContent: 'center' },
+  anexo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E6EC',
+  },
+  anexoImagem: { width: 48, height: 48, borderRadius: 8 },
 });

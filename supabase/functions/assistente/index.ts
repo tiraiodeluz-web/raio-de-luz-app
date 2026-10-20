@@ -35,6 +35,7 @@ Como agir:
 - Só adicione ao carrinho quando o cliente pedir claramente (ex.: "adiciona", "quero 12", "coloca no carrinho"). Depois, confirme em uma frase o que entrou.
 - Pedir de novo: ver_ultimos_pedidos e repetir_pedido. Kits prontos: listar_kits, mostrar_kits e adicionar_kit_ao_carrinho.
 - Você não finaliza pedido, não aplica cupom e não negocia preço, prazo ou frete. Para fechar o pedido, oriente a abrir o Carrinho do app. Para negociar, oriente a falar com o vendedor pelo WhatsApp do app.
+- Fotos: o cliente pode mandar foto de um produto (imagem de santo, terço, chaveiro, peça de outro fornecedor) ou de uma lista de pedido escrita à mão ou impressa. Descreva em poucas palavras o que você entendeu e busque no catálogo o equivalente mais próximo. Se for lista de pedido, leia item por item, busque cada um e mostre o que achou; confirme com o cliente antes de adicionar tudo, e diga quais itens não encontrou. Se a foto estiver ilegível, peça outra.
 - Se o assunto não for produtos ou pedidos da loja, diga com gentileza que você só ajuda com as compras na Raio de Luz.
 - Escreva a resposta e, na mesma mensagem, chame sugerir_respostas com 2 ou 3 próximos passos curtos que o cliente provavelmente vai querer tocar (ex.: "Adicionar 12", "Ver outros santos", "Repetir último pedido").`;
 
@@ -141,7 +142,19 @@ const FERRAMENTAS: Anthropic.Tool[] = [
 const FERRAMENTAS_DE_EXIBICAO = new Set(["mostrar_produtos", "mostrar_kits", "sugerir_respostas"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type MensagemApp = { papel: "cliente" | "assistente"; texto: string; produtos?: { id: string; nome: string }[] };
+type MensagemApp = {
+  papel: "cliente" | "assistente";
+  texto: string;
+  produtos?: { id: string; nome: string }[];
+  // Só a mensagem nova traz a foto (JPEG em base64, já reduzida no app); nas
+  // anteriores vem só temFoto, pra não pagar a imagem de novo a cada rodada.
+  temFoto?: boolean;
+  fotoBase64?: string;
+};
+
+// ~4,5 MB de imagem; o app manda bem menos (lado maior 1280px).
+const MAX_FOTO_BASE64 = 6_000_000;
+const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
 type Saida = { produtoIds: string[]; kitIds: string[]; sugestoes: string[]; carrinhoAlterado: boolean };
 
@@ -357,8 +370,19 @@ function montarHistorico(mensagens: MensagemApp[]): Anthropic.MessageParam[] {
       const produtos = (m.produtos ?? []).slice(0, 8).map((p, i) => `${i + 1}. ${p.nome} (id ${p.id})`).join("; ");
       const completo = [conteudo, produtos ? `[Produtos mostrados: ${produtos}]` : ""].filter(Boolean).join("\n");
       if (completo && historico.length > 0) historico.push({ role: "assistant", content: completo });
-    } else if (conteudo) {
-      historico.push({ role: "user", content: conteudo });
+    } else {
+      const foto = typeof m.fotoBase64 === "string" ? m.fotoBase64 : "";
+      if (foto && foto.length <= MAX_FOTO_BASE64 && BASE64.test(foto)) {
+        historico.push({
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: foto } },
+            { type: "text", text: conteudo || "O que é isso? Vocês têm?" },
+          ],
+        });
+      } else if (conteudo || m.temFoto) {
+        historico.push({ role: "user", content: m.temFoto ? `[O cliente mandou uma foto nesta mensagem.] ${conteudo}`.trim() : conteudo });
+      }
     }
   }
   return historico;
@@ -388,7 +412,11 @@ Deno.serve(async (req) => {
   } catch {
     return json({ erro: "Requisição inválida." }, 400);
   }
-  const historico = montarHistorico(Array.isArray(corpo.mensagens) ? corpo.mensagens : []);
+  const recebidas = Array.isArray(corpo.mensagens) ? corpo.mensagens : [];
+  if (recebidas.some((m) => typeof m?.fotoBase64 === "string" && m.fotoBase64.length > MAX_FOTO_BASE64)) {
+    return json({ erro: "Foto muito grande. Tente outra." }, 413);
+  }
+  const historico = montarHistorico(recebidas);
   if (historico.length === 0 || historico[historico.length - 1].role !== "user") {
     return json({ erro: "Mensagem vazia." }, 400);
   }

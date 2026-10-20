@@ -48,7 +48,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "O app acessa suas fotos para anexar imagens em notificações."
+          "photosPermission": "O app acessa suas fotos para anexar imagens em notificações e enviar fotos ao assistente.",
+          "cameraPermission": "O app usa a câmera para você fotografar um produto ou uma lista de pedido e enviar ao assistente."
         }
       ]
     ],
