@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { formatarReais } from '@/lib/formatacao';
 import { usePedidoDetalhe, useRepetirPedido } from '@/lib/pedidos';
+import { useRecursos20 } from '@/lib/versao-app';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -27,6 +28,7 @@ export default function DetalhePedidoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = usePedidoDetalhe(id);
   const repetir = useRepetirPedido();
+  const recursos20 = useRecursos20();
 
   async function pedirDeNovo() {
     if (!id) return;
@@ -129,7 +131,7 @@ export default function DetalhePedidoScreen() {
           </View>
         ) : null}
 
-        <Button titulo="Pedir de novo" icone="repeat" onPress={pedirDeNovo} carregando={repetir.isPending} />
+        {recursos20 ? <Button titulo="Pedir de novo" icone="repeat" onPress={pedirDeNovo} carregando={repetir.isPending} /> : null}
       </ScrollView>
     </SafeAreaView>
   );

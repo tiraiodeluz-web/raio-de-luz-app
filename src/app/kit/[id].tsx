@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth-context';
 import { formatarReais } from '@/lib/formatacao';
 import { precoUnitarioItem, totalDoKit, useAdicionarKitAoCarrinho, useKit, type ItemKit } from '@/lib/kits';
 import { useToast } from '@/lib/toast-context';
+import { useRecursos20 } from '@/lib/versao-app';
 
 export default function KitScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,6 +20,7 @@ export default function KitScreen() {
   const { data: kit, isLoading } = useKit(id);
   const adicionar = useAdicionarKitAoCarrinho();
   const { mostrarToast } = useToast();
+  const recursos20 = useRecursos20();
 
   if (isLoading) {
     return (
@@ -29,7 +31,7 @@ export default function KitScreen() {
     );
   }
 
-  if (!kit || !kit.ativo) {
+  if (!kit || !kit.ativo || !recursos20) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <CabecalhoVoltar titulo="Kit" />

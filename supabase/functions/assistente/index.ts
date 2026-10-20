@@ -406,6 +406,11 @@ Deno.serve(async (req) => {
   const { data: usuario, error: erroUsuario } = await db.auth.getUser(token);
   if (erroUsuario || !usuario.user) return json({ erro: "Sessão expirada. Entre de novo no app." }, 401);
 
+  const { data: perfilUsuario } = await db.from("perfis").select("versao_app").eq("id", usuario.user.id).maybeSingle();
+  if (perfilUsuario?.versao_app === "classica") {
+    return json({ erro: "O assistente faz parte da versão 2.0 do app." }, 403);
+  }
+
   let corpo: { mensagens?: MensagemApp[] };
   try {
     corpo = await req.json();

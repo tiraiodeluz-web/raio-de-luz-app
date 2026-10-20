@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { EstadoVazio } from '@/components/estado-vazio';
+import { SeletorVersaoApp } from '@/components/seletor-versao-app';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
@@ -104,6 +105,12 @@ export default function ContaScreen() {
         </View>
 
         {perfil?.tipo === 'admin' ? (
+          <View style={styles.versaoApp}>
+            <SeletorVersaoApp usuarioId={perfil.id} versao={perfil.versao_app} />
+          </View>
+        ) : null}
+
+        {perfil?.tipo === 'admin' ? (
           <Button
             titulo="VER COMO ADMIN"
             onPress={() => {
@@ -128,6 +135,7 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: Spacing.six, gap: Spacing.four },
   titulo: { fontSize: 22, lineHeight: 28, paddingHorizontal: Spacing.three, paddingTop: Spacing.two },
   botaoEntrar: { paddingHorizontal: Spacing.four },
+  versaoApp: { paddingHorizontal: Spacing.three },
   perfilCard: {
     flexDirection: 'row',
     alignItems: 'center',

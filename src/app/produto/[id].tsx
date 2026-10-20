@@ -20,6 +20,7 @@ import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import { ehSantoPersonalizado, useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
+import { useRecursos20 } from '@/lib/versao-app';
 
 export default function DetalheProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,7 +31,8 @@ export default function DetalheProdutoScreen() {
   const { data: favoritosIds } = useFavoritosIds();
   const alternarFavorito = useAlternarFavorito();
 
-  const recomendados = useProdutosRecomendados(id);
+  const recursos20 = useRecursos20();
+  const recomendados = useProdutosRecomendados(recursos20 ? id : undefined);
 
   const [santoEscolhido, setSantoEscolhido] = useState<SantoDoProduto | null>(null);
   const [quantidade, setQuantidade] = useState(1);
@@ -123,9 +125,11 @@ export default function DetalheProdutoScreen() {
       <CabecalhoVoltar
         titulo="Detalhes do Produto"
         acao={
-          <Pressable onPress={() => compartilharProduto(produto.id, produto.nome)} hitSlop={8} style={styles.compartilhar}>
-            <Ionicons name="share-social-outline" size={22} color={BrandColors.fundoEscuro} />
-          </Pressable>
+          recursos20 ? (
+            <Pressable onPress={() => compartilharProduto(produto.id, produto.nome)} hitSlop={8} style={styles.compartilhar}>
+              <Ionicons name="share-social-outline" size={22} color={BrandColors.fundoEscuro} />
+            </Pressable>
+          ) : null
         }
       />
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -213,7 +217,7 @@ export default function DetalheProdutoScreen() {
           {produto.descricao ? <ThemedText themeColor="textSecondary">{produto.descricao}</ThemedText> : null}
         </View>
 
-        {recomendados.data && recomendados.data.length > 0 ? (
+        {recursos20 && recomendados.data && recomendados.data.length > 0 ? (
           <View style={styles.secaoRecomendados}>
             <SecaoCabecalho titulo="Recomendados" />
             <FlatList

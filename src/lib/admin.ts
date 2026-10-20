@@ -174,7 +174,7 @@ export function useClienteAdmin(clienteId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('perfis')
-        .select('id,nome,razao_social,limite_credito')
+        .select('id,nome,razao_social,limite_credito,versao_app')
         .eq('id', clienteId as string)
         .single();
       if (error) throw error;

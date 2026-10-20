@@ -29,6 +29,7 @@ import { prepararFoto, useEnviarAoAssistente, type MensagemChat } from '@/lib/as
 import { useAuth } from '@/lib/auth-context';
 import { useKits, type Kit } from '@/lib/kits';
 import type { ProdutoResumo } from '@/lib/produtos';
+import { useRecursos20 } from '@/lib/versao-app';
 
 const BOAS_VINDAS: MensagemChat = {
   id: 'boas-vindas',
@@ -45,6 +46,7 @@ function novoId() {
 
 export default function AssistenteScreen() {
   const { session, perfil } = useAuth();
+  const recursos20 = useRecursos20();
   const [mensagens, setMensagens] = useState<MensagemChat[]>([BOAS_VINDAS]);
   const [texto, setTexto] = useState('');
   const [foto, setFoto] = useState<{ uri: string; base64: string } | null>(null);
@@ -65,6 +67,15 @@ export default function AssistenteScreen() {
         <View style={styles.botaoEntrar}>
           <Button titulo="Entrar" onPress={() => router.push('/(auth)/login')} />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!recursos20) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <CabecalhoVoltar titulo="Assistente" />
+        <EstadoVazio icone="sparkles-outline" titulo="Disponível na versão 2.0 do app" />
       </SafeAreaView>
     );
   }

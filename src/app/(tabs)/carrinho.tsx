@@ -25,6 +25,7 @@ import {
 import { alterarQuantidadeOffline, itensOfflineParaExibicao, removerItemOffline, useFilaCarrinhoOffline } from '@/lib/carrinho-offline';
 import { useCompartilharCarrinho } from '@/lib/compartilhar';
 import { formatarReais } from '@/lib/formatacao';
+import { useRecursos20 } from '@/lib/versao-app';
 
 type LinhaCarrinho = ItemCarrinho & { pendente?: boolean };
 
@@ -36,6 +37,7 @@ export default function CarrinhoScreen() {
   const alterarQuantidade = useAlterarQuantidadeCarrinho();
   const removerItem = useRemoverDoCarrinho();
   const compartilharCarrinho = useCompartilharCarrinho();
+  const recursos20 = useRecursos20();
 
   const [codigoCupom, setCodigoCupom] = useState('');
   const [cupom, setCupom] = useState<CupomValidado | null>(null);
@@ -158,7 +160,7 @@ export default function CarrinhoScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.cabecalho}>
         <ThemedText style={styles.titulo}>Carrinho</ThemedText>
-        {listaItens.length > 0 ? (
+        {recursos20 && listaItens.length > 0 ? (
           <Pressable onPress={compartilhar} style={styles.compartilhar} hitSlop={8} disabled={compartilharCarrinho.isPending}>
             <Ionicons name="share-social-outline" size={18} color={BrandColors.fundoEscuro} />
             <ThemedText type="smallBold" style={styles.compartilharTexto}>

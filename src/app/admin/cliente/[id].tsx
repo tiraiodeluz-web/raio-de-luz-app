@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
+import { SeletorVersaoApp } from '@/components/seletor-versao-app';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
@@ -44,6 +45,7 @@ export default function PedidosDoClienteScreen() {
           placeholder="Sem limite definido"
         />
         <Button titulo="Salvar limite" onPress={salvarLimite} carregando={alterarLimite.isPending} />
+        {cliente ? <SeletorVersaoApp usuarioId={cliente.id} versao={cliente.versao_app} /> : null}
       </View>
       {isLoading ? (
         <ActivityIndicator style={styles.carregando} />

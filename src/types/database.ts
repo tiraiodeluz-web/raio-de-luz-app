@@ -723,6 +723,7 @@ export type Database = {
           uf: string | null
           ultimo_acesso: string | null
           ultimo_produto_carrinho: string | null
+          versao_app: string
         }
         Insert: {
           aprovado_em?: string | null
@@ -746,6 +747,7 @@ export type Database = {
           uf?: string | null
           ultimo_acesso?: string | null
           ultimo_produto_carrinho?: string | null
+          versao_app?: string
         }
         Update: {
           aprovado_em?: string | null
@@ -769,6 +771,7 @@ export type Database = {
           uf?: string | null
           ultimo_acesso?: string | null
           ultimo_produto_carrinho?: string | null
+          versao_app?: string
         }
         Relationships: []
       }
