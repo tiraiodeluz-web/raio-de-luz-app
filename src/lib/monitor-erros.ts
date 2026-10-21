@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
@@ -16,9 +17,13 @@ export function definirTelaAtual(rota: string) {
   telaAtual = rota;
 }
 
+// Ex.: "1.0.0" (código que veio no APK) ou "1.0.0 · OTA 3f9c2a1b" (rodando
+// uma atualização do EAS Update) — mostra se o erro já é da versão nova.
 function versaoApp(): string {
   const versao = Constants.expoConfig?.version ?? '?';
-  return __DEV__ ? `${versao} (dev)` : versao;
+  if (__DEV__) return `${versao} (dev)`;
+  if (Updates.isEnabled && !Updates.isEmbeddedLaunch && Updates.updateId) return `${versao} · OTA ${Updates.updateId.slice(0, 8)}`;
+  return versao;
 }
 
 export async function registrarErro(erro: unknown, origem: Origem, fatal = false): Promise<void> {

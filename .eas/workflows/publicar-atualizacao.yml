@@ -1,0 +1,25 @@
+# Publica uma atualização OTA (sem reinstalar o APK) no canal "preview".
+# Rodar pelo site expo.dev → Workflows → "Publicar atualização" → Run,
+# ou pelo terminal: npx eas-cli@latest workflow:run publicar-atualizacao.yml
+name: Publicar atualização
+
+on:
+  workflow_dispatch:
+    inputs:
+      mensagem:
+        type: string
+        description: O que mudou nesta atualização
+        required: false
+
+jobs:
+  atualizacao:
+    name: Atualização Android (preview)
+    type: update
+    environment: preview
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://zjkhlvomxhtafajbzbjb.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R
+    params:
+      channel: preview
+      platform: android
+      message: ${{ inputs.mensagem || 'Atualização' }}

@@ -4,9 +4,11 @@ import { DefaultTheme, Stack, ThemeProvider, usePathname, useRouter, useSegments
 // src/lib/ambiente.ts e notificacoes-push.ts para o porquê).
 import type * as NotificationsType from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Updates from 'expo-updates';
 import { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AvisoAtualizacao } from '@/components/aviso-atualizacao';
 import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { useSincronizarCarrinhoOffline } from '@/lib/carrinho-offline';
@@ -128,6 +130,8 @@ function GuardiaoDeRotas() {
       {!RODANDO_NO_EXPO_GO && Platform.OS !== 'web' ? (
         <TratadorDeNotificacoes carregando={carregando} router={router} />
       ) : null}
+      {/* Atualização OTA só existe no APK instalado (não no Expo Go nem no modo dev). */}
+      {Updates.isEnabled && !__DEV__ ? <AvisoAtualizacao /> : null}
     </>
   );
 }
