@@ -7,7 +7,6 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
-import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { formatarReais } from '@/lib/formatacao';
@@ -56,7 +55,6 @@ export default function PedidosScreen() {
         />
       )}
 
-      <WhatsAppFlutuante />
     </SafeAreaView>
   );
 }

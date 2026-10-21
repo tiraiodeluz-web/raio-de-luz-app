@@ -9,7 +9,6 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { BrandColors, Spacing } from '@/constants/theme';
 import { BrasilApiError, buscarCep } from '@/lib/brasil-api';
 import { useAuth } from '@/lib/auth-context';
@@ -257,7 +256,6 @@ export default function CheckoutScreen() {
           <Button titulo="Confirmar Pedido" icone="checkmark-done" onPress={confirmarPedido} carregando={enviando} />
         </ScrollView>
       </KeyboardAvoidingView>
-      <WhatsAppFlutuante />
     </SafeAreaView>
   );
 }

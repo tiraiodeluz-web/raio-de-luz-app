@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ThemedText } from '@/components/themed-text';
-import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { Spacing } from '@/constants/theme';
 import { useCatalogos } from '@/lib/produtos';
 
@@ -38,7 +37,6 @@ export default function CatalogosScreen() {
         />
       )}
 
-      <WhatsAppFlutuante />
     </SafeAreaView>
   );
 }

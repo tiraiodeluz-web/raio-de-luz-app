@@ -13,7 +13,6 @@ import { KitCard } from '@/components/kit-card';
 import { ProdutoCard } from '@/components/produto-card';
 import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { ThemedText } from '@/components/themed-text';
-import { WhatsAppFlutuante } from '@/components/whatsapp-flutuante';
 import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import { useKits } from '@/lib/kits';
 import { useRecursos20 } from '@/lib/versao-app';
@@ -122,7 +121,6 @@ export default function InicioScreen() {
         </View>
       </ScrollView>
 
-      <WhatsAppFlutuante />
 
       {produtoParaComprar ? (
         <ComprarRapido produto={produtoParaComprar} onFechar={() => setProdutoParaComprar(null)} />

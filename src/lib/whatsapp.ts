@@ -1,7 +1,7 @@
 import { Linking } from 'react-native';
 
 // Regra 13: pedido e suporte vão para este número; o botão flutuante usa um
-// número diferente (ver src/components/whatsapp-flutuante.tsx).
+// número diferente (o botão flutuante foi removido do app).
 const NUMERO_PEDIDOS = '5543996081065';
 
 // O link do PDF vai no texto: wa.me não aceita anexo (ver lib/pedido-pdf.ts).
