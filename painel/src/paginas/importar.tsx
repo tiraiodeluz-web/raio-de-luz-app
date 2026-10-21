@@ -9,7 +9,7 @@ import { buscarTodos } from '../lib/buscar-todos';
 import { useCatalogos, useCategorias } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { numero, reais } from '../lib/formato';
-import { lerPlanilhaProdutos, siglaSku, type ProdutoPlanilha } from '../lib/planilha';
+import { chaveNome, lerPlanilhaProdutos, siglaSku, type ProdutoPlanilha } from '../lib/planilha';
 import { supabase } from '../lib/supabase';
 
 type ProdutoBanco = {
@@ -21,6 +21,7 @@ type ProdutoBanco = {
   imagem_principal: string | null;
   ativo: boolean;
   categoria_id: string | null;
+  catalogo_id: string | null;
 };
 
 type Mudanca = { campo: string; antes: string; depois: string };
@@ -31,6 +32,10 @@ type Analisado = ProdutoPlanilha & {
   mudancas: Mudanca[];
   santosDesconhecidos: string[];
   categoriaSugerida: string | null;
+  // Id da categoria/catálogo da planilha quando já existe no app (senão o
+  // nome vai em `categoria`/`catalogo` e é criado na importação).
+  categoriaId: string | null;
+  catalogoId: string | null;
 };
 
 type Analise = {
@@ -39,6 +44,10 @@ type Analise = {
   linhasIgnoradas: number;
   itens: Analisado[];
   ausentes: ProdutoBanco[];
+  temCategoria: boolean;
+  temCatalogo: boolean;
+  categoriasNovas: string[];
+  catalogosNovos: string[];
 };
 
 type Aba = 'novo' | 'alterado' | 'igual' | 'avisos' | 'ausentes';
@@ -57,6 +66,8 @@ export function PaginaImportar() {
   const [atualizarFotos, setAtualizarFotos] = useState(true);
   const [desativarAusentes, setDesativarAusentes] = useState(false);
   const [usarSugestao, setUsarSugestao] = useState(true);
+  const [criarClassificacao, setCriarClassificacao] = useState(true);
+  const [atualizarClassificacao, setAtualizarClassificacao] = useState(true);
   const [categoriaPadrao, setCategoriaPadrao] = useState('');
   const [catalogo, setCatalogo] = useState('');
   const [progresso, setProgresso] = useState<number | null>(null);
@@ -80,16 +91,24 @@ export function PaginaImportar() {
       const leitura = lerPlanilhaProdutos(linhas);
       if (leitura.produtos.length === 0) throw new Error('Nenhum produto encontrado na planilha.');
 
-      const [banco, vinculos, santos] = await Promise.all([
+      const [banco, vinculos, santos, listaCategorias, listaCatalogos] = await Promise.all([
         buscarTodos<ProdutoBanco>((de, ate) =>
-          supabase.from('produtos').select('id, sku, nome, preco, embalagem, imagem_principal, ativo, categoria_id').order('sku').range(de, ate),
+          supabase.from('produtos').select('id, sku, nome, preco, embalagem, imagem_principal, ativo, categoria_id, catalogo_id').order('sku').range(de, ate),
         ),
         buscarTodos<{ produto_id: string; foto_url: string | null; santos: { codigo: string | null } | null }>((de, ate) =>
           supabase.from('produto_santos').select('produto_id, foto_url, santos ( codigo )').order('produto_id').order('santo_id').range(de, ate),
         ),
         supabase.from('santos').select('codigo'),
+        supabase.from('categorias').select('id, nome'),
+        supabase.from('catalogos').select('id, nome'),
       ]);
       if (santos.error) throw santos.error;
+      if (listaCategorias.error) throw listaCategorias.error;
+      if (listaCatalogos.error) throw listaCatalogos.error;
+      const idCategoria = new Map(listaCategorias.data.map((c) => [chaveNome(c.nome), c.id]));
+      const idCatalogo = new Map(listaCatalogos.data.map((c) => [chaveNome(c.nome), c.id]));
+      const nomeCategoriaAtual = new Map(listaCategorias.data.map((c) => [c.id, c.nome]));
+      const nomeCatalogoAtual = new Map(listaCatalogos.data.map((c) => [c.id, c.nome]));
       const codigosValidos = new Set(santos.data.map((s) => s.codigo));
       const porSku = new Map(banco.map((p) => [p.sku, p]));
       const santosDoProduto = new Map<string, Map<string, string | null>>();
@@ -116,7 +135,9 @@ export function PaginaImportar() {
       const skusPlanilha = new Set(leitura.produtos.map((p) => p.sku));
       const itens: Analisado[] = leitura.produtos.map((p) => {
         const santosDesconhecidos = p.santos.filter((s) => !codigosValidos.has(s.codigo)).map((s) => s.codigo);
-        const base = { ...p, santos: p.santos.filter((s) => codigosValidos.has(s.codigo)), santosDesconhecidos, mudancas: [] as Mudanca[] };
+        const categoriaId = p.categoria ? (idCategoria.get(chaveNome(p.categoria)) ?? null) : null;
+        const catalogoId = p.catalogo ? (idCatalogo.get(chaveNome(p.catalogo)) ?? null) : null;
+        const base = { ...p, santos: p.santos.filter((s) => codigosValidos.has(s.codigo)), santosDesconhecidos, mudancas: [] as Mudanca[], categoriaId, catalogoId };
         if (!p.nome || p.preco === null) return { ...base, situacao: 'invalido', categoriaSugerida: null };
         const existente = porSku.get(p.sku);
         if (!existente) return { ...base, situacao: 'novo', categoriaSugerida: sugerir(p.sku) };
@@ -126,6 +147,8 @@ export function PaginaImportar() {
         if (Math.abs(Number(existente.preco) - p.preco) > 0.004) mudancas.push({ campo: 'Preço', antes: reais(existente.preco), depois: reais(p.preco) });
         if (existente.embalagem !== p.embalagem) mudancas.push({ campo: 'Embalagem', antes: `${existente.embalagem} un.`, depois: `${p.embalagem} un.` });
         if (p.imagem && p.imagem !== existente.imagem_principal) mudancas.push({ campo: 'Foto', antes: existente.imagem_principal ? 'outra foto' : 'sem foto', depois: 'foto da planilha' });
+        if (p.categoria && categoriaId !== existente.categoria_id) mudancas.push({ campo: 'Categoria', antes: existente.categoria_id ? (nomeCategoriaAtual.get(existente.categoria_id) ?? '—') : 'sem categoria', depois: p.categoria });
+        if (p.catalogo && catalogoId !== existente.catalogo_id) mudancas.push({ campo: 'Catálogo', antes: existente.catalogo_id ? (nomeCatalogoAtual.get(existente.catalogo_id) ?? '—') : 'sem catálogo', depois: p.catalogo });
         const atuais = santosDoProduto.get(existente.id) ?? new Map<string, string | null>();
         const novosSantos = base.santos.filter((s) => !atuais.has(s.codigo));
         const fotosSanto = base.santos.filter((s) => atuais.has(s.codigo) && s.foto && s.foto !== atuais.get(s.codigo));
@@ -134,8 +157,20 @@ export function PaginaImportar() {
         return { ...base, situacao: mudancas.length ? 'alterado' : 'igual', existente, mudancas, categoriaSugerida: null };
       });
 
+      const nomesNovos = (pegar: (p: Analisado) => string | null, existentes: Map<string, string>) => {
+        const achados = new Map<string, string>();
+        for (const i of itens) {
+          const n = pegar(i);
+          if (n && !existentes.has(chaveNome(n)) && !achados.has(chaveNome(n))) achados.set(chaveNome(n), n);
+        }
+        return [...achados.values()];
+      };
       setAnalise({
         arquivo: arquivo.name,
+        temCategoria: leitura.temCategoria,
+        temCatalogo: leitura.temCatalogo,
+        categoriasNovas: nomesNovos((i) => i.categoria, idCategoria),
+        catalogosNovos: nomesNovos((i) => i.catalogo, idCatalogo),
         linhasLidas: leitura.linhasLidas,
         linhasIgnoradas: leitura.linhasIgnoradas,
         itens,
@@ -165,7 +200,7 @@ export function PaginaImportar() {
 
   async function importar() {
     if (!analise) return;
-    if (criarNovos && grupos.novo.length && !categoriaPadrao) {
+    if (criarNovos && grupos.novo.length && !categoriaPadrao && !analise.temCategoria) {
       avisar('Escolha a categoria padrão dos produtos novos', 'erro');
       return;
     }
@@ -176,20 +211,47 @@ export function PaginaImportar() {
     ].filter(Boolean);
     if (!resumo.length || !confirm(`Confirma: ${resumo.join(', ')}?\n\nAs mudanças aparecem no app na hora.`)) return;
 
-    const itens = [...(criarNovos ? grupos.novo : []), ...(atualizar ? grupos.alterado : [])].map((p) => ({
-      sku: p.sku,
-      nome: p.nome,
-      preco: p.preco,
-      embalagem: p.embalagem,
-      imagem: p.situacao === 'alterado' && !atualizarFotos ? '' : (p.imagem ?? ''),
-      categoria_id: p.situacao === 'novo' && usarSugestao ? p.categoriaSugerida : null,
-      santos: p.santos.map((s) => ({ codigo: s.codigo, foto: p.situacao === 'alterado' && !atualizarFotos ? null : s.foto })),
-    }));
+    const lista = [...(criarNovos ? grupos.novo : []), ...(atualizar ? grupos.alterado : [])];
     const total = { criados: 0, atualizados: 0, santos: 0, desativados: 0 };
-    const passos = Math.ceil(itens.length / LOTE) + Math.ceil(aDesativar / 200);
+    const passos = Math.ceil(lista.length / LOTE) + Math.ceil(aDesativar / 200);
     let feitos = 0;
     setProgresso(0);
     try {
+      // Categorias e catálogos da planilha que ainda não existem no app.
+      const criarNomes = async (tabela: 'categorias' | 'catalogos', nomes: string[]) => {
+        const mapa = new Map<string, string>();
+        if (!criarClassificacao || !nomes.length) return mapa;
+        const { data: ordens, error: erroOrdem } = await supabase.from(tabela).select('ordem').order('ordem', { ascending: false }).limit(1);
+        if (erroOrdem) throw erroOrdem;
+        let ordem = ordens?.[0]?.ordem ?? 0;
+        for (const nome of nomes) {
+          const { data: criado, error } = await supabase.from(tabela).insert({ nome, ordem: ++ordem }).select('id').single();
+          if (error) throw error;
+          mapa.set(chaveNome(nome), criado.id);
+        }
+        return mapa;
+      };
+      const categoriasCriadas = await criarNomes('categorias', analise.categoriasNovas);
+      const catalogosCriados = await criarNomes('catalogos', analise.catalogosNovos);
+      queryClient.invalidateQueries({ queryKey: ['categorias'] });
+      queryClient.invalidateQueries({ queryKey: ['catalogos'] });
+
+      const itens = lista.map((p) => {
+        const novoProduto = p.situacao === 'novo';
+        const usarPlanilha = novoProduto || atualizarClassificacao;
+        const categoriaPlanilha = usarPlanilha && p.categoria ? (p.categoriaId ?? categoriasCriadas.get(chaveNome(p.categoria)) ?? null) : null;
+        const catalogoPlanilha = usarPlanilha && p.catalogo ? (p.catalogoId ?? catalogosCriados.get(chaveNome(p.catalogo)) ?? null) : null;
+        return {
+          sku: p.sku,
+          nome: p.nome,
+          preco: p.preco,
+          embalagem: p.embalagem,
+          imagem: p.situacao === 'alterado' && !atualizarFotos ? '' : (p.imagem ?? ''),
+          categoria_id: categoriaPlanilha ?? (novoProduto && usarSugestao ? p.categoriaSugerida : null),
+          catalogo_id: catalogoPlanilha,
+          santos: p.santos.map((s) => ({ codigo: s.codigo, foto: p.situacao === 'alterado' && !atualizarFotos ? null : s.foto })),
+        };
+      });
       for (let i = 0; i < itens.length; i += LOTE) {
         const { data, error } = await supabase.rpc('importar_produtos_lote', {
           p_itens: itens.slice(i, i + LOTE),
@@ -329,6 +391,19 @@ export function PaginaImportar() {
                 </p>
               </div>
             </div>
+            {analise.temCategoria || analise.temCatalogo ? (
+              <div className="caixa-info pilha" style={{ marginTop: 16, gap: 8 }}>
+                <strong>A planilha traz categoria{analise.temCatalogo ? ' e catálogo' : ''} de cada produto.</strong>
+                <span>
+                  Categorias que não existem no app ({analise.categoriasNovas.length}
+                  {analise.categoriasNovas.length ? `: ${analise.categoriasNovas.join(', ')}` : ''}) e catálogos ({analise.catalogosNovos.length}
+                  {analise.catalogosNovos.length ? `: ${analise.catalogosNovos.join(', ')}` : ''}).
+                </span>
+                <Caixa marcado={criarClassificacao} aoMudar={setCriarClassificacao} rotulo="Criar automaticamente as categorias e catálogos que ainda não existem" />
+                <Caixa marcado={atualizarClassificacao} aoMudar={setAtualizarClassificacao} rotulo="Também trocar a categoria e o catálogo dos produtos que já existem" />
+                <span className="pequeno">Linhas sem categoria/catálogo na planilha usam a sugestão pela sigla ou a categoria escolhida acima.</span>
+              </div>
+            ) : null}
             <div className="separador" style={{ margin: '16px 0' }} />
             {progresso !== null ? (
               <div className="pilha">
@@ -421,7 +496,12 @@ function ListaAnalise({
               <td className="pequeno">{p.santos.length ? `${p.santos.length}: ${p.santos.map((s) => s.codigo).join(', ')}` : <span className="fraco">—</span>}</td>
               <td className="pequeno">
                 {aba === 'novo' ? (
-                  usarSugestao && p.categoriaSugerida ? (
+                  p.categoria ? (
+                    <span>
+                      <Etiqueta tom="info">{p.categoria}</Etiqueta>
+                      {p.catalogo ? <span className="texto-3 pequeno"> · {p.catalogo}</span> : null}
+                    </span>
+                  ) : usarSugestao && p.categoriaSugerida ? (
                     <Etiqueta tom="info">{nomeCategoria.get(p.categoriaSugerida)} (sugerida)</Etiqueta>
                   ) : (
                     <span>{categoriaPadrao ?? '—'}</span>

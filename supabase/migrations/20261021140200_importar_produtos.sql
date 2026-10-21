@@ -1,9 +1,10 @@
 -- Importação da planilha de produtos pelo painel web, em lotes.
--- Cada item: { sku, nome, preco, embalagem, imagem, categoria_id?, santos: [{codigo, foto}] }
---   - SKU novo  -> cria o produto na categoria do item (o painel sugere pela
---     sigla do SKU) ou na escolhida para o lote, e no catálogo escolhido.
---   - SKU antigo -> atualiza nome, preço, embalagem e foto (preço promocional,
---     descrição, categoria e "ativo" ficam como estão).
+-- Cada item: { sku, nome, preco, embalagem, imagem, categoria_id?, catalogo_id?, santos: [{codigo, foto}] }
+--   - SKU novo  -> cria o produto na categoria/catálogo do item (colunas da
+--     planilha) ou, se faltar, nos escolhidos para o lote.
+--   - SKU antigo -> atualiza nome, preço, embalagem e foto; categoria e
+--     catálogo só mudam se o item trouxer (preço promocional, descrição e
+--     "ativo" ficam como estão).
 --   - santos: liga o santo ao produto (com a foto da linha da planilha) e
 --     marca o produto como "escolhe santo". Santos que já estavam ligados e
 --     não vieram na planilha continuam ligados.
@@ -20,6 +21,8 @@ declare
   v_atualizados integer := 0;
   v_santos integer := 0;
   v_n integer;
+  v_cat uuid;
+  v_catalogo uuid;
 begin
   if not public.eh_admin() then
     raise exception 'Acesso restrito ao admin' using errcode = '42501';
@@ -33,6 +36,8 @@ begin
       continue;
     end if;
     v_tem_santos := jsonb_array_length(coalesce(v_item->'santos', '[]'::jsonb)) > 0;
+    v_cat := nullif(v_item->>'categoria_id', '')::uuid;
+    v_catalogo := nullif(v_item->>'catalogo_id', '')::uuid;
 
     select id into v_id from public.produtos where sku = trim(v_item->>'sku');
     if v_id is null then
@@ -40,7 +45,7 @@ begin
       values (trim(v_item->>'sku'), trim(v_item->>'nome'), (v_item->>'preco')::numeric,
               greatest(coalesce((v_item->>'embalagem')::integer, 1), 1),
               nullif(v_item->>'imagem', ''),
-              coalesce((v_item->>'categoria_id')::uuid, p_categoria_id), p_catalogo_id, v_tem_santos)
+              coalesce(v_cat, p_categoria_id), coalesce(v_catalogo, p_catalogo_id), v_tem_santos)
       returning id into v_id;
       v_criados := v_criados + 1;
     else
@@ -49,6 +54,8 @@ begin
              preco = (v_item->>'preco')::numeric,
              embalagem = greatest(coalesce((v_item->>'embalagem')::integer, 1), 1),
              imagem_principal = coalesce(nullif(v_item->>'imagem', ''), imagem_principal),
+             categoria_id = coalesce(v_cat, categoria_id),
+             catalogo_id = coalesce(v_catalogo, catalogo_id),
              personalizavel = personalizavel or v_tem_santos,
              atualizado_em = now()
        where id = v_id;

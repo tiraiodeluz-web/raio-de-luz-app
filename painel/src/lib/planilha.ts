@@ -14,13 +14,15 @@ export type ProdutoPlanilha = {
   preco: number | null;
   embalagem: number;
   imagem: string | null;
+  categoria: string | null;
+  catalogo: string | null;
   santos: SantoPlanilha[];
   outrasVariacoes: string[];
   linhas: number[];
   avisos: string[];
 };
 
-export type ResultadoLeitura = { produtos: ProdutoPlanilha[]; linhasLidas: number; linhasIgnoradas: number };
+export type ResultadoLeitura = { produtos: ProdutoPlanilha[]; linhasLidas: number; linhasIgnoradas: number; temCategoria: boolean; temCatalogo: boolean };
 
 const normalizar = (t: unknown) =>
   String(t ?? '')
@@ -72,13 +74,15 @@ export function lerPlanilhaProdutos(linhas: unknown[][]): ResultadoLeitura {
     tamanho: col('size'),
     cor: col('color'),
     imagem: col('image 1'),
+    categoria: col('categoria'),
+    catalogo: Math.max(col('catalogo'), col('catalogos')),
   };
   // A coluna do código do santo não tem título: fica entre PACKAGE SIZE e GROUPING KEY.
   let santo = -1;
   for (let i = c.embalagem + 1; i < c.grupo; i++) if (!cab[i]) santo = i;
   if (santo < 0 && c.embalagem >= 0) santo = c.embalagem + 1;
 
-  const porSku = new Map<string, { p: ProdutoPlanilha; precos: number[]; embalagens: number[]; imagemDoProprio: string | null }>();
+  const porSku = new Map<string, { p: ProdutoPlanilha; precos: number[]; embalagens: number[]; imagemDoProprio: string | null; categorias: string[]; catalogos: string[] }>();
   let lidas = 0;
   let ignoradas = 0;
 
@@ -106,10 +110,12 @@ export function lerPlanilhaProdutos(linhas: unknown[][]): ResultadoLeitura {
     let item = porSku.get(sku);
     if (!item) {
       item = {
-        p: { sku, nome, preco: null, embalagem, imagem: null, santos: [], outrasVariacoes: [], linhas: [], avisos: [] },
+        p: { sku, nome, preco: null, embalagem, imagem: null, categoria: null, catalogo: null, santos: [], outrasVariacoes: [], linhas: [], avisos: [] },
         precos: [],
         embalagens: [],
         imagemDoProprio: null,
+        categorias: [],
+        catalogos: [],
       };
       porSku.set(sku, item);
     }
@@ -119,6 +125,8 @@ export function lerPlanilhaProdutos(linhas: unknown[][]): ResultadoLeitura {
     else p.avisos.push(`Linha ${numeroLinha}: preço "${texto(l[c.preco])}" não é um número.`);
     item.embalagens.push(embalagem);
     if (!p.nome && nome) p.nome = nome;
+    if (c.categoria >= 0 && texto(l[c.categoria])) item.categorias.push(texto(l[c.categoria]));
+    if (c.catalogo >= 0 && texto(l[c.catalogo])) item.catalogos.push(texto(l[c.catalogo]));
     if (id === sku && imagem) item.imagemDoProprio = imagem;
     if (!p.imagem && imagem) p.imagem = imagem;
 
@@ -133,7 +141,11 @@ export function lerPlanilhaProdutos(linhas: unknown[][]): ResultadoLeitura {
     }
   });
 
-  const produtos = [...porSku.values()].map(({ p, precos, embalagens, imagemDoProprio }) => {
+  const produtos = [...porSku.values()].map(({ p, precos, embalagens, imagemDoProprio, categorias, catalogos }) => {
+    p.categoria = moda(categorias) ?? null;
+    p.catalogo = moda(catalogos) ?? null;
+    if (new Set(categorias).size > 1) p.avisos.push(`Categorias diferentes entre as variações (${[...new Set(categorias)].join(' / ')}); usada ${p.categoria}.`);
+    if (new Set(catalogos).size > 1) p.avisos.push(`Catálogos diferentes entre as variações (${[...new Set(catalogos)].join(' / ')}); usado ${p.catalogo}.`);
     p.preco = moda(precos) ?? null;
     const distintos = [...new Set(precos)];
     if (distintos.length > 1) {
@@ -149,8 +161,11 @@ export function lerPlanilhaProdutos(linhas: unknown[][]): ResultadoLeitura {
     return p;
   });
 
-  return { produtos, linhasLidas: lidas, linhasIgnoradas: ignoradas };
+  return { produtos, linhasLidas: lidas, linhasIgnoradas: ignoradas, temCategoria: c.categoria >= 0, temCatalogo: c.catalogo >= 0 };
 }
+
+// Compara nomes sem acento, maiúscula ou espaço sobrando ("Terços" = "tercos").
+export const chaveNome = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
 
 // Sigla do SKU ("CH.032-1" -> "CH"), usada pra sugerir a categoria de produtos novos.
 export const siglaSku = (sku: string) => sku.split(/[.\-/\s_]/)[0].toUpperCase();
