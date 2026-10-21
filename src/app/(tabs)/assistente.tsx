@@ -29,13 +29,17 @@ import { prepararFoto, useEnviarAoAssistente, type MensagemChat } from '@/lib/as
 import { useAuth } from '@/lib/auth-context';
 import { useKits, type Kit } from '@/lib/kits';
 import type { ProdutoResumo } from '@/lib/produtos';
+import { abrirWhatsAppVendedor } from '@/lib/whatsapp';
 import { useRecursos20 } from '@/lib/versao-app';
+
+// Primeira sugestão do chat: leva pro WhatsApp da equipe em vez de ir pra IA.
+const FALAR_VENDEDOR = 'Falar com vendedor';
 
 const BOAS_VINDAS: MensagemChat = {
   id: 'boas-vindas',
   papel: 'assistente',
-  texto: 'Oi! Sou o assistente da Raio de Luz. Me diga o que você procura ou o que quer pedir, do seu jeito. Ex.: "quero 12 chaveiros de São Bento". Também dá pra mandar foto de um produto ou da sua lista de pedido.',
-  sugestoes: ['Repetir meu último pedido', 'Ver os kits', 'Produtos em oferta'],
+  texto: 'Oi! Sou a RDL AI, a assistente da Raio de Luz. Me diga o que você procura ou o que quer pedir, do seu jeito. Ex.: "quero 12 chaveiros de São Bento". Também dá pra mandar foto de um produto ou da sua lista de pedido.',
+  sugestoes: [FALAR_VENDEDOR, 'Repetir meu último pedido', 'Ver os kits', 'Produtos em oferta'],
 };
 
 let contador = 0;
@@ -62,7 +66,7 @@ export default function AssistenteScreen() {
   if (!session) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <CabecalhoVoltar titulo="Assistente" />
+        <CabecalhoVoltar titulo="RDL AI" semVoltar />
         <EstadoVazio icone="sparkles-outline" titulo="Faça login para usar o assistente" />
         <View style={styles.botaoEntrar}>
           <Button titulo="Entrar" onPress={() => router.push('/(auth)/login')} />
@@ -74,7 +78,7 @@ export default function AssistenteScreen() {
   if (!recursos20) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <CabecalhoVoltar titulo="Assistente" />
+        <CabecalhoVoltar titulo="RDL AI" semVoltar />
         <EstadoVazio icone="sparkles-outline" titulo="Disponível na versão 2.0 do app" />
       </SafeAreaView>
     );
@@ -83,7 +87,7 @@ export default function AssistenteScreen() {
   if (perfil && !perfil.cadastro_aprovado && perfil.tipo !== 'admin') {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <CabecalhoVoltar titulo="Assistente" />
+        <CabecalhoVoltar titulo="RDL AI" semVoltar />
         <EstadoVazio
           icone="sparkles-outline"
           titulo="Disponível após a aprovação do cadastro"
@@ -168,7 +172,8 @@ export default function AssistenteScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <CabecalhoVoltar
-        titulo="Assistente"
+        titulo="RDL AI"
+        semVoltar
         acao={
           mensagens.length > 1 ? (
             <Pressable onPress={novaConversa} hitSlop={8} accessibilityLabel="Nova conversa">
@@ -191,7 +196,9 @@ export default function AssistenteScreen() {
               mensagem={item}
               kits={(item.kitIds ?? []).map((id) => kitsPorId.get(id)).filter((k): k is Kit => !!k)}
               mostrarSugestoes={item.id === ultimaDoAssistente?.id && !enviar.isPending}
-              onSugestao={(sugestao) => mandar(sugestao, foto)}
+              onSugestao={(sugestao) =>
+                sugestao === FALAR_VENDEDOR ? abrirWhatsAppVendedor(perfil?.razao_social || perfil?.nome) : mandar(sugestao, foto)
+              }
               onComprar={setProdutoParaComprar}
             />
           )}
@@ -304,7 +311,11 @@ function Bolha({
       {mostrarSugestoes && mensagem.sugestoes && mensagem.sugestoes.length > 0 ? (
         <View style={styles.sugestoes}>
           {mensagem.sugestoes.map((sugestao) => (
-            <Pressable key={sugestao} style={styles.sugestao} onPress={() => onSugestao(sugestao)}>
+            <Pressable
+              key={sugestao}
+              style={[styles.sugestao, sugestao === FALAR_VENDEDOR && styles.sugestaoVendedor]}
+              onPress={() => onSugestao(sugestao)}>
+              {sugestao === FALAR_VENDEDOR ? <Ionicons name="logo-whatsapp" size={16} color={BrandColors.whatsapp} /> : null}
               <ThemedText type="small" style={styles.sugestaoTexto}>
                 {sugestao}
               </ThemedText>
@@ -361,6 +372,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
   },
+  sugestaoVendedor: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, borderColor: BrandColors.whatsapp },
   sugestaoTexto: { color: BrandColors.fundoEscuro, fontWeight: '600' },
   entrada: {
     flexDirection: 'row',

@@ -10,3 +10,11 @@ export function abrirWhatsAppPedido(numeroPedido: number, linkPdf?: string | nul
   const texto = encodeURIComponent(linkPdf ? `${mensagem}\n\nPDF do pedido: ${linkPdf}` : mensagem);
   return Linking.openURL(`https://wa.me/${NUMERO_PEDIDOS}?text=${texto}`);
 }
+
+// "Falar com vendedor" (primeira opção do chat da RDL AI): abre o WhatsApp da
+// equipe comercial já se apresentando. Usa o mesmo número dos pedidos/suporte.
+export function abrirWhatsAppVendedor(quem?: string | null) {
+  const nome = quem ? `Sou ${quem} e vim` : 'Vim';
+  const texto = encodeURIComponent(`Olá! ${nome} pelo app da Raio de Luz e gostaria de falar com um vendedor.`);
+  return Linking.openURL(`https://wa.me/${NUMERO_PEDIDOS}?text=${texto}`);
+}

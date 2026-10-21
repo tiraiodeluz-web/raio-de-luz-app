@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { StatusPedidoBadge } from '@/components/status-pedido-badge';
 import { ThemedText } from '@/components/themed-text';
@@ -21,7 +22,7 @@ export default function PedidosScreen() {
   if (!session) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText style={styles.titulo}>Meus Pedidos</ThemedText>
+        <CabecalhoVoltar titulo="Meus pedidos" />
         <EstadoVazio icone="log-in-outline" titulo="Faça login para ver seus pedidos" />
         <Button titulo="Entrar" onPress={() => router.push('/(auth)/login')} />
       </SafeAreaView>
@@ -30,7 +31,7 @@ export default function PedidosScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ThemedText style={styles.titulo}>Meus Pedidos</ThemedText>
+      <CabecalhoVoltar titulo="Meus pedidos" />
 
       {isLoading ? (
         <ActivityIndicator style={styles.carregando} />
@@ -62,7 +63,6 @@ export default function PedidosScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
-  titulo: { fontSize: 20, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three },
   carregando: { marginTop: Spacing.five },
   lista: { padding: Spacing.three, gap: Spacing.two },
   item: {

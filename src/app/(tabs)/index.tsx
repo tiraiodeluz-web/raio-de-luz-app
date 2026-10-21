@@ -135,7 +135,6 @@ export default function InicioScreen() {
 // logo, campo de busca branco e o sino num círculo branco.
 // O logo é um recorte provisório do print — trocar pelo arquivo original.
 function Cabecalho() {
-  const recursos20 = useRecursos20();
   return (
     <View style={styles.cabecalho}>
       <Image
@@ -150,16 +149,6 @@ function Cabecalho() {
           Buscar produtos...
         </ThemedText>
       </Pressable>
-      {recursos20 ? (
-        <Pressable
-          style={styles.sino}
-          onPress={() => router.push('/assistente')}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Assistente de compras">
-          <Ionicons name="sparkles" size={20} color={BrandColors.dourado} />
-        </Pressable>
-      ) : null}
       <Pressable
         style={styles.sino}
         onPress={() => router.push('/notificacoes')}

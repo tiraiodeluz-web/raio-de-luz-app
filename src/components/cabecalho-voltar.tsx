@@ -8,16 +8,20 @@ import { BrandColors, Spacing } from '@/constants/theme';
 type Props = {
   titulo?: string;
   acao?: React.ReactNode;
+  // Telas que são aba (ex.: RDL AI) não têm pra onde "voltar".
+  semVoltar?: boolean;
 };
 
 // O Stack raiz fica com headerShown: false (visual próprio em vez do header
 // nativo); as telas fora das abas usam este cabeçalho.
-export function CabecalhoVoltar({ titulo, acao }: Props) {
+export function CabecalhoVoltar({ titulo, acao, semVoltar }: Props) {
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar}>
-        <Ionicons name="arrow-back" size={24} color={BrandColors.fundoEscuro} />
-      </Pressable>
+      {semVoltar ? null : (
+        <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar}>
+          <Ionicons name="arrow-back" size={24} color={BrandColors.fundoEscuro} />
+        </Pressable>
+      )}
       {titulo ? (
         <ThemedText type="title" numberOfLines={1} style={styles.titulo}>
           {titulo}

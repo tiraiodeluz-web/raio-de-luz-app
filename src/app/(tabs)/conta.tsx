@@ -78,6 +78,12 @@ export default function ContaScreen() {
 
         <View style={styles.menu}>
           <Button
+            titulo="Meus pedidos"
+            variante="secundario"
+            icone="file-tray-full-outline"
+            onPress={() => router.push('/pedidos')}
+          />
+          <Button
             titulo="Meus favoritos"
             variante="secundario"
             icone="heart-outline"
