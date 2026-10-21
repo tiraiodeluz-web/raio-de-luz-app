@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Alert, ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +13,8 @@ import { formatarReais } from '@/lib/formatacao';
 import { usePedidoDetalhe, useRepetirPedido } from '@/lib/pedidos';
 import { useRecursos20 } from '@/lib/versao-app';
 import { urlImagem } from '@/lib/imagem';
+import { registrarErro } from '@/lib/monitor-erros';
+import { compartilharPdfPedido } from '@/lib/pedido-pdf';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -29,6 +32,20 @@ export default function DetalhePedidoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = usePedidoDetalhe(id);
   const repetir = useRepetirPedido();
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  async function baixarPdf() {
+    if (!id) return;
+    setGerandoPdf(true);
+    try {
+      await compartilharPdfPedido(id);
+    } catch (erro) {
+      void registrarErro(erro, 'manual');
+      Alert.alert('PDF', 'Não foi possível gerar o PDF agora. Tente de novo.');
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
   const recursos20 = useRecursos20();
 
   async function pedirDeNovo() {
@@ -133,6 +150,7 @@ export default function DetalhePedidoScreen() {
         ) : null}
 
         {recursos20 ? <Button titulo="Pedir de novo" icone="repeat" onPress={pedirDeNovo} carregando={repetir.isPending} /> : null}
+        <Button titulo="PDF do pedido" variante="secundario" icone="document-text-outline" onPress={baixarPdf} carregando={gerandoPdf} />
       </ScrollView>
     </SafeAreaView>
   );

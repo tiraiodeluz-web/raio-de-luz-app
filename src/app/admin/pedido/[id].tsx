@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +15,8 @@ import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos } from '@/lib/mascaras';
 import { ROTULO_STATUS } from '@/lib/pedidos';
 import { urlImagem } from '@/lib/imagem';
+import { registrarErro } from '@/lib/monitor-erros';
+import { compartilharPdfPedido } from '@/lib/pedido-pdf';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -24,6 +27,20 @@ export default function DetalhePedidoAdminScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = usePedidoAdminDetalhe(id);
   const alterarStatus = useAlterarStatusPedido();
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  async function gerarPdf() {
+    if (!id) return;
+    setGerandoPdf(true);
+    try {
+      await compartilharPdfPedido(id);
+    } catch (erro) {
+      void registrarErro(erro, 'manual');
+      Alert.alert('PDF', 'Não foi possível gerar o PDF agora. Tente de novo.');
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
 
   if (isLoading || !data) {
     return (
@@ -54,6 +71,8 @@ export default function DetalhePedidoAdminScreen() {
           <StatusPedidoBadge status={pedido.status} />
           <ThemedText themeColor="textSecondary">{FORMATADOR_DATA.format(new Date(pedido.criado_em))}</ThemedText>
         </View>
+
+        <Button titulo="Gerar PDF do pedido" variante="secundario" icone="document-text-outline" onPress={gerarPdf} carregando={gerandoPdf} />
 
         <View style={styles.secao}>
           <ThemedText type="smallBold">Cliente</ThemedText>

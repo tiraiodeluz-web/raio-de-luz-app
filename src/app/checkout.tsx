@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -17,6 +17,8 @@ import { calcularSubtotalCarrinho, useCriarPedido, useItensCarrinho, validarCupo
 import { useEnderecoPrincipal, useSalvarEndereco } from '@/lib/enderecos';
 import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos, mascararCep } from '@/lib/mascaras';
+import { registrarErro } from '@/lib/monitor-erros';
+import { compartilharPdfPedido, linkPdfPedido } from '@/lib/pedido-pdf';
 import { abrirWhatsAppPedido } from '@/lib/whatsapp';
 
 export default function CheckoutScreen() {
@@ -39,7 +41,8 @@ export default function CheckoutScreen() {
   const [erroGeral, setErroGeral] = useState<string | null>(null);
 
   const [cupom, setCupom] = useState<CupomValidado | null>(null);
-  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ numero: number } | null>(null);
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ numero: number; pedidoId: string; linkPdf: string | null } | null>(null);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   // Regra 9: sugere o endereço salvo nos próximos pedidos.
   useEffect(() => {
@@ -95,7 +98,25 @@ export default function CheckoutScreen() {
           <ThemedText themeColor="textSecondary" style={styles.textoConfirmacao}>
             Continue pelo WhatsApp para combinar pagamento e frete.
           </ThemedText>
-          <Button titulo="Abrir WhatsApp" onPress={() => abrirWhatsAppPedido(pedidoConfirmado.numero)} />
+          {gerandoPdf ? (
+            <View style={styles.gerandoPdf}>
+              <ActivityIndicator />
+              <ThemedText themeColor="textSecondary">Preparando o PDF do pedido...</ThemedText>
+            </View>
+          ) : (
+            <>
+              <Button
+                titulo="Abrir WhatsApp"
+                onPress={() => abrirWhatsAppPedido(pedidoConfirmado.numero, pedidoConfirmado.linkPdf)}
+              />
+              <Button
+                titulo="Compartilhar PDF do pedido"
+                variante="secundario"
+                icone="document-text-outline"
+                onPress={() => compartilharPdfPedido(pedidoConfirmado.pedidoId).catch((e) => registrarErro(e, 'manual'))}
+              />
+            </>
+          )}
           <Button titulo="Ir para o início" variante="texto" onPress={() => router.replace('/(tabs)')} />
         </View>
       </SafeAreaView>
@@ -142,8 +163,20 @@ export default function CheckoutScreen() {
       });
       const resultado = await criarPedido.mutateAsync({ enderecoId: endereco.id, cupom: cupom?.codigo });
       if (resultado) {
-        setPedidoConfirmado({ numero: Number(resultado.numero) });
-        abrirWhatsAppPedido(Number(resultado.numero));
+        const numeroPedido = Number(resultado.numero);
+        setPedidoConfirmado({ numero: numeroPedido, pedidoId: resultado.pedido_id, linkPdf: null });
+        // Sem o PDF (sem internet, falha no upload) o pedido continua valendo:
+        // o WhatsApp abre só com o número, como antes.
+        setGerandoPdf(true);
+        let linkPdf: string | null = null;
+        try {
+          linkPdf = await linkPdfPedido(resultado.pedido_id);
+        } catch (erroPdf) {
+          void registrarErro(erroPdf, 'manual');
+        }
+        setGerandoPdf(false);
+        setPedidoConfirmado({ numero: numeroPedido, pedidoId: resultado.pedido_id, linkPdf });
+        abrirWhatsAppPedido(numeroPedido, linkPdf);
       }
     } catch (erro) {
       setErroGeral(erro instanceof Error ? erro.message : 'Não foi possível confirmar o pedido agora.');
@@ -275,6 +308,7 @@ const styles = StyleSheet.create({
   erro: { color: '#D64545' },
   avisoLimite: { color: '#B07B13' },
   confirmacao: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four, gap: Spacing.three },
+  gerandoPdf: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.two, minHeight: 50 },
   tituloConfirmacao: { fontSize: 24, lineHeight: 30 },
   textoConfirmacao: { marginBottom: Spacing.two },
 });
