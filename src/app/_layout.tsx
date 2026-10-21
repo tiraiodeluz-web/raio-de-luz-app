@@ -1,20 +1,49 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments, type Href } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider, usePathname, useRouter, useSegments, type ErrorBoundaryProps, type Href } from 'expo-router';
 // Import só de tipos — não gera um require() real no bundle (ver
 // src/lib/ambiente.ts e notificacoes-push.ts para o porquê).
 import type * as NotificationsType from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { RODANDO_NO_EXPO_GO } from '@/lib/ambiente';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { useSincronizarCarrinhoOffline } from '@/lib/carrinho-offline';
+import { definirTelaAtual, instalarMonitorGlobal, registrarErro } from '@/lib/monitor-erros';
 import { ToastProvider } from '@/lib/toast-context';
 
 SplashScreen.preventAutoHideAsync();
+instalarMonitorGlobal();
 
 const queryClient = new QueryClient();
+
+// Erro de render em qualquer tela: registra pro admin ver e mostra uma tela
+// amigável em vez de fechar o app. Fica fora dos providers (por isso usa só
+// componentes básicos e o supabase direto).
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => {
+    void registrarErro(error, 'tela', true);
+  }, [error]);
+
+  return (
+    <View style={estilosErro.container}>
+      <Text style={estilosErro.titulo}>Ops! Algo deu errado nesta tela.</Text>
+      <Text style={estilosErro.texto}>O problema já foi registrado para a nossa equipe. Tente de novo.</Text>
+      <Pressable onPress={retry} style={estilosErro.botao} accessibilityRole="button">
+        <Text style={estilosErro.botaoTexto}>Tentar de novo</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const estilosErro = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12, backgroundColor: '#ffffff' },
+  titulo: { fontSize: 18, fontWeight: '700', color: '#010534', textAlign: 'center' },
+  texto: { fontSize: 15, color: '#4A4D5A', textAlign: 'center' },
+  botao: { marginTop: 8, backgroundColor: '#010534', borderRadius: 999, paddingHorizontal: 28, paddingVertical: 14 },
+  botaoTexto: { color: '#ffffff', fontWeight: '700' },
+});
 
 export default function RootLayout() {
   useEffect(() => {
@@ -49,8 +78,13 @@ function GuardiaoDeRotas() {
   // precisamos ler os dois primeiros segmentos como texto de qualquer rota.
   const segments = useSegments() as string[];
   const router = useRouter();
+  const pathname = usePathname();
 
   useSincronizarCarrinhoOffline(!!session);
+
+  useEffect(() => {
+    definirTelaAtual(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     if (carregando) return;

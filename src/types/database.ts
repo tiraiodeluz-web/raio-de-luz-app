@@ -324,6 +324,53 @@ export type Database = {
           },
         ]
       }
+      erros_app: {
+        Row: {
+          criado_em: string
+          fatal: boolean
+          id: string
+          mensagem: string
+          origem: string
+          plataforma: string | null
+          stack: string | null
+          tela: string | null
+          usuario_id: string | null
+          versao_app: string | null
+        }
+        Insert: {
+          criado_em?: string
+          fatal?: boolean
+          id?: string
+          mensagem: string
+          origem: string
+          plataforma?: string | null
+          stack?: string | null
+          tela?: string | null
+          usuario_id?: string | null
+          versao_app?: string | null
+        }
+        Update: {
+          criado_em?: string
+          fatal?: boolean
+          id?: string
+          mensagem?: string
+          origem?: string
+          plataforma?: string | null
+          stack?: string | null
+          tela?: string | null
+          usuario_id?: string | null
+          versao_app?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erros_app_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eventos_push: {
         Row: {
           ativo: boolean

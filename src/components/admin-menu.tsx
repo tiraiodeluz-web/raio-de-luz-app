@@ -21,6 +21,7 @@ const ITENS: { titulo: string; icone: keyof typeof Ionicons.glyphMap; href: Href
   { titulo: 'Carrinhos abandonados', icone: 'cart-outline', href: '/admin/carrinhos-abandonados' },
   { titulo: 'Enviar notificação', icone: 'megaphone-outline', href: '/admin/notificacao' },
   { titulo: 'Eventos de push', icone: 'notifications-outline', href: '/admin/eventos-push' },
+  { titulo: 'Erros do app', icone: 'bug-outline', href: '/admin/erros' },
 ];
 
 // Menu lateral (sheet) do admin — Métricas, Pedidos, Clientes, Carrinhos
