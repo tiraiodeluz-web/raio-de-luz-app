@@ -28,19 +28,31 @@ export async function gerarPdfPedido(pedidoId: string): Promise<{ arquivo: File;
   const { uri } = await Print.printToFileAsync({ html: montarHtmlPedido(pedido), ...PAGINA_A4 });
   const destino = new File(Paths.cache, `Pedido-${pedido.numero}-Raio-de-Luz.pdf`);
   if (destino.exists) destino.delete();
-  new File(uri).move(destino);
+  // move() é assíncrono neste SDK: sem o await, o arquivo ainda não está no
+  // destino quando o upload/compartilhamento tenta ler (erro ENOENT).
+  await new File(uri).move(destino);
   return { arquivo: destino, numero: pedido.numero };
 }
 
 // Admin (e cliente) compartilham o PDF pelo menu do celular: WhatsApp,
 // e-mail, Drive, impressora...
+let compartilhando = false;
+
 export async function compartilharPdfPedido(pedidoId: string): Promise<void> {
-  const { arquivo, numero } = await gerarPdfPedido(pedidoId);
-  await Sharing.shareAsync(arquivo.uri, {
-    mimeType: 'application/pdf',
-    UTI: 'com.adobe.pdf',
-    dialogTitle: `Pedido #${numero} — Raio de Luz`,
-  });
+  // Toque repetido enquanto a janela de compartilhar já está aberta dá erro
+  // "Another share request is being processed": ignora o segundo toque.
+  if (compartilhando) return;
+  compartilhando = true;
+  try {
+    const { arquivo, numero } = await gerarPdfPedido(pedidoId);
+    await Sharing.shareAsync(arquivo.uri, {
+      mimeType: 'application/pdf',
+      UTI: 'com.adobe.pdf',
+      dialogTitle: `Pedido #${numero} — Raio de Luz`,
+    });
+  } finally {
+    compartilhando = false;
+  }
 }
 
 const VALIDADE_LINK_SEGUNDOS = 60 * 60 * 24 * 365;

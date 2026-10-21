@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useAvisar } from '../componentes/avisos';
 import { Tabela } from '../componentes/tabela';
 import { Botao, CabecalhoPagina, Campo, CaixaErro, Carregando, Cartao, Entrada, Etiqueta, Kpi, Miniatura, Selecao, Vazio } from '../componentes/ui';
+import { estaOnline } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { cnpj, data, dataHora, hoje, lerNumero, linkWhatsApp, numero, reais, relativo, somarDias, telefone } from '../lib/formato';
 import { COR_STATUS, ROTULO_STATUS, type StatusPedido } from '../lib/status';
@@ -127,7 +128,7 @@ export function PaginaCliente() {
           <Kpi rotulo="Ticket médio" valor={reais(validos.length ? total / validos.length : 0)} />
           <Kpi rotulo="Última compra" valor={validos[0] ? relativo(validos[0].criado_em) : 'nunca'} detalhe={validos[0] ? data(validos[0].criado_em) : undefined} />
           <Kpi rotulo="Carrinho agora" valor={reais(valorCarrinho)} detalhe={`${carrinho.length} item(ns)`} />
-          <Kpi rotulo="Último acesso ao app" valor={relativo(perfil.ultimo_acesso)} detalhe={`${numero(mensagensIa)} mensagens ao assistente`} />
+          <Kpi rotulo="Último acesso ao app" valor={estaOnline(perfil.ultimo_acesso) ? 'Online agora' : relativo(perfil.ultimo_acesso)} detalhe={`${numero(mensagensIa)} mensagens ao assistente`} />
         </div>
 
         <div className="grade grade-lateral">

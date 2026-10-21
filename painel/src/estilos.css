@@ -317,3 +317,5 @@ table.tabela { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .truncar { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
 pre.mono { white-space: pre-wrap; word-break: break-word; background: var(--superficie-2); padding: 10px; border-radius: 8px; margin: 0; max-height: 300px; overflow: auto; }
+
+.ponto-online { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #25d366; margin-right: 6px; box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2); vertical-align: middle; }

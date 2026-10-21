@@ -6,6 +6,7 @@ import { useAvisar } from '../componentes/avisos';
 import { Tabela } from '../componentes/tabela';
 import { Abas, Botao, CabecalhoPagina, Campo, CaixaErro, Carregando, Cartao, Entrada, Modal, Vazio } from '../componentes/ui';
 import { baixarCsv } from '../lib/csv';
+import { estaOnline } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { cnpj, data, lerNumero, linkWhatsApp, numero, reais, relativo, telefone } from '../lib/formato';
 import { supabase } from '../lib/supabase';
@@ -36,6 +37,7 @@ export type ClienteLinha = {
 export function useClientes() {
   return useQuery({
     queryKey: ['clientes-painel'],
+    refetchInterval: 30_000,
     queryFn: async () => {
       const [metricas, perfis] = await Promise.all([
         supabase.rpc('relatorio_clientes'),
@@ -165,7 +167,10 @@ export function PaginaClientes() {
                 ordenar: (c) => c.razao_social || c.nome,
                 celula: (c) => (
                   <div>
-                    <div className="forte truncar">{c.razao_social || c.nome}</div>
+                    <div className="forte truncar">
+                      {estaOnline(c.ultimo_acesso) ? <span className="ponto-online" title="Online agora" /> : null}
+                      {c.razao_social || c.nome}
+                    </div>
                     <div className="texto-3 pequeno">
                       {c.razao_social ? c.nome : ''}
                       {c.codigo ? ` · cód. ${c.codigo}` : ''}
@@ -176,7 +181,7 @@ export function PaginaClientes() {
               { chave: 'cnpj', titulo: 'CNPJ', celula: (c) => <span className="sem-quebra">{cnpj(c.cnpj)}</span> },
               { chave: 'cidade', titulo: 'Cidade', ordenar: (c) => c.cidade, celula: (c) => [c.cidade, c.uf].filter(Boolean).join('/') || '—' },
               { chave: 'cadastro', titulo: 'Cadastro', ordenar: (c) => c.cadastrado_em, celula: (c) => data(c.cadastrado_em) },
-              { chave: 'acesso', titulo: 'Último acesso', ordenar: (c) => c.ultimo_acesso, celula: (c) => <span className="sem-quebra">{relativo(c.ultimo_acesso)}</span> },
+              { chave: 'acesso', titulo: 'Último acesso', ordenar: (c) => c.ultimo_acesso, celula: (c) => <span className="sem-quebra">{estaOnline(c.ultimo_acesso) ? <strong style={{ color: 'var(--sucesso)' }}>online agora</strong> : relativo(c.ultimo_acesso)}</span> },
               { chave: 'pedidos', titulo: 'Pedidos', classe: 'num', ordenar: (c) => c.pedidos, celula: (c) => numero(c.pedidos) },
               { chave: 'total', titulo: 'Total comprado', classe: 'num', ordenar: (c) => c.total_gasto, celula: (c) => reais(c.total_gasto) },
               {

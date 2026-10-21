@@ -50,3 +50,25 @@ export function useContadoresMenu() {
     },
   });
 }
+
+const CINCO_MINUTOS_MS = 5 * 60 * 1000;
+
+// Cliente "online" = último acesso ao app há menos de 5 minutos (o app
+// renova isso a cada 4 minutos enquanto está aberto). Só clientes, sem admin.
+export function useClientesOnline() {
+  return useQuery({
+    queryKey: ['clientes-online'],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('perfis')
+        .select('id, nome, razao_social')
+        .eq('tipo', 'cliente')
+        .gte('ultimo_acesso', new Date(Date.now() - CINCO_MINUTOS_MS).toISOString());
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export const estaOnline = (ultimoAcesso: string | null) => !!ultimoAcesso && Date.now() - new Date(ultimoAcesso).getTime() < CINCO_MINUTOS_MS;

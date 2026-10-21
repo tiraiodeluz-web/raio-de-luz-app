@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import { GraficoBarras, ListaBarras } from '../componentes/grafico';
 import { SeletorPeriodo } from '../componentes/seletor-periodo';
 import { CabecalhoPagina, CaixaErro, Carregando, Cartao, Etiqueta, Kpi, Vazio } from '../componentes/ui';
+import { useClientesOnline } from '../lib/dados';
 import { custoIaDolar, useCotacaoDolar } from '../lib/custo-ia';
 import { dataHora, diaCurto, numero, reais } from '../lib/formato';
 import { calcularPeriodo, type Periodo } from '../lib/periodo';
@@ -35,6 +36,7 @@ export function PaginaInicio() {
   const [periodo, setPeriodo] = useState<Periodo>(calcularPeriodo('30d'));
   const [cotacao] = useCotacaoDolar();
   const navegar = useNavigate();
+  const online = useClientesOnline();
 
   const resumo = useQuery({
     queryKey: ['painel-resumo', periodo.inicio, periodo.fim],
@@ -75,6 +77,12 @@ export function PaginaInicio() {
               valor={numero(r.cadastros_pendentes)}
               detalhe={`${numero(r.novos_cadastros)} novo(s) no período`}
               para="/clientes?aba=pendentes"
+            />
+            <Kpi
+              rotulo={<><span className="ponto-online" /> Online agora</>}
+              valor={numero(online.data?.length ?? 0)}
+              detalhe={online.data?.length ? online.data.slice(0, 2).map((c) => c.razao_social || c.nome).join(', ') + (online.data.length > 2 ? '…' : '') : 'ninguém no app neste momento'}
+              para="/clientes"
             />
             <Kpi rotulo="Produtos vistos" valor={numero(r.visualizacoes)} detalhe="aberturas de produto no app" para="/relatorios" />
             <Kpi rotulo="Assistente IA" valor={reais(custoIa * cotacao)} detalhe={`${numero(r.ia_mensagens)} mensagens`} para="/custo-ia" />
