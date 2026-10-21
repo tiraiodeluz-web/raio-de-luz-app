@@ -1,0 +1,26 @@
+# Publica o painel web (pasta painel/) no EAS Hosting.
+# Endereço: https://raiodeluz-painel.expo.app
+# Roda sozinho quando algo em painel/ muda no branch main, ou na mão:
+# expo.dev → Workflows → "Publicar painel web" → Run.
+name: Publicar painel web
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: ['main']
+    paths: ['painel/**']
+
+jobs:
+  publicar:
+    name: Painel no EAS Hosting
+    steps:
+      - uses: eas/checkout
+      - name: Dependências do app (o EAS lê o app.json)
+        run: npm ci
+      - name: Gerar o painel
+        working_directory: ./painel
+        run: |
+          npm ci
+          npm run build
+      - name: Publicar
+        run: npx eas-cli@latest deploy --export-dir painel/dist --prod --non-interactive --dev-domain raiodeluz-painel

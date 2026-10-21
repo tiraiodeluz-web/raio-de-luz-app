@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
@@ -276,4 +277,16 @@ export function useOpcoesFiltro(origem: 'catalogo' | 'categoria', id: string | u
       return (data ?? []).map((o) => ({ id: o.id, nome: o.nome, qtd: Number(o.qtd) }));
     },
   });
+}
+
+// Conta a abertura da tela do produto (relatórios "mais vistos" e "viu e não
+// comprou" do painel web). Falha em silêncio: não pode atrapalhar a compra.
+export function useRegistrarVisualizacao(produtoId: string | undefined) {
+  useEffect(() => {
+    if (!produtoId) return;
+    supabase.rpc('registrar_visualizacao_produto', { p_produto_id: produtoId }).then(
+      () => {},
+      () => {},
+    );
+  }, [produtoId]);
 }

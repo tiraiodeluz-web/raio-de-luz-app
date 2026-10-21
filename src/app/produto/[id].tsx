@@ -18,7 +18,7 @@ import { useAdicionarAoCarrinho } from '@/lib/carrinho';
 import { compartilharProduto } from '@/lib/compartilhar';
 import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
-import { ehSantoPersonalizado, useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
+import { ehSantoPersonalizado, useProdutoDetalhe, useProdutosRecomendados, useRegistrarVisualizacao, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 import { useRecursos20 } from '@/lib/versao-app';
 import { urlImagem } from '@/lib/imagem';
@@ -27,6 +27,7 @@ export default function DetalheProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
   const { data, isLoading } = useProdutoDetalhe(id);
+  useRegistrarVisualizacao(id);
   const adicionar = useAdicionarAoCarrinho();
   const { mostrarToast } = useToast();
   const { data: favoritosIds } = useFavoritosIds();

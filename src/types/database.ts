@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistente_uso: {
+        Row: {
+          dia: string
+          mensagens: number
+          tokens_entrada: number
+          tokens_saida: number
+          usuario_id: string
+        }
+        Insert: {
+          dia: string
+          mensagens?: number
+          tokens_entrada?: number
+          tokens_saida?: number
+          usuario_id: string
+        }
+        Update: {
+          dia?: string
+          mensagens?: number
+          tokens_entrada?: number
+          tokens_saida?: number
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistente_uso_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           ativo: boolean
@@ -855,6 +887,35 @@ export type Database = {
           },
         ]
       }
+      produto_visualizacoes: {
+        Row: {
+          dia: string
+          produto_id: string
+          usuario_id: string
+          vezes: number
+        }
+        Insert: {
+          dia: string
+          produto_id: string
+          usuario_id?: string
+          vezes?: number
+        }
+        Update: {
+          dia?: string
+          produto_id?: string
+          usuario_id?: string
+          vezes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produto_visualizacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       produtos: {
         Row: {
           ativo: boolean
@@ -1107,7 +1168,15 @@ export type Database = {
       eh_admin: { Args: never; Returns: boolean }
       excluir_minha_conta: { Args: never; Returns: undefined }
       formatar_reais: { Args: { v: number }; Returns: string }
+      importar_produtos_lote: {
+        Args: { p_catalogo_id?: string; p_categoria_id?: string; p_itens: Json }
+        Returns: Json
+      }
       metricas_admin: { Args: never; Returns: Json }
+      painel_resumo: {
+        Args: { p_fim: string; p_inicio: string }
+        Returns: Json
+      }
       pedido_atualizar_vendas: { Args: { p_uid: string }; Returns: undefined }
       pedido_copiar_itens: {
         Args: { p_pedido_id: string; p_uid: string }
@@ -1182,6 +1251,69 @@ export type Database = {
       registrar_dispositivo: {
         Args: { p_plataforma: string; p_token: string }
         Returns: undefined
+      }
+      registrar_visualizacao_produto: {
+        Args: { p_produto_id: string }
+        Returns: undefined
+      }
+      relatorio_clientes: {
+        Args: never
+        Returns: {
+          aprovado: boolean
+          cadastrado_em: string
+          cidade: string
+          cliente_id: string
+          codigo: string
+          dias_sem_comprar: number
+          intervalo_medio_dias: number
+          nome: string
+          pedidos: number
+          primeira_compra: string
+          razao_social: string
+          telefone: string
+          ticket_medio: number
+          total_gasto: number
+          uf: string
+          ultima_compra: string
+          ultimo_acesso: string
+        }[]
+      }
+      relatorio_custo_ia: {
+        Args: { p_fim: string; p_inicio: string }
+        Returns: Json
+      }
+      relatorio_interesse: {
+        Args: { p_fim: string; p_inicio: string; p_min_vezes?: number }
+        Returns: {
+          cliente: string
+          cliente_id: string
+          imagem: string
+          produto: string
+          produto_id: string
+          sku: string
+          telefone: string
+          ultima_vez: string
+          vezes: number
+        }[]
+      }
+      relatorio_produtos: {
+        Args: { p_fim: string; p_inicio: string }
+        Returns: {
+          ativo: boolean
+          categoria: string
+          criado_em: string
+          faturamento: number
+          imagem: string
+          nome: string
+          pedidos: number
+          preco: number
+          produto_id: string
+          sku: string
+          ultima_venda: string
+          unidades: number
+          visitantes: number
+          visualizacoes: number
+        }[]
       }
       remover_dispositivo: { Args: { p_token: string }; Returns: undefined }
       repetir_pedido: {
