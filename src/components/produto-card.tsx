@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAlternarFavorito, useFavoritosIds } from '@/lib/favoritos';
 import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formatacao';
 import type { ProdutoResumo } from '@/lib/produtos';
+import { urlImagem } from '@/lib/imagem';
 
 type Props = {
   produto: ProdutoResumo;
@@ -38,7 +39,7 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/produto/${produto.id}`)}>
       <View style={styles.imagemContainer}>
-        <Image source={{ uri: produto.imagem_principal ?? undefined }} style={styles.imagem} contentFit="contain" />
+        <Image source={{ uri: urlImagem(produto.imagem_principal, 'card') }} style={styles.imagem} contentFit="contain" />
         {temDesconto ? (
           <View style={styles.selo}>
             <ThemedText type="small" style={styles.seloTexto}>

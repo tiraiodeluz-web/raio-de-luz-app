@@ -11,6 +11,7 @@ import { BrandColors, Spacing } from '@/constants/theme';
 import { formatarReais } from '@/lib/formatacao';
 import { usePedidoDetalhe, useRepetirPedido } from '@/lib/pedidos';
 import { useRecursos20 } from '@/lib/versao-app';
+import { urlImagem } from '@/lib/imagem';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -89,7 +90,7 @@ export default function DetalhePedidoScreen() {
           <ThemedText type="smallBold">Itens</ThemedText>
           {itens.map((item) => (
             <View key={item.id} style={styles.item}>
-              <Image source={{ uri: item.imagem_url ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+              <Image source={{ uri: urlImagem(item.imagem_url, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
                   {item.produto_nome}

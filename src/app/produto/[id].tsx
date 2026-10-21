@@ -21,6 +21,7 @@ import { formatarReais, percentualDesconto, precoExibido } from '@/lib/formataca
 import { ehSantoPersonalizado, useProdutoDetalhe, useProdutosRecomendados, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 import { useRecursos20 } from '@/lib/versao-app';
+import { urlImagem } from '@/lib/imagem';
 
 export default function DetalheProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -134,7 +135,7 @@ export default function DetalheProdutoScreen() {
       />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.fotoContainer}>
-          {foto ? <Image source={{ uri: foto }} style={styles.foto} contentFit="contain" /> : null}
+          {foto ? <Image source={{ uri: urlImagem(foto, 'grande') }} style={styles.foto} contentFit="contain" /> : null}
         </View>
 
         {precisaEscolherSanto ? (
@@ -149,7 +150,7 @@ export default function DetalheProdutoScreen() {
                     style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
                     onPress={() => setSantoEscolhido(santo)}>
                     {santo.fotoUrl ? (
-                      <Image source={{ uri: santo.fotoUrl }} style={styles.santoFoto} contentFit="cover" />
+                      <Image source={{ uri: urlImagem(santo.fotoUrl, 'miniatura') }} style={styles.santoFoto} contentFit="cover" />
                     ) : (
                       <View style={styles.santoSemFoto}>
                         <Ionicons name="create-outline" size={22} color={BrandColors.fundoEscuro} />

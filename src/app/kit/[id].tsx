@@ -13,6 +13,7 @@ import { formatarReais } from '@/lib/formatacao';
 import { precoUnitarioItem, totalDoKit, useAdicionarKitAoCarrinho, useKit, type ItemKit } from '@/lib/kits';
 import { useToast } from '@/lib/toast-context';
 import { useRecursos20 } from '@/lib/versao-app';
+import { urlImagem } from '@/lib/imagem';
 
 export default function KitScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -106,7 +107,7 @@ function LinhaItem({ item }: { item: ItemKit }) {
       style={[styles.item, indisponivel && styles.itemIndisponivel]}
       disabled={indisponivel}
       onPress={() => router.push(`/produto/${item.produto.id}`)}>
-      <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+      <Image source={{ uri: urlImagem(item.produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
           {item.quantidade}x {item.produto.nome}

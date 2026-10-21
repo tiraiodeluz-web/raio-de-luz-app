@@ -30,6 +30,7 @@ import { textoConteudoKit, useExcluirKit, useKit, useSalvarKit } from '@/lib/kit
 import { buscarProdutoDetalhe, ehSantoPersonalizado, useProdutos, type ProdutoResumo, type SantoDoProduto } from '@/lib/produtos';
 import { useToast } from '@/lib/toast-context';
 import { enviarImagemParaStorage } from '@/lib/upload-imagem';
+import { urlImagem } from '@/lib/imagem';
 
 type ItemFormulario = {
   chave: string;
@@ -317,7 +318,7 @@ function LinhaItemFormulario({
   return (
     <View style={[styles.item, faltaSanto && styles.itemErro]}>
       <View style={styles.itemTopo}>
-        <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+        <Image source={{ uri: urlImagem(item.produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
         <View style={styles.flex}>
           <ThemedText type="smallBold" numberOfLines={2}>
             {item.produto.nome}
@@ -417,7 +418,7 @@ function BuscaProdutoModal({
           }
           renderItem={({ item: produto }) => (
             <Pressable style={styles.resultado} onPress={() => onEscolher(produto)}>
-              <Image source={{ uri: produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+              <Image source={{ uri: urlImagem(produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.flex}>
                 <ThemedText type="smallBold" numberOfLines={2}>
                   {produto.nome}

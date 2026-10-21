@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth-context';
 import { useAdicionarCarrinhoCompartilhado, useCarrinhoCompartilhado, type ItemCarrinhoCompartilhado } from '@/lib/compartilhar';
 import { formatarReais, precoExibido } from '@/lib/formatacao';
+import { urlImagem } from '@/lib/imagem';
 
 // Tela aberta pelo link de "compartilhar carrinho" (ver lib/compartilhar.ts).
 // Mostra os produtos que a outra pessoa separou e, com um toque, adiciona
@@ -85,7 +86,7 @@ function ItemLinha({ item }: { item: ItemCarrinhoCompartilhado }) {
   const preco = precoExibido(item.preco, item.preco_promocional);
   return (
     <View style={styles.item}>
-      <Image source={{ uri: item.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+      <Image source={{ uri: urlImagem(item.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
           {item.nome}

@@ -13,6 +13,7 @@ import { proximoStatus, useAlterarStatusPedido, usePedidoAdminDetalhe } from '@/
 import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos } from '@/lib/mascaras';
 import { ROTULO_STATUS } from '@/lib/pedidos';
+import { urlImagem } from '@/lib/imagem';
 
 const FORMATADOR_DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -84,7 +85,7 @@ export default function DetalhePedidoAdminScreen() {
           <ThemedText type="smallBold">Itens</ThemedText>
           {itens.map((item) => (
             <View key={item.id} style={styles.item}>
-              <Image source={{ uri: item.imagem_url ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+              <Image source={{ uri: urlImagem(item.imagem_url, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
                   {item.produto_nome}

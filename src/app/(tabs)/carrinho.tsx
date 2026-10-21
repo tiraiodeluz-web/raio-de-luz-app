@@ -26,6 +26,7 @@ import { alterarQuantidadeOffline, itensOfflineParaExibicao, removerItemOffline,
 import { useCompartilharCarrinho } from '@/lib/compartilhar';
 import { formatarReais } from '@/lib/formatacao';
 import { useRecursos20 } from '@/lib/versao-app';
+import { urlImagem } from '@/lib/imagem';
 
 type LinhaCarrinho = ItemCarrinho & { pendente?: boolean };
 
@@ -239,7 +240,7 @@ function ItemLinha({
 
   return (
     <View style={styles.item}>
-      <Image source={{ uri: item.fotoUrl ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+      <Image source={{ uri: urlImagem(item.fotoUrl, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
           {item.produto.nome}

@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useCarrinhoDoCliente } from '@/lib/admin';
 import { formatarReais, precoExibido } from '@/lib/formatacao';
+import { urlImagem } from '@/lib/imagem';
 
 export default function CarrinhoDoClienteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,7 +40,7 @@ export default function CarrinhoDoClienteScreen() {
           ListEmptyComponent={<EstadoVazio icone="cart-outline" titulo="Carrinho vazio" />}
           renderItem={({ item }) => (
             <View style={styles.item}>
-              <Image source={{ uri: item.produto.imagem_principal ?? undefined }} style={styles.itemImagem} contentFit="cover" />
+              <Image source={{ uri: urlImagem(item.produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
                   {item.produto.nome}
