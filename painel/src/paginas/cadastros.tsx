@@ -278,8 +278,14 @@ function ModalCadastro({ config, item, proximaOrdem, usados, aoFechar }: { confi
           </Campo>
         ) : null}
       </div>
-      <Campo rotulo="Foto">
-        <CampoImagem valor={foto} aoMudar={setFoto} pasta={config.pasta} ladoMax={1000} />
+      <Campo
+        rotulo="Foto"
+        ajuda={config.tabela === 'catalogos' ? 'Capa do catálogo: 1600 × 900 px (proporção 16:9). O app mostra a imagem inteira nessa proporção e corta o que passar.' : undefined}>
+        {config.tabela === 'catalogos' ? (
+          <CampoImagem valor={foto} aoMudar={setFoto} pasta={config.pasta} proporcao="16 / 9" largura={320} ladoMax={1600} />
+        ) : (
+          <CampoImagem valor={foto} aoMudar={setFoto} pasta={config.pasta} ladoMax={1000} />
+        )}
       </Campo>
       <Interruptor marcado={ativo} aoMudar={setAtivo} rotulo="Aparece no app" />
       {erro ? <div className="caixa-erro">{erro}</div> : null}
