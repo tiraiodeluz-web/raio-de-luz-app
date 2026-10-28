@@ -1248,6 +1248,8 @@ export type Database = {
         }
       }
       push_segredo_confere: { Args: { p_segredo: string }; Returns: boolean }
+      contar_notificacoes_nao_lidas: { Args: never; Returns: number }
+      marcar_notificacoes_lidas: { Args: never; Returns: undefined }
       registrar_dispositivo: {
         Args: { p_plataforma: string; p_token: string }
         Returns: undefined

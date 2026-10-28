@@ -15,6 +15,7 @@ import { SecaoCabecalho } from '@/components/secao-cabecalho';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Radii, Spacing } from '@/constants/theme';
 import { useKits } from '@/lib/kits';
+import { useNotificacoesNaoLidas } from '@/lib/notificacoes-lidas';
 import { useRecursos20 } from '@/lib/versao-app';
 import {
   useBanners,
@@ -133,6 +134,7 @@ export default function InicioScreen() {
 // logo, campo de busca branco e o sino num círculo branco.
 // O logo é um recorte provisório do print — trocar pelo arquivo original.
 function Cabecalho() {
+  const naoLidas = useNotificacoesNaoLidas();
   return (
     <View style={styles.cabecalho}>
       <Image
@@ -152,8 +154,15 @@ function Cabecalho() {
         onPress={() => router.push('/notificacoes')}
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel="Notificações">
+        accessibilityLabel={naoLidas > 0 ? `Notificações, ${naoLidas} não lidas` : 'Notificações'}>
         <Ionicons name="notifications-outline" size={20} color={BrandColors.fundoEscuro} />
+        {naoLidas > 0 ? (
+          <View style={styles.sinoContador}>
+            <ThemedText type="small" style={styles.sinoContadorTexto}>
+              {naoLidas > 99 ? '99+' : naoLidas}
+            </ThemedText>
+          </View>
+        ) : null}
       </Pressable>
     </View>
   );
@@ -190,6 +199,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  sinoContador: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: '#E5483D',
+    borderWidth: 2,
+    borderColor: BrandColors.fundoEscuro,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sinoContadorTexto: { color: '#ffffff', fontSize: 11, lineHeight: 14, fontWeight: '700' },
   secao: { gap: Spacing.two },
   listaHorizontal: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   carregandoHorizontal: { marginVertical: Spacing.three },

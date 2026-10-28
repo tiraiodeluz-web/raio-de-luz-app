@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,10 +9,17 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { EstadoVazio } from '@/components/estado-vazio';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
+import { useMarcarNotificacoesLidas } from '@/lib/notificacoes-lidas';
 import { useNotificacoes } from '@/lib/produtos';
 
 export default function NotificacoesScreen() {
   const notificacoes = useNotificacoes();
+  const { mutate: marcarLidas } = useMarcarNotificacoesLidas();
+
+  // Abrir a tela zera o contador do sininho e do ícone do app.
+  useEffect(() => {
+    marcarLidas();
+  }, [marcarLidas]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

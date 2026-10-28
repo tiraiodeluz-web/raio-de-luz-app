@@ -76,7 +76,7 @@ export default function KitScreen() {
             {kit.nome}
           </ThemedText>
           <ThemedText type="smallBold" style={styles.tituloItens}>
-            Itens do kit
+            Produtos do kit
           </ThemedText>
           {kit.itens.map((item) => (
             <LinhaItem key={item.id} item={item} />
