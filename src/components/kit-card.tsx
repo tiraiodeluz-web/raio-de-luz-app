@@ -9,6 +9,7 @@ import { totalDoKit, type Kit } from '@/lib/kits';
 
 export function KitCard({ kit }: { kit: Kit }) {
   const quantidadeItens = kit.itens.length;
+  const quantidadeProdutos = kit.itens.reduce((soma, item) => soma + item.quantidade, 0);
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/kit/${kit.id}`)}>
       <View style={styles.imagemContainer}>
@@ -24,7 +25,7 @@ export function KitCard({ kit }: { kit: Kit }) {
           {kit.nome}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {quantidadeItens} {quantidadeItens === 1 ? 'item' : 'itens'}
+          {quantidadeItens} {quantidadeItens === 1 ? 'item' : 'itens'} · {quantidadeProdutos} {quantidadeProdutos === 1 ? 'produto' : 'produtos'}
         </ThemedText>
         <ThemedText type="smallBold" style={styles.preco}>
           {formatarReais(totalDoKit(kit.itens))}
