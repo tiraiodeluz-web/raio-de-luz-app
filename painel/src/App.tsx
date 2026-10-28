@@ -14,6 +14,7 @@ import { PaginaErros } from './paginas/erros';
 import { PaginaKits } from './paginas/kits';
 import { PaginaInicio } from './paginas/inicio';
 import { PaginaLogin } from './paginas/login';
+import { PaginaNotificacoes } from './paginas/notificacoes';
 import { PaginaPedido } from './paginas/pedido';
 import { PaginaPedidos } from './paginas/pedidos';
 import { PaginaProduto } from './paginas/produto';
@@ -51,6 +52,7 @@ export function App() {
         <Route path="categorias" element={<PaginaCategorias />} />
         <Route path="catalogos" element={<PaginaCatalogos />} />
         <Route path="santos" element={<PaginaSantos />} />
+        <Route path="notificacoes" element={<PaginaNotificacoes />} />
         <Route path="kits" element={<PaginaKits />} />
         <Route path="banners" element={<PaginaBanners />} />
         <Route path="relatorios" element={<PaginaRelatorios />} />
