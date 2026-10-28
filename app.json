@@ -35,12 +35,13 @@
         {
           "backgroundColor": "#010534",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 250
+          "imageWidth": 288
         }
       ],
       [
         "expo-notifications",
         {
+          "icon": "./assets/images/notification-icon.png",
           "color": "#C9A227",
           "defaultChannel": "padrao-v2"
         }
