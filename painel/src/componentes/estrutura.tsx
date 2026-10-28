@@ -32,6 +32,7 @@ export function Estrutura() {
         { para: '/categorias', rotulo: 'Categorias', icone: '🗂️' },
         { para: '/catalogos', rotulo: 'Catálogos', icone: '📚' },
         { para: '/santos', rotulo: 'Santos', icone: '✝️' },
+        { para: '/kits', rotulo: 'Kits', icone: '🎁' },
         { para: '/banners', rotulo: 'Banners da home', icone: '🖼️' },
       ],
     },

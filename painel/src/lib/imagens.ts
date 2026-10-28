@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export { urlImagem } from '@/lib/imagem';
 
-export type PastaImagem = 'produtos' | 'santos-produto' | 'banners' | 'categorias' | 'catalogos' | 'santos';
+export type PastaImagem = 'produtos' | 'santos-produto' | 'banners' | 'categorias' | 'catalogos' | 'santos' | 'kits';
 
 // Reduz a foto (lado maior até `ladoMax`) e converte pra WebP antes de
 // subir: uma foto de celular de 4 MB vira ~150 KB, e o app carrega rápido.
