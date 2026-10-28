@@ -32,6 +32,7 @@ type Mensagem = {
   // Sem isso o FCM entrega como mensagem "normal" (só gaveta, sem acender
   // tela nem banner) — precisa de "high" pra virar heads-up de verdade.
   priority: "high";
+  badge?: number;
   data: Record<string, unknown>;
   richContent?: { image: string };
 };
@@ -68,8 +69,12 @@ Deno.serve(async (req) => {
     try {
       const tokens = await tokensDe(db, n.destinatario_id);
       const rota = n.rota_destino ?? (n.catalogo_destino_id ? `/catalogo/${n.catalogo_destino_id}` : null);
+      // Número no ícone do app = notificações não lidas de cada pessoa.
+      const { data: badges } = await db.rpc("badge_por_token", { p_tokens: tokens });
+      const badgePorToken = new Map<string, number>((badges ?? []).map((b: { token: string; qtd: number }) => [b.token, b.qtd]));
       const mensagens: Mensagem[] = tokens.map((to) => ({
         to,
+        ...(badgePorToken.has(to) ? { badge: badgePorToken.get(to) } : {}),
         title: n.titulo,
         body: n.corpo,
         sound: "default",
