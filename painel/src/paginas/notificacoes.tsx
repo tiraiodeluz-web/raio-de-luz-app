@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { useAvisar } from '../componentes/avisos';
 import { CampoImagem } from '../componentes/campo-imagem';
+import { montarRota, SeletorLink, type TipoLinkInterno } from '../componentes/seletor-link';
 import { AreaTexto, Botao, CabecalhoPagina, Campo, CaixaErro, Cartao, Carregando, Entrada, Vazio } from '../componentes/ui';
 import { mensagemErro } from '../lib/erros';
 import { dataHora } from '../lib/formato';
@@ -16,6 +17,8 @@ export function PaginaNotificacoes() {
   const [legenda, setLegenda] = useState('');
   const [corpo, setCorpo] = useState('');
   const [imagem, setImagem] = useState<string | null>(null);
+  const [tipoLink, setTipoLink] = useState<TipoLinkInterno>('nenhum');
+  const [valorLink, setValorLink] = useState('');
   const [erro, setErro] = useState<string | null>(null);
 
   const historico = useQuery({
@@ -23,7 +26,7 @@ export function PaginaNotificacoes() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('notificacoes')
-        .select('id, titulo, corpo, imagem_url, criado_em')
+        .select('id, titulo, corpo, imagem_url, rota_destino, criado_em')
         .is('destinatario_id', null)
         .is('evento', null)
         .order('criado_em', { ascending: false })
@@ -41,6 +44,7 @@ export function PaginaNotificacoes() {
         legenda: legenda.trim() || null,
         corpo: corpo.trim(),
         imagem_url: imagem,
+        rota_destino: montarRota(tipoLink, valorLink),
         destinatario_id: null,
         criado_por: sessao.user?.id,
       });
@@ -51,6 +55,8 @@ export function PaginaNotificacoes() {
       setLegenda('');
       setCorpo('');
       setImagem(null);
+      setTipoLink('nenhum');
+      setValorLink('');
       queryClient.invalidateQueries({ queryKey: ['notificacoes-enviadas'] });
       avisar('Notificação enviada pra todos os clientes', 'sucesso');
     },
@@ -60,6 +66,7 @@ export function PaginaNotificacoes() {
   function confirmar() {
     setErro(null);
     if (!titulo.trim() || !corpo.trim()) return setErro('Preencha ao menos o título e a mensagem.');
+    if (tipoLink !== 'nenhum' && !valorLink) return setErro('Escolha pra onde a notificação leva, ou deixe em "Só o app".');
     if (!confirm('Enviar essa notificação agora pra TODOS os clientes aprovados? Não dá pra desfazer.')) return;
     enviar.mutate();
   }
@@ -82,6 +89,7 @@ export function PaginaNotificacoes() {
             <Campo rotulo="Imagem (opcional, 16:9)">
               <CampoImagem valor={imagem} aoMudar={setImagem} pasta="notificacoes" proporcao="16 / 9" largura={320} ladoMax={1200} />
             </Campo>
+            <SeletorLink tipo={tipoLink} valor={valorLink} aoMudar={(t, v) => { setTipoLink(t); setValorLink(v); }} />
             {erro ? <div className="caixa-erro">{erro}</div> : null}
             <div className="linha">
               <Botao variante="primario" onClick={confirmar} carregando={enviar.isPending}>
@@ -105,7 +113,10 @@ export function PaginaNotificacoes() {
                   <div style={{ flex: 1 }}>
                     <strong>{n.titulo}</strong>
                     <div className="texto-2 pequeno">{n.corpo}</div>
-                    <div className="texto-3 pequeno">{dataHora(n.criado_em)}</div>
+                    <div className="texto-3 pequeno">
+                      {dataHora(n.criado_em)}
+                      {n.rota_destino ? ' · 🔗 com link' : ''}
+                    </div>
                   </div>
                 </div>
               ))}
