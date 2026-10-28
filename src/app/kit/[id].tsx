@@ -75,21 +75,18 @@ export default function KitScreen() {
           <ThemedText type="title" style={styles.nome}>
             {kit.nome}
           </ThemedText>
-          <View style={styles.linhaTotal}>
-            <ThemedText themeColor="textSecondary">Total do kit</ThemedText>
-            <ThemedText type="title" style={styles.total}>
-              {formatarReais(totalDoKit(kit.itens))}
-            </ThemedText>
-          </View>
-
-          {kit.descricao ? <ThemedText style={styles.descricao}>{kit.descricao}</ThemedText> : null}
-
           <ThemedText type="smallBold" style={styles.tituloItens}>
             Itens do kit
           </ThemedText>
           {kit.itens.map((item) => (
             <LinhaItem key={item.id} item={item} />
           ))}
+          <View style={[styles.linhaTotal, styles.totalFinal]}>
+            <ThemedText themeColor="textSecondary">Total do kit</ThemedText>
+            <ThemedText type="title" style={styles.total}>
+              {formatarReais(totalDoKit(kit.itens))}
+            </ThemedText>
+          </View>
         </View>
       </ScrollView>
 
@@ -135,7 +132,7 @@ const styles = StyleSheet.create({
   nome: { fontSize: 22, lineHeight: 28, color: BrandColors.fundoEscuro },
   linhaTotal: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
   total: { fontSize: 24, lineHeight: 30, color: BrandColors.fundoEscuro },
-  descricao: { lineHeight: 22 },
+  totalFinal: { marginTop: Spacing.two, justifyContent: 'space-between', alignItems: 'center' },
   tituloItens: { marginTop: Spacing.two },
   item: {
     flexDirection: 'row',
