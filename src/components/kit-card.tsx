@@ -25,7 +25,7 @@ export function KitCard({ kit }: { kit: Kit }) {
           {kit.nome}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {quantidadeItens} {quantidadeItens === 1 ? 'item' : 'itens'} · {quantidadeProdutos} {quantidadeProdutos === 1 ? 'produto' : 'produtos'}
+          {quantidadeItens} {quantidadeItens === 1 ? 'produto' : 'produtos'} · {quantidadeProdutos} {quantidadeProdutos === 1 ? 'item' : 'itens'}
         </ThemedText>
         <ThemedText type="smallBold" style={styles.preco}>
           {formatarReais(totalDoKit(kit.itens))}
