@@ -6,6 +6,8 @@
 // O segredo fica em privado.config('push_segredo') e é conferido via RPC.
 // Variável opcional (Supabase → Edge Functions → Secrets):
 //   EXPO_ACCESS_TOKEN  só se "Enhanced push security" estiver ligado no Expo
+//   RESEND_API_KEY     chave do Resend (envio de e-mail quando o cadastro é aprovado);
+//                      sem ela, o e-mail é simplesmente pulado
 // SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já existem por padrão.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -21,6 +23,7 @@ type Notificacao = {
   rota_destino: string | null;
   catalogo_destino_id: string | null;
   destinatario_id: string | null;
+  evento: string | null;
 };
 
 type Mensagem = {
@@ -56,7 +59,7 @@ Deno.serve(async (req) => {
   const ids = fila.map((f: { notificacao_id: string }) => f.notificacao_id);
   const { data: notifs } = await db
     .from("notificacoes")
-    .select("id,titulo,corpo,imagem_url,rota_destino,catalogo_destino_id,destinatario_id")
+    .select("id,titulo,corpo,imagem_url,rota_destino,catalogo_destino_id,destinatario_id,evento")
     .in("id", ids);
 
   let enviados = 0;
@@ -89,6 +92,11 @@ Deno.serve(async (req) => {
       }
       await marcar(db, item.id, "enviado", null);
       enviados += mensagens.length;
+      // E-mail junto do push quando o cadastro é aprovado. Falha aqui nunca
+      // derruba o envio do push (já marcado como enviado).
+      if (n.evento === "cadastro_aprovado" && n.destinatario_id) {
+        await emailCadastroAprovado(db, n.destinatario_id).catch((e) => console.error("[email aprovado]", String(e)));
+      }
     } catch (e) {
       await marcar(db, item.id, "erro", String(e));
     }
@@ -136,4 +144,41 @@ async function marcar(db: ReturnType<typeof createClient>, id: number, status: s
 
 function resposta(corpo: unknown, status = 200) {
   return new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json" } });
+}
+
+const EMAIL_REMETENTE = "Raio de Luz Religiosos <nao-responda@raiodeluzreligiosos.com.br>";
+
+async function emailCadastroAprovado(db: ReturnType<typeof createClient>, usuarioId: string) {
+  const chave = Deno.env.get("RESEND_API_KEY");
+  if (!chave) return;
+  const { data: usuario } = await db.auth.admin.getUserById(usuarioId);
+  const email = usuario?.user?.email;
+  if (!email) return;
+  const { data: perfil } = await db.from("perfis").select("nome").eq("id", usuarioId).maybeSingle();
+  const nome = escaparHtml((perfil?.nome ?? "").split(" ")[0] || "cliente");
+
+  const html = `<div style="background:#f3f1eb;padding:24px 12px;font-family:Helvetica,Arial,sans-serif">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden">
+    <div style="background:#010534;padding:22px;text-align:center">
+      <div style="color:#C9A227;font-size:20px;font-weight:700">Raio de Luz Religiosos</div>
+    </div>
+    <div style="padding:28px 24px;color:#1b1d2a;font-size:15px;line-height:1.55">
+      <h2 style="margin:0 0 12px;color:#010534;font-size:20px">Parabéns, seu cadastro foi aprovado! 🎉</h2>
+      <p style="margin:0 0 12px">Olá, ${nome}! Seu cadastro no aplicativo da <b>Raio de Luz Religiosos</b> já está liberado.</p>
+      <p style="margin:0 0 12px">Abra o aplicativo, entre com seu e-mail e senha e confira nossos milhares de produtos.</p>
+      <p style="margin:0;font-size:13px;color:#666">Qualquer dúvida, é só chamar a gente pelo WhatsApp.</p>
+    </div>
+  </div>
+</div>`;
+
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${chave}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: EMAIL_REMETENTE, to: [email], subject: "Seu cadastro foi aprovado · Raio de Luz Religiosos", html }),
+  });
+  if (!r.ok) throw new Error(`Resend respondeu ${r.status}: ${await r.text()}`);
+}
+
+function escaparHtml(t: string) {
+  return t.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
