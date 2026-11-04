@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Spacing } from '@/constants/theme';
-import { ehSantoPersonalizado, type SantoDoProduto } from '@/lib/produtos';
+import type { SantoDoProduto } from '@/lib/produtos';
 import { urlImagem } from '@/lib/imagem';
 
 type Props = {
@@ -28,14 +28,14 @@ export function SeletorSantoSheet({ visivel, santos, carregando, onFechar, onSel
             Escolha o santo
           </ThemedText>
           <FlatList
-            data={santos.filter((item) => item.fotoUrl || ehSantoPersonalizado(item))}
+            data={santos}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.lista}
             renderItem={({ item }) => (
               <Pressable style={styles.item} onPress={() => onSelecionar(item)} disabled={carregando}>
                 <View style={styles.fotoContainer}>
-                  {item.fotoUrl ? (
-                    <Image source={{ uri: urlImagem(item.fotoUrl, 'miniatura') }} style={styles.foto} contentFit="cover" />
+                  {item.miniaturaUrl ? (
+                    <Image source={{ uri: urlImagem(item.miniaturaUrl, 'miniatura') }} style={styles.foto} contentFit="cover" />
                   ) : (
                     <View style={styles.semFoto}>
                       <Ionicons name="create-outline" size={20} color={BrandColors.fundoEscuro} />

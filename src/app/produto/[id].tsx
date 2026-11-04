@@ -142,7 +142,6 @@ export default function DetalheProdutoScreen() {
         {precisaEscolherSanto ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listaSantos}>
             {santos
-              .filter((santo) => santo.fotoUrl || ehSantoPersonalizado(santo))
               .map((santo) => {
                 const selecionado = santo.id === santoEscolhido?.id;
                 return (
@@ -150,8 +149,8 @@ export default function DetalheProdutoScreen() {
                     key={santo.id}
                     style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
                     onPress={() => setSantoEscolhido(santo)}>
-                    {santo.fotoUrl ? (
-                      <Image source={{ uri: urlImagem(santo.fotoUrl, 'miniatura') }} style={styles.santoFoto} contentFit="cover" />
+                    {santo.miniaturaUrl ? (
+                      <Image source={{ uri: urlImagem(santo.miniaturaUrl, 'miniatura') }} style={styles.santoFoto} contentFit="cover" />
                     ) : (
                       <View style={styles.santoSemFoto}>
                         <Ionicons name="create-outline" size={22} color={BrandColors.fundoEscuro} />

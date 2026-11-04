@@ -182,7 +182,11 @@ export function useProdutos(filtro: FiltroProdutos) {
   });
 }
 
-export type SantoDoProduto = { id: string; nome: string; fotoUrl: string | null; codigo: string | null };
+// fotoUrl: foto da variação (produto com aquele santo), usada na foto grande.
+// miniaturaUrl: quadradinho do seletor = foto do próprio santo (cadastrada no
+// painel); sem ela, a foto do produto. "Personalizado" sem foto fica sem miniatura
+// (o seletor mostra um ícone de edição).
+export type SantoDoProduto = { id: string; nome: string; fotoUrl: string | null; miniaturaUrl: string | null; codigo: string | null };
 
 // Santo "Personalizado" (codigo 15, cadastrado no banco) — quem escolhe
 // precisa digitar como quer a personalização, em vez de só selecionar.
@@ -212,11 +216,12 @@ export async function buscarProdutoDetalhe(id: string): Promise<ProdutoDetalhe> 
       .map((linha) => {
         const santo = linha.santos as { id: string; nome: string; codigo: string | null; foto_url: string | null; ordem: number } | null;
         if (!santo) return null;
-        return { id: santo.id, nome: santo.nome, codigo: santo.codigo, fotoUrl: linha.foto_url ?? santo.foto_url, ordem: santo.ordem };
+        const miniaturaUrl = santo.foto_url ?? (santo.codigo === '15' ? null : produto.imagem_principal);
+        return { id: santo.id, nome: santo.nome, codigo: santo.codigo, fotoUrl: linha.foto_url ?? santo.foto_url, miniaturaUrl, ordem: santo.ordem };
       })
       .filter((s): s is SantoDoProduto & { ordem: number } => s !== null)
       .sort((a, b) => a.ordem - b.ordem)
-      .map(({ id: santoId, nome, codigo, fotoUrl }) => ({ id: santoId, nome, codigo, fotoUrl }));
+      .map(({ id: santoId, nome, codigo, fotoUrl, miniaturaUrl }) => ({ id: santoId, nome, codigo, fotoUrl, miniaturaUrl }));
   }
 
   return { produto, santos };
