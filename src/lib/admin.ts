@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { buscarFotosDosSantos } from '@/lib/fotos-santo';
 import { supabase } from '@/lib/supabase';
 import type { Enums } from '@/types/database';
 
@@ -229,6 +230,7 @@ export type ItemCarrinhoAdmin = {
   quantidade: number;
   produto: { id: string; nome: string; preco: number; preco_promocional: number | null; imagem_principal: string | null };
   santo: { id: string; nome: string } | null;
+  fotoUrl: string | null;
 };
 
 export function useCarrinhoDoCliente(clienteId: string | undefined) {
@@ -238,15 +240,20 @@ export function useCarrinhoDoCliente(clienteId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('carrinho_itens')
-        .select(`id, quantidade, produtos ( id, nome, preco, preco_promocional, imagem_principal ), santos ( id, nome )`)
+        .select(`id, quantidade, produto_id, produtos ( id, nome, preco, preco_promocional, imagem_principal ), santos ( id, nome )`)
         .eq('usuario_id', clienteId as string)
         .order('criado_em', { ascending: true });
       if (error) throw error;
+      const fotos = await buscarFotosDosSantos(
+        (data ?? []).map((l) => ({ produtoId: l.produto_id, santoId: (l.santos as { id: string } | null)?.id ?? null })),
+      );
       return (data ?? [])
         .map((linha) => {
           const produto = linha.produtos as ItemCarrinhoAdmin['produto'] | null;
           if (!produto) return null;
-          return { id: linha.id, quantidade: linha.quantidade, produto, santo: linha.santos as ItemCarrinhoAdmin['santo'] };
+          const santo = linha.santos as ItemCarrinhoAdmin['santo'];
+          const fotoUrl = (santo && fotos.get(`${linha.produto_id}|${santo.id}`)) || produto.imagem_principal;
+          return { id: linha.id, quantidade: linha.quantidade, produto, santo, fotoUrl };
         })
         .filter((item): item is ItemCarrinhoAdmin => item !== null);
     },

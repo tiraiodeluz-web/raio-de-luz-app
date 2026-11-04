@@ -104,7 +104,7 @@ function LinhaItem({ item }: { item: ItemKit }) {
       style={[styles.item, indisponivel && styles.itemIndisponivel]}
       disabled={indisponivel}
       onPress={() => router.push(`/produto/${item.produto.id}`)}>
-      <Image source={{ uri: urlImagem(item.produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
+      <Image source={{ uri: urlImagem(item.fotoUrl, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
       <View style={styles.itemInfo}>
         <ThemedText type="smallBold" numberOfLines={2}>
           {item.quantidade}x {item.produto.nome}

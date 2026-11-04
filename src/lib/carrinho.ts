@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { adicionarItemOffline, type ProdutoSnapshotOffline } from '@/lib/carrinho-offline';
 import { precoExibido } from '@/lib/formatacao';
+import { buscarFotosDosSantos } from '@/lib/fotos-santo';
 import { supabase } from '@/lib/supabase';
 
 type AdicionarAoCarrinhoParams = {
@@ -151,19 +152,7 @@ export function useItensCarrinho() {
 
       const linhas = (data ?? []).filter((linha) => linha.produtos !== null);
 
-      const produtoIds = [...new Set(linhas.filter((l) => l.santo_id).map((l) => l.produto_id))];
-      const fotosPorSanto = new Map<string, string>();
-      if (produtoIds.length > 0) {
-        const { data: variantes, error: erroVariantes } = await supabase
-          .from('produto_santos')
-          .select('produto_id, santo_id, foto_url')
-          .in('produto_id', produtoIds)
-          .not('foto_url', 'is', null);
-        if (erroVariantes) throw erroVariantes;
-        for (const v of variantes ?? []) {
-          if (v.foto_url) fotosPorSanto.set(`${v.produto_id}|${v.santo_id}`, v.foto_url);
-        }
-      }
+      const fotosPorSanto = await buscarFotosDosSantos(linhas.map((l) => ({ produtoId: l.produto_id, santoId: l.santo_id })));
 
       return linhas.map((linha) => {
         const produto = linha.produtos as ItemCarrinho['produto'];

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { precoExibido } from '@/lib/formatacao';
+import { buscarFotosDosSantos } from '@/lib/fotos-santo';
 import { supabase } from '@/lib/supabase';
 
 export type ItemKit = {
@@ -19,6 +20,8 @@ export type ItemKit = {
     personalizavel: boolean;
   };
   santo: { id: string; nome: string } | null;
+  // Foto do santo fixado no item (quando existir); senão, a do produto.
+  fotoUrl: string | null;
 };
 
 export type Kit = {
@@ -47,7 +50,7 @@ type LinhaKit = {
 function paraKit(linha: LinhaKit): Kit {
   const itens = linha.kit_itens
     .filter((i) => i.produtos !== null)
-    .map((i) => ({ id: i.id, quantidade: i.quantidade, ordem: i.ordem, produto: i.produtos as ItemKit['produto'], santo: i.santos }))
+    .map((i) => ({ id: i.id, quantidade: i.quantidade, ordem: i.ordem, produto: i.produtos as ItemKit['produto'], santo: i.santos, fotoUrl: (i.produtos as ItemKit['produto']).imagem_principal }))
     .sort((a, b) => a.ordem - b.ordem);
   return { id: linha.id, nome: linha.nome, descricao: linha.descricao, imagem_url: linha.imagem_url, ativo: linha.ativo, itens };
 }
@@ -67,6 +70,15 @@ export function textoConteudoKit(itens: { quantidade: number; nome: string; sant
   return ['Esse kit contém:', ...linhas].join('\n');
 }
 
+// Itens com santo fixado mostram a foto desse santo no lugar da do produto.
+async function comFotosDosSantos(kits: Kit[]): Promise<Kit[]> {
+  const fotos = await buscarFotosDosSantos(kits.flatMap((k) => k.itens.map((i) => ({ produtoId: i.produto.id, santoId: i.santo?.id ?? null }))));
+  return kits.map((k) => ({
+    ...k,
+    itens: k.itens.map((i) => ({ ...i, fotoUrl: (i.santo && fotos.get(`${i.produto.id}|${i.santo.id}`)) || i.produto.imagem_principal })),
+  }));
+}
+
 export function useKits() {
   return useQuery({
     queryKey: ['kits', 'vitrine'],
@@ -75,7 +87,7 @@ export function useKits() {
       // vitrine mostre só o que o cliente vê.
       const { data, error } = await supabase.from('kits').select(SELECT_KIT).eq('ativo', true).order('criado_em', { ascending: false });
       if (error) throw error;
-      return (data as unknown as LinhaKit[]).map(paraKit);
+      return comFotosDosSantos((data as unknown as LinhaKit[]).map(paraKit));
     },
   });
 }
@@ -98,7 +110,9 @@ export function useKit(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase.from('kits').select(SELECT_KIT).eq('id', id as string).maybeSingle();
       if (error) throw error;
-      return data ? paraKit(data as unknown as LinhaKit) : null;
+      if (!data) return null;
+      const [kit] = await comFotosDosSantos([paraKit(data as unknown as LinhaKit)]);
+      return kit;
     },
   });
 }

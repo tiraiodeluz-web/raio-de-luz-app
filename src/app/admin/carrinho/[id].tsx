@@ -40,7 +40,7 @@ export default function CarrinhoDoClienteScreen() {
           ListEmptyComponent={<EstadoVazio icone="cart-outline" titulo="Carrinho vazio" />}
           renderItem={({ item }) => (
             <View style={styles.item}>
-              <Image source={{ uri: urlImagem(item.produto.imagem_principal, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
+              <Image source={{ uri: urlImagem(item.fotoUrl, 'miniatura') }} style={styles.itemImagem} contentFit="cover" />
               <View style={styles.itemInfo}>
                 <ThemedText type="smallBold" numberOfLines={2}>
                   {item.produto.nome}
