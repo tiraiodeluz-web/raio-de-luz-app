@@ -16,7 +16,7 @@ export default function PoliticaPrivacidadeScreen() {
       <CabecalhoVoltar titulo="Política de privacidade" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText themeColor="textSecondary" style={styles.atualizacao}>
-          Última atualização: 15 de julho de 2026
+          Última atualização: 5 de novembro de 2026
         </ThemedText>
 
         <ThemedText themeColor="textSecondary">
@@ -30,8 +30,12 @@ export default function PoliticaPrivacidadeScreen() {
         <Secao titulo="1. Dados coletados">
           Para utilização do aplicativo, poderão ser coletados e armazenados os seguintes dados: nome completo,
           razão social, CNPJ, e-mail, telefone, CEP, endereço completo, cidade e estado, histórico de pedidos
-          realizados e dados necessários para autenticação no aplicativo.{'\n\n'}O aplicativo não coleta dados de
-          localização (GPS), não acessa a câmera e não acessa a galeria de fotos do dispositivo.
+          realizados e dados necessários para autenticação no aplicativo. Também são tratados: as mensagens e as
+          fotos que você enviar ao assistente de compras (RDL AI); o identificador do aparelho para envio de
+          notificações; e registros técnicos de erros e de uso do aplicativo (por exemplo, produtos visualizados e
+          data do último acesso).{'\n\n'}O aplicativo não coleta dados de localização (GPS). A câmera e a galeria de
+          fotos só são acessadas quando você escolhe enviar uma foto ao assistente, e somente a foto escolhida é
+          enviada.
         </Secao>
 
         <Secao titulo="2. Finalidade da coleta">
@@ -51,7 +55,9 @@ export default function PoliticaPrivacidadeScreen() {
         <Secao titulo="4. Compartilhamento de dados">
           Os dados pessoais poderão ser compartilhados somente quando necessário para a prestação dos serviços,
           incluindo: plataforma de hospedagem responsável pela infraestrutura do aplicativo; serviços de consulta de
-          CEP; serviços de consulta de CNPJ; prestadores de serviços essenciais ao funcionamento do aplicativo; e
+          CEP; serviços de consulta de CNPJ; serviço de inteligência artificial que responde às mensagens do
+          assistente (as mensagens e fotos enviadas ao assistente são processadas por esse prestador); serviços de
+          envio de notificações e de e-mails; prestadores de serviços essenciais ao funcionamento do aplicativo; e
           autoridades públicas, quando exigido por lei.{'\n\n'}A RAIO DE LUZ ARTIGOS RELIGIOSOS LTDA - ME não
           comercializa nem vende dados pessoais a terceiros.
         </Secao>

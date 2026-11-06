@@ -30,10 +30,18 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://zjkhlvomxhtafajbzbjb.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }

@@ -35,7 +35,7 @@ export default function ContaScreen() {
   function confirmarExclusao() {
     Alert.alert(
       'Excluir conta',
-      'Isso apaga seu cadastro, carrinho e endereços permanentemente. Pedidos já feitos ficam guardados sem o seu nome. Essa ação não pode ser desfeita.',
+      'Isso apaga seu cadastro, carrinho e endereços permanentemente. Os pedidos já feitos continuam guardados pela empresa (com razão social, CNPJ e endereço de entrega) para fins fiscais, sem ligação com sua conta. Essa ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Excluir conta', style: 'destructive', onPress: excluirConta },

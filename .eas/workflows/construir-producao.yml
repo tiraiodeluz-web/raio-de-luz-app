@@ -1,0 +1,15 @@
+# Gera o pacote (.aab) do app para a Play Store, no perfil "production" do eas.json.
+# Rodar pelo expo.dev → Workflows → "Construir app para a Play Store" → Run.
+# O número da versão (versionCode) sobe sozinho a cada build.
+name: Construir app para a Play Store
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  construir:
+    name: Android (production, .aab)
+    type: build
+    params:
+      platform: android
+      profile: production

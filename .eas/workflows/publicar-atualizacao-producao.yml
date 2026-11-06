@@ -1,0 +1,26 @@
+# Publica uma atualização OTA (sem reinstalar) para quem instalou o app pela
+# Play Store (canal "production"). O canal "preview" continua sendo o dos APKs
+# de teste: ver publicar-atualizacao.yml.
+# Só rode depois de testar a mesma mudança no canal preview.
+name: Publicar atualização (produção)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mensagem:
+        type: string
+        description: O que mudou nesta atualização
+        required: false
+
+jobs:
+  atualizacao:
+    name: Atualização Android (production)
+    type: update
+    environment: production
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://zjkhlvomxhtafajbzbjb.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R
+    params:
+      channel: production
+      platform: android
+      message: ${{ inputs.mensagem || 'Atualização' }}
