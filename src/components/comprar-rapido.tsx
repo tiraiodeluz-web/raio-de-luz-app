@@ -49,10 +49,10 @@ export function ComprarRapido({ produto, onFechar }: Props) {
 
   useEffect(() => {
     if (session && semPersonalizacao) {
-      adicionar.mutate(
-        { produtoId: produto.id, produtoSnapshot: snapshotProduto },
-        { onSuccess: aoAdicionar, onError: aoFalhar },
-      );
+      // mutateAsync (e não mutate com callbacks): este componente é desmontado
+      // logo abaixo, e o React Query descarta os callbacks do mutate() quando
+      // isso acontece — o aviso "Adicionado ao carrinho!" nunca aparecia.
+      adicionar.mutateAsync({ produtoId: produto.id, produtoSnapshot: snapshotProduto }).then(aoAdicionar, aoFalhar);
       onFechar();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,16 +75,15 @@ export function ComprarRapido({ produto, onFechar }: Props) {
           router.push(`/produto/${produto.id}`);
           return;
         }
-        adicionar.mutate(
-          {
+        adicionar
+          .mutateAsync({
             produtoId: produto.id,
             santoId: santo.id,
             santoNome: santo.nome,
             fotoUrl: santo.fotoUrl,
             produtoSnapshot: snapshotProduto,
-          },
-          { onSuccess: aoAdicionar, onError: aoFalhar },
-        );
+          })
+          .then(aoAdicionar, aoFalhar);
       }}
     />
   );

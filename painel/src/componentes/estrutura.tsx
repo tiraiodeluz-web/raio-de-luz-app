@@ -35,6 +35,7 @@ export function Estrutura() {
         { para: '/santos', rotulo: 'Santos', icone: '✝️' },
         { para: '/kits', rotulo: 'Kits', icone: '🎁' },
         { para: '/banners', rotulo: 'Banners da home', icone: '🖼️' },
+        { para: '/icone', rotulo: 'Ícone do app', icone: '📱' },
       ],
     },
     {

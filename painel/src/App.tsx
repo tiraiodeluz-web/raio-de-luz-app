@@ -12,6 +12,7 @@ import { PaginaCupons } from './paginas/cupons';
 import { PaginaCustoIa } from './paginas/custo-ia';
 import { PaginaErros } from './paginas/erros';
 import { PaginaKits } from './paginas/kits';
+import { PaginaIcone } from './paginas/icone';
 import { PaginaInicio } from './paginas/inicio';
 import { PaginaLogin } from './paginas/login';
 import { PaginaNotificacoes } from './paginas/notificacoes';
@@ -53,6 +54,7 @@ export function App() {
         <Route path="catalogos" element={<PaginaCatalogos />} />
         <Route path="santos" element={<PaginaSantos />} />
         <Route path="notificacoes" element={<PaginaNotificacoes />} />
+        <Route path="icone" element={<PaginaIcone />} />
         <Route path="kits" element={<PaginaKits />} />
         <Route path="banners" element={<PaginaBanners />} />
         <Route path="relatorios" element={<PaginaRelatorios />} />
