@@ -7,6 +7,12 @@ Atualizado em 06/11/2026. App: **Raio de Luz Religiosos** · pacote `com.raiodel
 - Exclusão de conta: https://raiodeluz-painel.expo.app/excluir-conta.html
 (O texto da política foi atualizado em 05/11/2026 para refletir o assistente de IA, fotos enviadas ao assistente, notificações e registros técnicos. Revisar/aprovar.)
 
+## 1.1 Decisão (06/11/2026): substituir o app do Bubble
+O pacote `com.raiodeluzreligiosos.mobile` já existia na Play Console (app do Bubble, último envio em 22/07/2026, teste interno). O app novo **substitui** esse cadastro. Consequências:
+- **versionCode:** a Expo agora usa o do `app.json` (`android.versionCode`, hoje 1000; `eas.json` com `appVersionSource: local`). Para cada nova versão enviada à Play, aumentar esse número (a Play recusa número repetido ou menor).
+- **Chave de assinatura:** se a Play recusar o `.aab` por "chave de assinatura diferente", o app do Bubble foi enviado com outra chave de envio. Solução: na Play Console (Teste e lançamento → Configuração → Integridade do app / "Protegido com o Google Play" → Assinatura do app) pedir a **redefinição da chave de envio** e depois enviar o `.aab` da Expo. Leva alguns dias.
+- Mudar `eas.json` altera o *fingerprint* (runtime de OTA): APKs antigos de teste deixam de receber atualização e precisam de APK novo.
+
 ## 2. Gerar o pacote e enviar
 1. expo.dev → projeto `raio-de-luz-app` → **Workflows → "Construir app para a Play Store" → Run** (gera o `.aab`, `versionCode` sobe sozinho). Na primeira vez o EAS cria e guarda a chave de assinatura (upload key); não perca o acesso à conta Expo.
 2. Play Console → criar o app → **Teste interno** → enviar o `.aab` (manual) ou configurar `eas submit` (precisa da chave de serviço da Play Console; `eas.json` já aponta para a faixa `internal` como rascunho).

@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 16.0.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -26,7 +26,6 @@
     },
     "production": {
       "channel": "production",
-      "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://zjkhlvomxhtafajbzbjb.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R"
@@ -37,11 +36,6 @@
     }
   },
   "submit": {
-    "production": {
-      "android": {
-        "track": "internal",
-        "releaseStatus": "draft"
-      }
-    }
+    "production": {}
   }
 }
