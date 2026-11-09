@@ -28,6 +28,7 @@ export function TextField({ rotulo, erro, icone, claro, style, ...rest }: Props)
       <View
         style={[
           styles.pilula,
+          rest.multiline && styles.multilinha,
           { backgroundColor: claro ? '#ffffff' : theme.background, borderColor: erro ? '#D64545' : claro ? 'transparent' : theme.backgroundSelected },
         ]}>
         {icone ? <Ionicons name={icone} size={18} color={claro ? '#4A4D5A' : theme.textSecondary} style={styles.icone} /> : null}
@@ -57,6 +58,8 @@ const styles = StyleSheet.create({
     borderRadius: Radii.pilula,
     paddingHorizontal: Spacing.three,
   },
+  // Campo de várias linhas: cantos arredondados normais (pílula fica estranha em caixa alta).
+  multilinha: { borderRadius: 16, alignItems: 'flex-start' },
   icone: { marginRight: Spacing.one },
   input: { flex: 1, fontSize: 16, paddingVertical: Spacing.two },
   erro: { color: '#D64545' },
