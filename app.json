@@ -10,11 +10,11 @@
     "backgroundColor": "#010534",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.raiodeluzreligiosos.app",
+      "bundleIdentifier": "com.raiodeluzreligiosos.loja",
       "supportsTablet": false
     },
     "android": {
-      "package": "com.raiodeluzreligiosos.app",
+      "package": "com.raiodeluzreligiosos.loja",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#010534",

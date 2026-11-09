@@ -259,6 +259,6 @@ alguém preencher com os dados reais.
 ## Publicação (EAS)
 
 `eas.json` já tem os perfis `development`, `preview` e `production`. O
-pacote Android é `com.raiodeluzreligiosos.app` (o mesmo do app já
+pacote Android é `com.raiodeluzreligiosos.loja` (o mesmo do app já
 publicado) — mantenha o mesmo keystore ou ative o Play App Signing antes
 do primeiro build de produção.

@@ -7,9 +7,9 @@ Atualizado em 06/11/2026. App: **Raio de Luz Religiosos** · pacote `com.raiodel
 - Exclusão de conta: https://raiodeluz-painel.expo.app/excluir-conta.html
 (O texto da política foi atualizado em 05/11/2026 para refletir o assistente de IA, fotos enviadas ao assistente, notificações e registros técnicos. Revisar/aprovar.)
 
-## 1.1 Decisão (09/11/2026): app novo com o pacote `com.raiodeluzreligiosos.app`
+## 1.1 Decisão (09/11/2026): app novo com o pacote `com.raiodeluzreligiosos.loja`
 O pacote antigo (`com.raiodeluzreligiosos.mobile`, app do Bubble) foi enviado à Play com outra chave de assinatura: o `.aab` da Expo foi recusado ("chave incorreta"). Em vez de pedir redefinição da chave, o app novo é um cadastro novo na Play com o pacote `com.raiodeluzreligiosos.app` (o pacote vira definitivo no 1º `.aab` enviado). Detalhes:
-- **Firebase (push):** projeto `raio-de-luz-130a7`, app Android `com.raiodeluzreligiosos.app` (`google-services.json` na raiz). A chave de serviço FCM V1 desse projeto precisa estar no expo.dev → Credentials → Android → `com.raiodeluzreligiosos.app`.
+- **Firebase (push):** projeto `raio-de-luz-130a7`, apps Android `com.raiodeluzreligiosos.loja` (usado) e `com.raiodeluzreligiosos.app` (não usado) no `google-services.json` da raiz. A chave de serviço FCM V1 desse projeto precisa estar no expo.dev → Credentials → Android → `com.raiodeluzreligiosos.loja`.
 - **versionCode:** vem do `app.json` (`android.versionCode`, `eas.json` com `appVersionSource: local`). A cada nova versão enviada à Play, aumentar esse número.
 - Mudar `eas.json`, o pacote ou o `google-services.json` altera o *fingerprint* (runtime de OTA): APKs antigos de teste deixam de receber atualização e precisam de APK novo.
 

@@ -29,7 +29,7 @@ Dono do projeto: Carlos (tiraiodeluz@gmail.com), único responsável de TI da em
 **App (`/`)**
 - Expo SDK **57** (`expo ~57.0.25`), React Native **0.86.3**, React **19.2.3**, TypeScript **~6.0** (strict), `reactCompiler` e `typedRoutes` ligados.
 - **Expo Router ~57** (rotas por arquivo em `src/app/`, abas em `src/app/(tabs)`), `@tanstack/react-query` (cache), `@supabase/supabase-js`, `expo-notifications`, `expo-updates` (OTA), `expo-image`, `expo-image-picker`, `expo-print` + `expo-sharing` (PDF do pedido), `expo-file-system`, `react-native-reanimated 4`, `@react-native-community/netinfo` (carrinho offline), `@react-native-async-storage/async-storage`.
-- Bundle id/package: `com.raiodeluzreligiosos.app`; scheme: `raiodeluz`; owner Expo `tiraiodeluzs-team`; EAS projectId `41e9a84f-4016-4b3c-ab74-e0b335dc343a`.
+- Bundle id/package: `com.raiodeluzreligiosos.loja`; scheme: `raiodeluz`; owner Expo `tiraiodeluzs-team`; EAS projectId `41e9a84f-4016-4b3c-ab74-e0b335dc343a`.
 - `runtimeVersion: { policy: "fingerprint" }` — OTA só chega a APK compatível. Mudança **nativa** (ícone, splash, ícone de notificação, permissões, plugins, pacotes com código nativo) **exige APK novo**; mudança de JS/telas vai por OTA.
 - Android 12+: o ícone do splash é recortado em círculo (logo deve caber nos 2/3 centrais). `app.json`: splash `imageWidth 288`; plugin de notificações com `icon: assets/images/notification-icon.png` (96×96+ branco/transparente), `color #C9A227`, `defaultChannel: padrao-v2`.
 
