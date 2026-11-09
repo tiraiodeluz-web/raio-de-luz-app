@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
@@ -251,12 +252,16 @@ export function useProdutosRecomendados(produtoId: string | undefined) {
 }
 
 export function useNotificacoes() {
+  const { session } = useAuth();
+  const uid = session?.user.id;
   return useQuery({
-    queryKey: ['notificacoes'],
+    queryKey: ['notificacoes', uid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('notificacoes')
-        .select('id,titulo,corpo,imagem_url,rota_destino,criado_em')
+      // Admin enxerga todas pela RLS; aqui a lista mostra só as da própria
+      // pessoa e os avisos gerais (senão o admin veria os de todos os clientes).
+      let consulta = supabase.from('notificacoes').select('id,titulo,corpo,imagem_url,rota_destino,criado_em');
+      consulta = uid ? consulta.or(`destinatario_id.eq.${uid},and(destinatario_id.is.null,evento.is.null)`) : consulta.is('destinatario_id', null).is('evento', null);
+      const { data, error } = await consulta
         .order('criado_em', { ascending: false })
         .limit(50);
       if (error) throw error;

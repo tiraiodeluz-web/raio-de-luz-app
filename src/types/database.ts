@@ -265,6 +265,12 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracoes: {
+        Row: { atualizado_em: string; chave: string; valor: string }
+        Insert: { atualizado_em?: string; chave: string; valor: string }
+        Update: { atualizado_em?: string; chave?: string; valor?: string }
+        Relationships: []
+      }
       dispositivos_push: {
         Row: {
           ativo: boolean
@@ -1256,6 +1262,11 @@ export type Database = {
       admin_avaliar_feedback: {
         Args: { p_aprovar: boolean; p_id: string; p_motivo?: string }
         Returns: undefined
+      }
+      admin_contar_publico: { Args: { p_publico: Json }; Returns: Json }
+      admin_enviar_notificacao: {
+        Args: { p_corpo: string; p_imagem_url: string; p_legenda: string; p_publico: Json; p_rota: string; p_titulo: string }
+        Returns: number
       }
       admin_salvar_kit: {
         Args: {

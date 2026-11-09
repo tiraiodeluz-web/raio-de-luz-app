@@ -5,24 +5,19 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
-// Programa de pontos. As regras de verdade ficam no banco
-// (supabase/migrations/20261110120*_pontos_*.sql); aqui só o que a tela mostra.
-export const PREMIOS = [
-  { pontos: 60, percentual: 3 },
-  { pontos: 80, percentual: 5 },
-  { pontos: 100, percentual: 7 },
-] as const;
-
-export const PONTOS_TAREFA = {
-  pedido_2k: 25,
-  ia_pedido: 25,
-  formulario: 20,
-  feedback_texto: 10,
-  feedback_video: 30,
+// Programa de fidelidade: cada ação soma um % de desconto, que vale (e é
+// consumido) no próximo pedido. As regras de verdade ficam no banco
+// (supabase/migrations/20261110120*_pontos_* e 20261111*): o "saldo" de
+// pontos_movimentos é esse % acumulado.
+export const DESCONTO_POR_ACAO = {
+  pedido: 3, // quando o pedido é pago
+  formulario: 2, // uma vez
+  feedback_video: 2, // uma vez, depois de aprovado
 } as const;
 
+export const DESCONTO_MAXIMO = 7; // 3 + 2 + 2: teto do desconto no próximo pedido
+
 export type MovimentoPontos = Tables<'pontos_movimentos'>;
-export type ResgatePontos = Tables<'pontos_resgates'>;
 export type Feedback = Tables<'feedbacks'>;
 
 const CHAVE = ['pontos'];
@@ -34,18 +29,18 @@ export function usePontos() {
     queryKey: [...CHAVE, uid],
     enabled: !!uid,
     queryFn: async () => {
-      const [movimentos, resgate, feedbacks, formulario] = await Promise.all([
+      const [movimentos, feedbacks, formulario] = await Promise.all([
         supabase.from('pontos_movimentos').select('*').eq('usuario_id', uid as string).order('criado_em', { ascending: false }),
-        supabase.from('pontos_resgates').select('*').eq('usuario_id', uid as string).eq('status', 'disponivel').maybeSingle(),
-        supabase.from('feedbacks').select('*').eq('usuario_id', uid as string).order('criado_em', { ascending: false }),
+        supabase.from('feedbacks').select('*').eq('usuario_id', uid as string).eq('tipo', 'video').order('criado_em', { ascending: false }),
         supabase.from('formulario_respostas').select('id').eq('usuario_id', uid as string).maybeSingle(),
       ]);
-      for (const r of [movimentos, resgate, feedbacks, formulario]) if (r.error) throw r.error;
+      for (const r of [movimentos, feedbacks, formulario]) if (r.error) throw r.error;
       const lista = movimentos.data ?? [];
+      const saldo = lista.reduce((soma, m) => soma + m.pontos, 0);
       return {
-        saldo: lista.reduce((soma, m) => soma + m.pontos, 0),
+        // % que será aplicado no próximo pedido (mesma conta da criar_pedido)
+        desconto: Math.min(Math.max(saldo, 0), DESCONTO_MAXIMO),
         movimentos: lista,
-        resgateDisponivel: resgate.data,
         feedbacks: feedbacks.data ?? [],
         respondeuFormulario: !!formulario.data,
       };
@@ -53,37 +48,15 @@ export function usePontos() {
   });
 }
 
-// Situação de cada feedback: o último enviado daquele tipo manda.
-export function situacaoFeedback(feedbacks: Feedback[], tipo: 'texto' | 'video'): 'fazer' | 'pendente' | 'aprovado' | 'recusado' {
-  const ultimo = feedbacks.find((f) => f.tipo === tipo);
+// Situação do feedback em vídeo: o último enviado manda.
+export function situacaoFeedback(feedbacks: Feedback[]): 'fazer' | 'pendente' | 'aprovado' | 'recusado' {
+  const ultimo = feedbacks[0];
   return (ultimo?.status as 'pendente' | 'aprovado' | 'recusado' | undefined) ?? 'fazer';
 }
 
-function useInvalidarPontos() {
+export function useInvalidarPontos() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: CHAVE });
-}
-
-export function useResgatarPontos() {
-  const invalidar = useInvalidarPontos();
-  return useMutation({
-    mutationFn: async (pontos: number) => {
-      const { error } = await supabase.rpc('resgatar_pontos', { p_pontos: pontos });
-      if (error) throw error;
-    },
-    onSuccess: invalidar,
-  });
-}
-
-export function useCancelarResgate() {
-  const invalidar = useInvalidarPontos();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('cancelar_resgate_pontos', { p_id: id });
-      if (error) throw error;
-    },
-    onSuccess: invalidar,
-  });
 }
 
 export function useResponderFormulario() {
@@ -107,20 +80,15 @@ async function enviarVideo(uid: string, uri: string, mimeType: string | undefine
   return caminho;
 }
 
-export function useEnviarFeedback() {
+export function useEnviarFeedbackVideo() {
   const { session } = useAuth();
   const invalidar = useInvalidarPontos();
   return useMutation({
-    mutationFn: async (dados: { tipo: 'texto'; texto: string } | { tipo: 'video'; uri: string; mimeType?: string }) => {
+    mutationFn: async (dados: { uri: string; mimeType?: string }) => {
       const uid = session?.user.id;
       if (!uid) throw new Error('Entre na sua conta para enviar.');
-      const videoPath = dados.tipo === 'video' ? await enviarVideo(uid, dados.uri, dados.mimeType) : null;
-      const { error } = await supabase.rpc('enviar_feedback', {
-        p_tipo: dados.tipo,
-        p_texto: dados.tipo === 'texto' ? dados.texto : null,
-        p_video_path: videoPath,
-        p_consentimento: true,
-      });
+      const videoPath = await enviarVideo(uid, dados.uri, dados.mimeType);
+      const { error } = await supabase.rpc('enviar_feedback', { p_tipo: 'video', p_texto: null, p_video_path: videoPath, p_consentimento: true });
       if (error) throw error;
     },
     onSuccess: invalidar,

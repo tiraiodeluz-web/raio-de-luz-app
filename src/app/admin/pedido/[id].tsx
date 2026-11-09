@@ -137,7 +137,7 @@ export default function DetalhePedidoAdminScreen() {
             <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(pedido.desconto - pedido.desconto_pontos)}`} />
           ) : null}
           {pedido.desconto_pontos > 0 ? (
-            <LinhaResumo rotulo="Desconto dos pontos" valor={`− ${formatarReais(pedido.desconto_pontos)}`} />
+            <LinhaResumo rotulo="Desconto de fidelidade" valor={`− ${formatarReais(pedido.desconto_pontos)}`} />
           ) : null}
           <LinhaResumo rotulo="Total" valor={formatarReais(pedido.total)} destaque />
         </View>

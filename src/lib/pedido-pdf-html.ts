@@ -143,7 +143,7 @@ export function montarHtmlPedido(pedido: PedidoPdf): string {
                 descontoCupom > 0
                   ? `Desconto${pedido.cupom_codigo ? ` (${escapar(pedido.cupom_codigo)})` : ''}: − ${escapar(formatarReais(descontoCupom))}<br />`
                   : ''
-              }${descontoPontos > 0 ? `Desconto dos pontos: − ${escapar(formatarReais(descontoPontos))}<br />` : ''}`
+              }${descontoPontos > 0 ? `Desconto de fidelidade: − ${escapar(formatarReais(descontoPontos))}<br />` : ''}`
             : ''
         }
         <span class="total">Total: ${escapar(formatarReais(Number(pedido.total)))}</span>

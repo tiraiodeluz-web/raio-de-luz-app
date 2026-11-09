@@ -18,6 +18,7 @@ import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos, mascararCep } from '@/lib/mascaras';
 import { registrarErro } from '@/lib/monitor-erros';
 import { compartilharPdfPedido, linkPdfPedido } from '@/lib/pedido-pdf';
+import { usePedidoMinimo } from '@/lib/configuracoes';
 import { usePontos } from '@/lib/pontos';
 import { abrirWhatsAppPedido } from '@/lib/whatsapp';
 
@@ -29,6 +30,7 @@ export default function CheckoutScreen() {
   const salvarEndereco = useSalvarEndereco();
   const criarPedido = useCriarPedido();
   const pontos = usePontos();
+  const pedidoMinimo = usePedidoMinimo();
 
   const [cep, setCep] = useState('');
   const [rua, setRua] = useState('');
@@ -136,14 +138,19 @@ export default function CheckoutScreen() {
 
   const subtotal = calcularSubtotalCarrinho(listaItens);
   const desconto = cupom ? Math.min(cupom.valor, subtotal) : 0;
-  // Desconto trocado com pontos: mesma conta da criar_pedido (percentual sobre
-  // o valor já com cupom), só pra mostrar — quem aplica de verdade é o banco.
-  const resgate = pontos.data?.resgateDisponivel ?? null;
-  const descontoPontos = resgate ? Math.round((subtotal - desconto) * Number(resgate.percentual)) / 100 : 0;
+  // Desconto de fidelidade (% acumulado): mesma conta da criar_pedido, só pra
+  // mostrar — quem aplica de verdade é o banco.
+  const descontoFidelidade = pontos.data?.desconto ?? 0;
+  const descontoPontos = Math.round((subtotal - desconto) * descontoFidelidade) / 100;
   const total = subtotal - desconto - descontoPontos;
+  const faltaParaMinimo = Math.max(0, pedidoMinimo - subtotal);
 
   async function confirmarPedido() {
     setErroGeral(null);
+    if (faltaParaMinimo > 0) {
+      setErroGeral(`O pedido mínimo é de ${formatarReais(pedidoMinimo)} em produtos. Faltam ${formatarReais(faltaParaMinimo)}.`);
+      return;
+    }
     const novosErros: Record<string, string> = {};
     if (apenasDigitos(cep).length !== 8) novosErros.cep = 'CEP inválido.';
     if (!rua.trim()) novosErros.rua = 'Informe a rua.';
@@ -241,7 +248,7 @@ export default function CheckoutScreen() {
             <LinhaResumo rotulo="Subtotal" valor={formatarReais(subtotal)} />
             {desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(desconto)}`} /> : null}
             {descontoPontos > 0 ? (
-              <LinhaResumo rotulo={`Desconto dos pontos (${Number(resgate?.percentual)}%)`} valor={`− ${formatarReais(descontoPontos)}`} />
+              <LinhaResumo rotulo={`Desconto de fidelidade (${descontoFidelidade}%)`} valor={`− ${formatarReais(descontoPontos)}`} />
             ) : null}
             <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
           </View>
@@ -262,7 +269,12 @@ export default function CheckoutScreen() {
           ) : null}
 
           {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
-          <Button titulo="Confirmar Pedido" icone="checkmark-done" onPress={confirmarPedido} carregando={enviando} />
+          {faltaParaMinimo > 0 ? (
+            <ThemedText type="small" style={styles.avisoLimite}>
+              Pedido mínimo de {formatarReais(pedidoMinimo)} em produtos: faltam {formatarReais(faltaParaMinimo)}. Volte ao carrinho para adicionar mais itens.
+            </ThemedText>
+          ) : null}
+          <Button titulo="Confirmar Pedido" icone="checkmark-done" onPress={confirmarPedido} carregando={enviando} disabled={faltaParaMinimo > 0} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

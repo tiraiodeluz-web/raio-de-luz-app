@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
 
 // Programa de pontos: aprovar feedbacks (texto e vídeo), ver respostas do
 // formulário, saldos dos clientes e trocas. As regras ficam no banco.
-type Aba = 'feedbacks' | 'formularios' | 'clientes' | 'trocas';
+type Aba = 'feedbacks' | 'formularios' | 'clientes';
 type Cliente = { nome: string | null; razao_social: string | null } | null;
 
 const nomeCliente = (c: Cliente) => c?.razao_social || c?.nome || 'Cliente removido';
@@ -38,21 +38,20 @@ export function PaginaPontos() {
   return (
     <>
       <CabecalhoPagina
-        titulo="Programa de pontos"
-        descricao="Pedido de R$ 2.000+ (25), pedido com a RDL AI (25), formulário (20), feedback em texto (10) e em vídeo (30). Trocas: 60 pts = 3%, 80 = 5%, 100 = 7% no próximo pedido."
+        titulo="Desconto de fidelidade"
+        descricao="Pedido pago: +3% · formulário: +2% · feedback em vídeo aprovado: +2%. O desconto acumulado (máx. 7%) vale no próximo pedido do cliente e é consumido nele."
       />
       <Abas<Aba>
         abas={[
           { chave: 'feedbacks', rotulo: 'Feedbacks', contador: pendentes.data || undefined },
           { chave: 'formularios', rotulo: 'Formulários' },
-          { chave: 'clientes', rotulo: 'Saldos' },
-          { chave: 'trocas', rotulo: 'Trocas' },
+          { chave: 'clientes', rotulo: 'Descontos' },
         ]}
         ativa={aba}
         aoMudar={setAba}
       />
       <div style={{ marginTop: 16 }}>
-        {aba === 'feedbacks' ? <Feedbacks /> : aba === 'formularios' ? <Formularios /> : aba === 'clientes' ? <Saldos /> : <Trocas />}
+        {aba === 'feedbacks' ? <Feedbacks /> : aba === 'formularios' ? <Formularios /> : <Saldos />}
       </div>
     </>
   );
@@ -150,7 +149,7 @@ function Feedbacks() {
                       variante="primario"
                       carregando={avaliar.isPending && avaliar.variables?.id === f.id && avaliar.variables.aprovar}
                       onClick={() => avaliar.mutate({ id: f.id, aprovar: true })}>
-                      Aprovar (+{f.tipo === 'video' ? 30 : 10} pts)
+                      Aprovar (+2% de desconto)
                     </Botao>
                     <Botao variante="perigo" onClick={() => setRecusando(f)}>
                       Recusar
@@ -292,54 +291,11 @@ function Saldos() {
       linhas={lista.data ?? []}
       chaveLinha={(l) => l.id}
       ordemInicial={{ chave: 'saldo', desc: true }}
-      vazio={<Vazio icone="🏆" titulo="Nenhum cliente com pontos ainda" />}
+      vazio={<Vazio icone="🏆" titulo="Nenhum cliente com desconto ainda" />}
       colunas={[
         { chave: 'cliente', titulo: 'Cliente', celula: (l) => l.cliente, ordenar: (l) => l.cliente },
-        { chave: 'saldo', titulo: 'Saldo', celula: (l) => <strong>{l.saldo}</strong>, ordenar: (l) => l.saldo, classe: 'direita' },
-        { chave: 'ganhos', titulo: 'Total ganho', celula: (l) => l.ganhos, ordenar: (l) => l.ganhos, classe: 'direita' },
-      ]}
-    />
-  );
-}
-
-type TrocaLinha = { id: string; pontos: number; percentual: number; status: string; criado_em: string; perfis: Cliente; pedidos: { numero: number } | null };
-
-function Trocas() {
-  const lista = useQuery({
-    queryKey: ['pontos', 'trocas'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pontos_resgates')
-        .select('id, pontos, percentual, status, criado_em, perfis(nome, razao_social), pedidos!pontos_resgates_pedido_id_fkey(numero)')
-        .order('criado_em', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data as unknown as TrocaLinha[];
-    },
-  });
-  if (lista.isLoading) return <Carregando />;
-  if (lista.error) return <CaixaErro erro={lista.error} tentarDeNovo={() => lista.refetch()} />;
-  return (
-    <Tabela<TrocaLinha>
-      linhas={lista.data ?? []}
-      chaveLinha={(l) => l.id}
-      vazio={<Vazio icone="🎁" titulo="Nenhuma troca ainda" />}
-      colunas={[
-        { chave: 'data', titulo: 'Data', celula: (l) => dataHora(l.criado_em), ordenar: (l) => l.criado_em },
-        { chave: 'cliente', titulo: 'Cliente', celula: (l) => nomeCliente(l.perfis), ordenar: (l) => nomeCliente(l.perfis) },
-        { chave: 'premio', titulo: 'Prêmio', celula: (l) => `${Number(l.percentual)}% (${l.pontos} pts)` },
-        {
-          chave: 'status',
-          titulo: 'Situação',
-          celula: (l) =>
-            l.status === 'usado' ? (
-              <Etiqueta tom="sucesso">Usado{l.pedidos ? ` no pedido Nº ${l.pedidos.numero}` : ''}</Etiqueta>
-            ) : l.status === 'disponivel' ? (
-              <Etiqueta tom="aviso">Esperando pedido</Etiqueta>
-            ) : (
-              <Etiqueta>Cancelado</Etiqueta>
-            ),
-        },
+        { chave: 'saldo', titulo: 'Desconto acumulado', celula: (l) => <strong>{Math.min(Math.max(l.saldo, 0), 7)}%</strong>, ordenar: (l) => l.saldo, classe: 'direita' },
+        { chave: 'ganhos', titulo: 'Total já ganho', celula: (l) => `${l.ganhos}%`, ordenar: (l) => l.ganhos, classe: 'direita' },
       ]}
     />
   );

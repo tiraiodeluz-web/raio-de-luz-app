@@ -8,7 +8,7 @@ import { CabecalhoVoltar } from '@/components/cabecalho-voltar';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { BrandColors, Radii, Spacing } from '@/constants/theme';
-import { PONTOS_TAREFA, useResponderFormulario } from '@/lib/pontos';
+import { DESCONTO_POR_ACAO, useResponderFormulario } from '@/lib/pontos';
 import { useToast } from '@/lib/toast-context';
 
 // Perguntas do formulário (as respostas ficam em formulario_respostas.respostas,
@@ -42,7 +42,7 @@ export default function FormularioScreen() {
       },
       {
         onSuccess: () => {
-          mostrarToast(`Obrigado! Você ganhou ${PONTOS_TAREFA.formulario} pontos.`);
+          mostrarToast(`Obrigado! Você ganhou +${DESCONTO_POR_ACAO.formulario}% de desconto no próximo pedido.`);
           router.back();
         },
         onError: (e) => setErro(e instanceof Error ? e.message : 'Não foi possível enviar agora.'),
@@ -56,7 +56,7 @@ export default function FormularioScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={60}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <ThemedText themeColor="textSecondary">
-            Responda e ganhe {PONTOS_TAREFA.formulario} pontos. Suas respostas ajudam a melhorar o app e o atendimento.
+            Responda e ganhe +{DESCONTO_POR_ACAO.formulario}% de desconto no próximo pedido. Suas respostas ajudam a melhorar o app e o atendimento.
           </ThemedText>
 
           <Pergunta titulo="1. De 0 a 10, quanto você recomendaria o app da Raio de Luz a outro lojista?">

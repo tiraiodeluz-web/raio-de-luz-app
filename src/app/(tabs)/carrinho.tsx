@@ -24,7 +24,9 @@ import {
 } from '@/lib/carrinho';
 import { alterarQuantidadeOffline, itensOfflineParaExibicao, removerItemOffline, useFilaCarrinhoOffline } from '@/lib/carrinho-offline';
 import { useCompartilharCarrinho } from '@/lib/compartilhar';
+import { usePedidoMinimo } from '@/lib/configuracoes';
 import { formatarReais } from '@/lib/formatacao';
+import { usePontos } from '@/lib/pontos';
 import { useRecursos20 } from '@/lib/versao-app';
 import { urlImagem } from '@/lib/imagem';
 
@@ -93,7 +95,11 @@ export default function CarrinhoScreen() {
   const listaItens: LinhaCarrinho[] = [...(itens ?? []), ...itensPendentes];
   const subtotal = calcularSubtotalCarrinho(listaItens);
   const desconto = cupom ? Math.min(cupom.valor, subtotal) : 0;
-  const total = subtotal - desconto;
+  const pedidoMinimo = usePedidoMinimo();
+  const faltaParaMinimo = Math.max(0, pedidoMinimo - subtotal);
+  const descontoFidelidade = usePontos().data?.desconto ?? 0;
+  const valorFidelidade = Math.round((subtotal - desconto) * descontoFidelidade) / 100;
+  const total = subtotal - desconto - valorFidelidade;
 
   function alterarQuantidadeLinha(item: LinhaCarrinho, quantidade: number) {
     if (item.pendente) {
@@ -131,6 +137,10 @@ export default function CarrinhoScreen() {
   }
 
   function finalizarCompra() {
+    if (faltaParaMinimo > 0) {
+      Alert.alert('Pedido mínimo', `O pedido mínimo é de ${formatarReais(pedidoMinimo)} em produtos. Adicione mais ${formatarReais(faltaParaMinimo)} para finalizar.`);
+      return;
+    }
     // Item pendente só existe no aparelho — o pedido é criado a partir do
     // carrinho salvo no banco, então sem sincronizar antes ele ficaria de
     // fora do pedido sem o cliente perceber.
@@ -215,10 +225,18 @@ export default function CarrinhoScreen() {
                 </ThemedText>
                 <LinhaResumo rotulo="Subtotal" valor={formatarReais(subtotal)} />
                 {desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(desconto)}`} /> : null}
+                {valorFidelidade > 0 ? (
+                  <LinhaResumo rotulo={`Desconto de fidelidade (${descontoFidelidade}%)`} valor={`− ${formatarReais(valorFidelidade)}`} />
+                ) : null}
                 <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
               </View>
 
-              <Button titulo="Finalizar compra" onPress={finalizarCompra} />
+              {faltaParaMinimo > 0 ? (
+                <ThemedText type="small" style={styles.avisoMinimo}>
+                  Pedido mínimo de {formatarReais(pedidoMinimo)}: faltam {formatarReais(faltaParaMinimo)} em produtos para finalizar.
+                </ThemedText>
+              ) : null}
+              <Button titulo="Finalizar compra" onPress={finalizarCompra} disabled={faltaParaMinimo > 0} />
             </View>
           ) : null
         }
@@ -328,6 +346,7 @@ const styles = StyleSheet.create({
   linhaCupom: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end' },
   campoCupom: { flex: 1 },
   cupomAplicado: { color: '#1E8E3E' },
+  avisoMinimo: { color: '#B07B13' },
   resumo: {
     borderRadius: 12,
     padding: Spacing.three,

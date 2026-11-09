@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAvisar } from '../componentes/avisos';
 import { CampoImagem } from '../componentes/campo-imagem';
 import { montarRota, SeletorLink, type TipoLinkInterno } from '../componentes/seletor-link';
+import { ROTULOS_PUBLICO, SeletorPublico, usePrevia, type Publico } from '../componentes/seletor-publico';
 import { AreaTexto, Botao, CabecalhoPagina, Campo, CaixaErro, Cartao, Carregando, Entrada, Vazio } from '../componentes/ui';
 import { mensagemErro } from '../lib/erros';
 import { dataHora } from '../lib/formato';
@@ -19,6 +20,8 @@ export function PaginaNotificacoes() {
   const [imagem, setImagem] = useState<string | null>(null);
   const [tipoLink, setTipoLink] = useState<TipoLinkInterno>('nenhum');
   const [valorLink, setValorLink] = useState('');
+  const [publico, setPublico] = useState<Publico>({ tipo: 'todos' });
+  const previa = usePrevia(publico);
   const [erro, setErro] = useState<string | null>(null);
 
   const historico = useQuery({
@@ -38,19 +41,18 @@ export function PaginaNotificacoes() {
 
   const enviar = useMutation({
     mutationFn: async () => {
-      const { data: sessao } = await supabase.auth.getUser();
-      const { error } = await supabase.from('notificacoes').insert({
-        titulo: titulo.trim(),
-        legenda: legenda.trim() || null,
-        corpo: corpo.trim(),
-        imagem_url: imagem,
-        rota_destino: montarRota(tipoLink, valorLink),
-        destinatario_id: null,
-        criado_por: sessao.user?.id,
+      const { data, error } = await supabase.rpc('admin_enviar_notificacao', {
+        p_titulo: titulo,
+        p_corpo: corpo,
+        p_legenda: legenda,
+        p_imagem_url: imagem ?? '',
+        p_rota: montarRota(tipoLink, valorLink) ?? '',
+        p_publico: publico,
       });
       if (error) throw error;
+      return data as number;
     },
-    onSuccess: () => {
+    onSuccess: (n) => {
       setTitulo('');
       setLegenda('');
       setCorpo('');
@@ -58,7 +60,7 @@ export function PaginaNotificacoes() {
       setTipoLink('nenhum');
       setValorLink('');
       queryClient.invalidateQueries({ queryKey: ['notificacoes-enviadas'] });
-      avisar('Notificação enviada pra todos os clientes', 'sucesso');
+      avisar(`Notificação enviada para ${n} cliente(s)`, 'sucesso');
     },
     onError: (e) => setErro(mensagemErro(e)),
   });
@@ -67,13 +69,17 @@ export function PaginaNotificacoes() {
     setErro(null);
     if (!titulo.trim() || !corpo.trim()) return setErro('Preencha ao menos o título e a mensagem.');
     if (tipoLink !== 'nenhum' && !valorLink) return setErro('Escolha pra onde a notificação leva, ou deixe em "Só o app".');
-    if (!confirm('Enviar essa notificação agora pra TODOS os clientes aprovados? Não dá pra desfazer.')) return;
+    if (publico.tipo === 'cliente' && !publico.cliente_id) return setErro('Escolha o cliente.');
+    if (publico.tipo === 'regiao' && !publico.uf && !publico.cidade) return setErro('Escolha o estado ou a cidade.');
+    const total = previa.data?.total;
+    if (total === 0) return setErro('Nenhum cliente nesse público. Mude o filtro.');
+    if (!confirm(`Enviar essa notificação agora para ${total ?? 'os'} cliente(s) (${ROTULOS_PUBLICO[publico.tipo]})? Não dá pra desfazer.`)) return;
     enviar.mutate();
   }
 
   return (
     <>
-      <CabecalhoPagina titulo="Enviar notificação" descricao="Aviso que chega no celular de todos os clientes aprovados e fica salvo no sininho do app." />
+      <CabecalhoPagina titulo="Enviar notificação" descricao="Aviso que chega no celular dos clientes escolhidos e fica salvo no sininho do app." />
       <div className="grade grade-2" style={{ alignItems: 'start' }}>
         <Cartao titulo="Nova notificação">
           <div className="pilha" style={{ gap: 12 }}>
@@ -89,11 +95,24 @@ export function PaginaNotificacoes() {
             <Campo rotulo="Imagem (opcional, 16:9)">
               <CampoImagem valor={imagem} aoMudar={setImagem} pasta="notificacoes" proporcao="16 / 9" largura={320} ladoMax={1200} />
             </Campo>
+            <SeletorPublico publico={publico} aoMudar={setPublico} />
+            <div className="caixa-aviso">
+              {previa.isFetching ? (
+                'Contando clientes...'
+              ) : previa.data ? (
+                <>
+                  <strong>{previa.data.total} cliente(s)</strong> vão receber
+                  {previa.data.amostra.length ? <span className="texto-2"> · ex.: {previa.data.amostra.join(', ')}</span> : null}
+                </>
+              ) : (
+                'Complete o filtro para ver quantos clientes recebem.'
+              )}
+            </div>
             <SeletorLink tipo={tipoLink} valor={valorLink} aoMudar={(t, v) => { setTipoLink(t); setValorLink(v); }} />
             {erro ? <div className="caixa-erro">{erro}</div> : null}
             <div className="linha">
               <Botao variante="primario" onClick={confirmar} carregando={enviar.isPending}>
-                Enviar pra todos
+                Enviar notificação
               </Botao>
             </div>
           </div>

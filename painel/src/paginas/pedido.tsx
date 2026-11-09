@@ -180,7 +180,7 @@ export function PaginaPedido() {
               ) : null}
               {Number(p.desconto_pontos) > 0 ? (
                 <div className="linha entre">
-                  <span className="texto-2">Desconto dos pontos</span>
+                  <span className="texto-2">Desconto de fidelidade</span>
                   <span style={{ color: 'var(--sucesso)' }}>− {reais(p.desconto_pontos)}</span>
                 </div>
               ) : null}
