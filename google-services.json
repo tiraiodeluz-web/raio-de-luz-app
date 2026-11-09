@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "409469077582",
-    "project_id": "raio-de-luz-religiosos",
-    "storage_bucket": "raio-de-luz-religiosos.firebasestorage.app"
+    "project_number": "557779112879",
+    "project_id": "raio-de-luz-130a7",
+    "storage_bucket": "raio-de-luz-130a7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:409469077582:android:3f7cac646ce22ae6d3db1f",
+        "mobilesdk_app_id": "1:557779112879:android:85631e4c9fdc0460b7d55a",
         "android_client_info": {
-          "package_name": "com.raiodeluzreligiosos.mobile"
+          "package_name": "com.raiodeluzreligiosos.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBXG3e3ffY15P5h-AKWE0TkHJ7po3bHivw"
+          "current_key": "AIzaSyDFPo9b5LNX-0k0Yt9kjhRUFIXFRRPfF68"
         }
       ],
       "services": {
