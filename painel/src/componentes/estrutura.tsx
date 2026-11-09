@@ -23,6 +23,7 @@ export function Estrutura() {
         { para: '/clientes', rotulo: 'Clientes', icone: '👥', contador: contadores?.clientesPendentes },
         { para: '/cupons', rotulo: 'Cupons', icone: '🏷️' },
         { para: '/notificacoes', rotulo: 'Notificações', icone: '🔔' },
+        { para: '/pontos', rotulo: 'Pontos', icone: '🏆', contador: contadores?.feedbacksPendentes },
       ],
     },
     {

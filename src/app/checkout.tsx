@@ -18,6 +18,7 @@ import { formatarReais } from '@/lib/formatacao';
 import { apenasDigitos, mascararCep } from '@/lib/mascaras';
 import { registrarErro } from '@/lib/monitor-erros';
 import { compartilharPdfPedido, linkPdfPedido } from '@/lib/pedido-pdf';
+import { usePontos } from '@/lib/pontos';
 import { abrirWhatsAppPedido } from '@/lib/whatsapp';
 
 export default function CheckoutScreen() {
@@ -27,6 +28,7 @@ export default function CheckoutScreen() {
   const enderecoPrincipal = useEnderecoPrincipal();
   const salvarEndereco = useSalvarEndereco();
   const criarPedido = useCriarPedido();
+  const pontos = usePontos();
 
   const [cep, setCep] = useState('');
   const [rua, setRua] = useState('');
@@ -134,7 +136,11 @@ export default function CheckoutScreen() {
 
   const subtotal = calcularSubtotalCarrinho(listaItens);
   const desconto = cupom ? Math.min(cupom.valor, subtotal) : 0;
-  const total = subtotal - desconto;
+  // Desconto trocado com pontos: mesma conta da criar_pedido (percentual sobre
+  // o valor já com cupom), só pra mostrar — quem aplica de verdade é o banco.
+  const resgate = pontos.data?.resgateDisponivel ?? null;
+  const descontoPontos = resgate ? Math.round((subtotal - desconto) * Number(resgate.percentual)) / 100 : 0;
+  const total = subtotal - desconto - descontoPontos;
 
   async function confirmarPedido() {
     setErroGeral(null);
@@ -234,6 +240,9 @@ export default function CheckoutScreen() {
             <View style={styles.separador} />
             <LinhaResumo rotulo="Subtotal" valor={formatarReais(subtotal)} />
             {desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(desconto)}`} /> : null}
+            {descontoPontos > 0 ? (
+              <LinhaResumo rotulo={`Desconto dos pontos (${Number(resgate?.percentual)}%)`} valor={`− ${formatarReais(descontoPontos)}`} />
+            ) : null}
             <LinhaResumo rotulo="Total" valor={formatarReais(total)} destaque />
           </View>
 

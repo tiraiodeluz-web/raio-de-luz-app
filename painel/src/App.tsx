@@ -16,6 +16,7 @@ import { PaginaIcone } from './paginas/icone';
 import { PaginaInicio } from './paginas/inicio';
 import { PaginaLogin } from './paginas/login';
 import { PaginaNotificacoes } from './paginas/notificacoes';
+import { PaginaPontos } from './paginas/pontos';
 import { PaginaPedido } from './paginas/pedido';
 import { PaginaPedidos } from './paginas/pedidos';
 import { PaginaProduto } from './paginas/produto';
@@ -53,6 +54,7 @@ export function App() {
         <Route path="categorias" element={<PaginaCategorias />} />
         <Route path="catalogos" element={<PaginaCatalogos />} />
         <Route path="santos" element={<PaginaSantos />} />
+        <Route path="pontos" element={<PaginaPontos />} />
         <Route path="notificacoes" element={<PaginaNotificacoes />} />
         <Route path="icone" element={<PaginaIcone />} />
         <Route path="kits" element={<PaginaKits />} />

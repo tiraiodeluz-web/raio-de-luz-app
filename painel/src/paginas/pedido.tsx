@@ -46,7 +46,7 @@ export function PaginaPedido() {
       const { data, error } = await supabase
         .from('pedidos')
         .select(
-          `id, numero, criado_em, status, status_alterado_em, subtotal, desconto, total, cupom_codigo, observacoes, codigo_rastreio,
+          `id, numero, criado_em, status, status_alterado_em, subtotal, desconto, desconto_pontos, total, cupom_codigo, observacoes, codigo_rastreio,
            cliente_id, cliente_snapshot, endereco_entrega,
            pedido_itens ( id, produto_id, sku, produto_nome, santo_nome, quantidade, preco_unitario, subtotal, personalizacao, imagem_url,
              santos ( codigo ), produtos ( catalogos ( nome ) ) )`,
@@ -172,10 +172,16 @@ export function PaginaPedido() {
                 <span className="texto-2">Subtotal</span>
                 <span>{reais(p.subtotal)}</span>
               </div>
-              {Number(p.desconto) > 0 ? (
+              {Number(p.desconto) - Number(p.desconto_pontos) > 0 ? (
                 <div className="linha entre">
                   <span className="texto-2">Desconto {p.cupom_codigo ? `(cupom ${p.cupom_codigo})` : ''}</span>
-                  <span style={{ color: 'var(--sucesso)' }}>− {reais(p.desconto)}</span>
+                  <span style={{ color: 'var(--sucesso)' }}>− {reais(Number(p.desconto) - Number(p.desconto_pontos))}</span>
+                </div>
+              ) : null}
+              {Number(p.desconto_pontos) > 0 ? (
+                <div className="linha entre">
+                  <span className="texto-2">Desconto dos pontos</span>
+                  <span style={{ color: 'var(--sucesso)' }}>− {reais(p.desconto_pontos)}</span>
                 </div>
               ) : null}
               <div className="linha entre" style={{ fontSize: 17 }}>

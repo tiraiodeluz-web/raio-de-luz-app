@@ -133,7 +133,12 @@ export default function DetalhePedidoAdminScreen() {
             Resumo do Pedido
           </ThemedText>
           <LinhaResumo rotulo="Subtotal" valor={formatarReais(pedido.subtotal)} />
-          {pedido.desconto > 0 ? <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(pedido.desconto)}`} /> : null}
+          {pedido.desconto - pedido.desconto_pontos > 0 ? (
+            <LinhaResumo rotulo="Desconto" valor={`− ${formatarReais(pedido.desconto - pedido.desconto_pontos)}`} />
+          ) : null}
+          {pedido.desconto_pontos > 0 ? (
+            <LinhaResumo rotulo="Desconto dos pontos" valor={`− ${formatarReais(pedido.desconto_pontos)}`} />
+          ) : null}
           <LinhaResumo rotulo="Total" valor={formatarReais(pedido.total)} destaque />
         </View>
       </ScrollView>

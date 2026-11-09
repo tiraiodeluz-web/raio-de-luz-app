@@ -25,6 +25,7 @@ export type PedidoPdf = {
   criado_em: string;
   subtotal: number;
   desconto: number;
+  desconto_pontos?: number | null;
   total: number;
   cupom_codigo: string | null;
   cliente_snapshot: { nome?: string | null; razao_social?: string | null; telefone?: string | null } | null;
@@ -86,6 +87,8 @@ export function montarHtmlPedido(pedido: PedidoPdf): string {
     .join('');
 
   const desconto = Number(pedido.desconto) > 0;
+  const descontoPontos = Number(pedido.desconto_pontos ?? 0);
+  const descontoCupom = Number(pedido.desconto) - descontoPontos;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8" />
@@ -136,9 +139,11 @@ export function montarHtmlPedido(pedido: PedidoPdf): string {
       <div class="totais">
         ${
           desconto
-            ? `Subtotal: ${escapar(formatarReais(Number(pedido.subtotal)))}<br />Desconto${
-                pedido.cupom_codigo ? ` (${escapar(pedido.cupom_codigo)})` : ''
-              }: − ${escapar(formatarReais(Number(pedido.desconto)))}<br />`
+            ? `Subtotal: ${escapar(formatarReais(Number(pedido.subtotal)))}<br />${
+                descontoCupom > 0
+                  ? `Desconto${pedido.cupom_codigo ? ` (${escapar(pedido.cupom_codigo)})` : ''}: − ${escapar(formatarReais(descontoCupom))}<br />`
+                  : ''
+              }${descontoPontos > 0 ? `Desconto dos pontos: − ${escapar(formatarReais(descontoPontos))}<br />` : ''}`
             : ''
         }
         <span class="total">Total: ${escapar(formatarReais(Number(pedido.total)))}</span>

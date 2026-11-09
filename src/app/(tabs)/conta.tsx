@@ -90,6 +90,12 @@ export default function ContaScreen() {
             onPress={() => router.push('/favoritos')}
           />
           <Button
+            titulo="Meus pontos"
+            variante="secundario"
+            icone="trophy-outline"
+            onPress={() => router.push('/pontos')}
+          />
+          <Button
             titulo="Política de privacidade"
             variante="secundario"
             icone="lock-closed-outline"

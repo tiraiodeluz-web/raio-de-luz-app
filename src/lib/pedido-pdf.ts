@@ -11,7 +11,7 @@ async function buscarPedido(pedidoId: string): Promise<PedidoPdf> {
   const { data, error } = await supabase
     .from('pedidos')
     .select(
-      `id, numero, criado_em, subtotal, desconto, total, cupom_codigo, cliente_snapshot,
+      `id, numero, criado_em, subtotal, desconto, desconto_pontos, total, cupom_codigo, cliente_snapshot,
        pedido_itens ( sku, produto_nome, santo_nome, quantidade, preco_unitario, personalizacao,
          santos ( codigo ), produtos ( catalogos ( nome ) ) )`,
     )

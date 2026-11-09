@@ -32,18 +32,18 @@ export default function PoliticaPrivacidadeScreen() {
           razão social, CNPJ, e-mail, telefone, CEP, endereço completo, cidade e estado, histórico de pedidos
           realizados e dados necessários para autenticação no aplicativo. Também são tratados: as mensagens e as
           fotos que você enviar ao assistente de compras (RDL AI); o identificador do aparelho para envio de
-          notificações; e registros técnicos de erros e de uso do aplicativo (por exemplo, produtos visualizados e
-          data do último acesso).{'\n\n'}O aplicativo não coleta dados de localização (GPS). A câmera e a galeria de
-          fotos só são acessadas quando você escolhe enviar uma foto ao assistente, e somente a foto escolhida é
-          enviada.
+          notificações; registros técnicos de erros e de uso do aplicativo (por exemplo, produtos visualizados e
+          data do último acesso); e, no programa de pontos, as respostas do formulário e os depoimentos em texto ou vídeo que você enviar.{'\n\n'}O aplicativo não coleta dados de localização (GPS). A câmera e a galeria de
+          fotos só são acessadas quando você escolhe enviar uma foto ao assistente ou um vídeo de depoimento, e somente o
+          arquivo escolhido é enviado.
         </Secao>
 
         <Secao titulo="2. Finalidade da coleta">
           Os dados são utilizados para: identificar e autenticar o usuário; permitir o acesso ao aplicativo;
           processar e registrar pedidos; facilitar o preenchimento de informações cadastrais; consultar dados
           públicos de CNPJ e CEP por meio de serviços de terceiros; entrar em contato quando necessário; enviar
-          notificações relacionadas ao andamento dos pedidos e comunicações importantes; e melhorar a experiência
-          de utilização do aplicativo.
+          notificações relacionadas ao andamento dos pedidos e comunicações importantes; melhorar a experiência
+          de utilização do aplicativo; administrar o programa de pontos e descontos; e, somente quando você autorizar expressamente no momento do envio, usar seus depoimentos (texto ou vídeo, com seu nome e o da sua loja) em materiais de divulgação e marketing.
         </Secao>
 
         <Secao titulo="3. Pedidos">

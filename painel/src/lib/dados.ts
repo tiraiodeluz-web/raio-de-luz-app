@@ -42,11 +42,12 @@ export function useContadoresMenu() {
     queryKey: ['contadores-menu'],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const [clientes, pedidos] = await Promise.all([
+      const [clientes, pedidos, feedbacks] = await Promise.all([
         supabase.from('perfis').select('id', { count: 'exact', head: true }).eq('tipo', 'cliente').eq('cadastro_aprovado', false),
         supabase.from('pedidos').select('id', { count: 'exact', head: true }).eq('status', 'aguardando_pagamento'),
+        supabase.from('feedbacks').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
       ]);
-      return { clientesPendentes: clientes.count ?? 0, pedidosNovos: pedidos.count ?? 0 };
+      return { clientesPendentes: clientes.count ?? 0, pedidosNovos: pedidos.count ?? 0, feedbacksPendentes: feedbacks.count ?? 0 };
     },
   });
 }

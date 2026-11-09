@@ -469,6 +469,53 @@ export type Database = {
           },
         ]
       }
+      feedbacks: {
+        Row: {
+          analisado_em: string | null
+          consentimento_marketing: boolean
+          criado_em: string
+          id: string
+          motivo_recusa: string | null
+          status: string
+          texto: string | null
+          tipo: string
+          usuario_id: string
+          video_path: string | null
+        }
+        Insert: {
+          analisado_em?: string | null
+          consentimento_marketing: boolean
+          criado_em?: string
+          id?: string
+          motivo_recusa?: string | null
+          status?: string
+          texto?: string | null
+          tipo: string
+          usuario_id: string
+          video_path?: string | null
+        }
+        Update: {
+          analisado_em?: string | null
+          consentimento_marketing?: boolean
+          criado_em?: string
+          id?: string
+          motivo_recusa?: string | null
+          status?: string
+          texto?: string | null
+          tipo?: string
+          usuario_id?: string
+          video_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedbacks_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fila_push: {
         Row: {
           criado_em: string
@@ -503,6 +550,35 @@ export type Database = {
             columns: ["notificacao_id"]
             isOneToOne: false
             referencedRelation: "notificacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formulario_respostas: {
+        Row: {
+          criado_em: string
+          id: string
+          respostas: Json
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          respostas: Json
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          respostas?: Json
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formulario_respostas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
         ]
@@ -726,10 +802,12 @@ export type Database = {
           criado_em: string
           cupom_codigo: string | null
           desconto: number
+          desconto_pontos: number
           endereco_entrega: Json | null
           id: string
           numero: number
           observacoes: string | null
+          pontos_resgate_id: string | null
           status: Database["public"]["Enums"]["status_pedido"]
           status_alterado_em: string
           subtotal: number
@@ -743,10 +821,12 @@ export type Database = {
           criado_em?: string
           cupom_codigo?: string | null
           desconto?: number
+          desconto_pontos?: number
           endereco_entrega?: Json | null
           id?: string
           numero?: never
           observacoes?: string | null
+          pontos_resgate_id?: string | null
           status?: Database["public"]["Enums"]["status_pedido"]
           status_alterado_em?: string
           subtotal?: number
@@ -760,10 +840,12 @@ export type Database = {
           criado_em?: string
           cupom_codigo?: string | null
           desconto?: number
+          desconto_pontos?: number
           endereco_entrega?: Json | null
           id?: string
           numero?: never
           observacoes?: string | null
+          pontos_resgate_id?: string | null
           status?: Database["public"]["Enums"]["status_pedido"]
           status_alterado_em?: string
           subtotal?: number
@@ -775,6 +857,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_pontos_resgate_id_fkey"
+            columns: ["pontos_resgate_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_resgates"
             referencedColumns: ["id"]
           },
         ]
@@ -853,6 +942,92 @@ export type Database = {
           versao_app?: string
         }
         Relationships: []
+      }
+      pontos_movimentos: {
+        Row: {
+          criado_em: string
+          descricao: string
+          id: string
+          motivo: string
+          pontos: number
+          referencia_id: string | null
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          descricao: string
+          id?: string
+          motivo: string
+          pontos: number
+          referencia_id?: string | null
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string
+          id?: string
+          motivo?: string
+          pontos?: number
+          referencia_id?: string | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pontos_movimentos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pontos_resgates: {
+        Row: {
+          criado_em: string
+          id: string
+          pedido_id: string | null
+          percentual: number
+          pontos: number
+          status: string
+          usado_em: string | null
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          pedido_id?: string | null
+          percentual: number
+          pontos: number
+          status?: string
+          usado_em?: string | null
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          pedido_id?: string | null
+          percentual?: number
+          pontos?: number
+          status?: string
+          usado_em?: string | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pontos_resgates_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pontos_resgates_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       produto_santos: {
         Row: {
@@ -1078,6 +1253,10 @@ export type Database = {
           itens_indisponiveis: number
         }[]
       }
+      admin_avaliar_feedback: {
+        Args: { p_aprovar: boolean; p_id: string; p_motivo?: string }
+        Returns: undefined
+      }
       admin_salvar_kit: {
         Args: {
           p_ativo: boolean
@@ -1089,6 +1268,7 @@ export type Database = {
         }
         Returns: string
       }
+      cancelar_resgate_pontos: { Args: { p_id: string }; Returns: undefined }
       carrinho_compartilhado_itens: {
         Args: { p_id: string }
         Returns: {
@@ -1166,6 +1346,15 @@ export type Database = {
         }[]
       }
       eh_admin: { Args: never; Returns: boolean }
+      enviar_feedback: {
+        Args: {
+          p_consentimento: boolean
+          p_texto: string | null
+          p_tipo: string
+          p_video_path: string | null
+        }
+        Returns: string
+      }
       excluir_minha_conta: { Args: never; Returns: undefined }
       formatar_reais: { Args: { v: number }; Returns: string }
       importar_produtos_lote: {
@@ -1332,6 +1521,8 @@ export type Database = {
           notificacao_id: string
         }[]
       }
+      resgatar_pontos: { Args: { p_pontos: number }; Returns: string }
+      responder_formulario: { Args: { p_respostas: Json }; Returns: undefined }
       status_pedido_rotulo: {
         Args: { s: Database["public"]["Enums"]["status_pedido"] }
         Returns: string
