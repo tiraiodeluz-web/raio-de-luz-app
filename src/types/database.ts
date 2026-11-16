@@ -888,6 +888,7 @@ export type Database = {
           codigo: string | null
           criado_em: string
           foto_url: string | null
+          ia_consentimento_em: string | null
           id: string
           limite_credito: number | null
           nome: string
@@ -912,6 +913,7 @@ export type Database = {
           codigo?: string | null
           criado_em?: string
           foto_url?: string | null
+          ia_consentimento_em?: string | null
           id: string
           limite_credito?: number | null
           nome?: string
@@ -936,6 +938,7 @@ export type Database = {
           codigo?: string | null
           criado_em?: string
           foto_url?: string | null
+          ia_consentimento_em?: string | null
           id?: string
           limite_credito?: number | null
           nome?: string

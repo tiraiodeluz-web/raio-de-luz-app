@@ -190,3 +190,9 @@ Dono do projeto: Carlos (tiraiodeluz@gmail.com), único responsável de TI da em
 **`supabase/`** — `migrations/` (tudo do banco; **toda mudança de banco entra aqui E é aplicada no projeto**), `functions/processar-fila-push|assistente|abrir`, `emails/confirmar-cadastro.html` e `redefinir-senha.html` (modelos do Auth), `manutencao/limpar_funcoes_antigas.sql`. Migrações de referência: `..._schema.sql` (tabelas), `..._rls.sql` (políticas + trigger de proteção de campos), `..._funcoes.sql` (carrinho/pedido/cupom), `..._push.sql` (eventos/fila), `..._rotinas.sql` (cron + n8n), `20261021120000_busca_por_palavra.sql`, `20261021140200_importar_produtos.sql`, `20261028150000_notificacoes_nao_lidas.sql`.
 
 **Como validar uma mudança:** `npx tsc --noEmit` + `npx expo lint`; painel: `cd painel && npx vite build`; banco: testar com `DO` + rollback; publicar: commit → `main` → workflow OTA (app) / automático (painel) / build novo só se mudar algo nativo.
+
+
+---
+## Anexo (16/11/2026): preparação para a App Store
+- Roteiro completo, respostas de privacidade e notas para o avaliador em `docs/APP-STORE.md`; Play em `docs/PLAY-STORE.md`.
+- Novidades de conformidade: consentimento da RDL AI (`perfis.ia_consentimento_em`, exigido por `assistente_registrar_mensagem`), Termos de uso (`src/app/termos-de-uso.tsx` + `painel/public/termos-de-uso.html`), página de suporte (`painel/public/suporte.html`), aceite dos termos no cadastro, `ios.icon` com a logo, microfone desligado no plugin de imagens, `versionCode` 1001. Pedido mínimo (`configuracoes.pedido_minimo`) e desconto de fidelidade (3/2/2, teto 7%) estão descritos em `supabase/migrations/20261111120000_*`.

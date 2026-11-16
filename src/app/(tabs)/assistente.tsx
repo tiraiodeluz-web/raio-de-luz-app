@@ -29,6 +29,7 @@ import { prepararFoto, useEnviarAoAssistente, type MensagemChat } from '@/lib/as
 import { useAuth } from '@/lib/auth-context';
 import { useKits, type Kit } from '@/lib/kits';
 import type { ProdutoResumo } from '@/lib/produtos';
+import { supabase } from '@/lib/supabase';
 import { abrirWhatsAppVendedor } from '@/lib/whatsapp';
 import { useRecursos20 } from '@/lib/versao-app';
 
@@ -49,7 +50,8 @@ function novoId() {
 }
 
 export default function AssistenteScreen() {
-  const { session, perfil } = useAuth();
+  const { session, perfil, atualizarPerfil } = useAuth();
+  const [salvandoConsentimento, setSalvandoConsentimento] = useState(false);
   const recursos20 = useRecursos20();
   const [mensagens, setMensagens] = useState<MensagemChat[]>([BOAS_VINDAS]);
   const [texto, setTexto] = useState('');
@@ -96,6 +98,45 @@ export default function AssistenteScreen() {
       </SafeAreaView>
     );
   }
+  // Regra da App Store (5.1.2): antes de mandar dados pessoais (mensagens e fotos) pra uma
+  // IA de terceiros, avisar e pedir permissão. Fica gravado na conta (ia_consentimento_em) e
+  // o servidor também recusa o assistente sem ele (assistente_registrar_mensagem).
+  if (perfil && !perfil.ia_consentimento_em) {
+    async function aceitar() {
+      setSalvandoConsentimento(true);
+      const { error } = await supabase.from('perfis').update({ ia_consentimento_em: new Date().toISOString() }).eq('id', perfil?.id ?? '');
+      if (error) Alert.alert('Não foi possível salvar', 'Verifique sua internet e tente de novo.');
+      else await atualizarPerfil();
+      setSalvandoConsentimento(false);
+    }
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <CabecalhoVoltar titulo="RDL AI" semVoltar />
+        <ScrollView contentContainerStyle={styles.consentimento}>
+          <Ionicons name="sparkles" size={40} color={BrandColors.dourado} />
+          <ThemedText type="title" style={styles.consentimentoTitulo}>
+            Antes de usar a RDL AI
+          </ThemedText>
+          <ThemedText themeColor="textSecondary">
+            A RDL AI é uma assistente de compras que usa inteligência artificial de um serviço de terceiros (Anthropic, nos Estados Unidos).
+          </ThemedText>
+          <ThemedText themeColor="textSecondary">
+            Para responder, o app envia a esse serviço o que você escrever, as fotos que você escolher mandar e os dados do catálogo e do seu carrinho
+            necessários para a conversa. Esses dados são usados apenas para gerar a resposta.
+          </ThemedText>
+          <ThemedText themeColor="textSecondary">
+            Você escolhe se quer usar. Sem a sua permissão, nada é enviado, e você continua fazendo pedidos normalmente pelo catálogo ou falando com o
+            vendedor. Detalhes na Política de privacidade.
+          </ThemedText>
+          <Button titulo="Concordo e quero usar a RDL AI" icone="checkmark" onPress={aceitar} carregando={salvandoConsentimento} />
+          <Button titulo="Falar com vendedor" variante="secundario" icone="logo-whatsapp" onPress={() => abrirWhatsAppVendedor(perfil?.razao_social || perfil?.nome)} />
+          <Button titulo="Política de privacidade" variante="texto" onPress={() => router.push('/politica-privacidade')} />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+
 
   async function escolherFoto(origem: 'camera' | 'galeria') {
     const permissao =
@@ -339,6 +380,8 @@ function Digitando() {
 }
 
 const styles = StyleSheet.create({
+  consentimento: { padding: Spacing.four, gap: Spacing.three, alignItems: 'stretch' },
+  consentimentoTitulo: { fontSize: 22, lineHeight: 28, color: BrandColors.fundoEscuro },
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
   flex: { flex: 1 },
   botaoEntrar: { paddingHorizontal: Spacing.four },

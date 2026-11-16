@@ -102,6 +102,12 @@ export default function ContaScreen() {
             onPress={() => router.push('/politica-privacidade')}
           />
           <Button
+            titulo="Termos de uso"
+            variante="secundario"
+            icone="document-text-outline"
+            onPress={() => router.push('/termos-de-uso')}
+          />
+          <Button
             titulo="Sobre o aplicativo"
             variante="secundario"
             icone="information-circle"

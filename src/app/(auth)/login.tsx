@@ -1,4 +1,5 @@
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -118,6 +119,7 @@ function FormularioEntrar() {
 }
 
 function FormularioCadastrar() {
+  const [aceito, setAceito] = useState(false);
   const [nome, setNome] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [razaoSocial, setRazaoSocial] = useState('');
@@ -192,6 +194,7 @@ function FormularioCadastrar() {
     if (!emailValido(email)) novosErros.email = 'E-mail inválido.';
     if (senha.length < 6) novosErros.senha = 'A senha precisa ter ao menos 6 caracteres.';
     if (senha !== confirmarSenha) novosErros.confirmarSenha = 'As senhas não conferem.';
+    if (!aceito) novosErros.aceito = 'Para se cadastrar, aceite os Termos de uso e a Política de privacidade.';
     setErros(novosErros);
     if (Object.keys(novosErros).length > 0) return;
 
@@ -287,6 +290,21 @@ function FormularioCadastrar() {
         autoCorrect={false}
         erro={erros.confirmarSenha}
       />
+      <Pressable onPress={() => setAceito((v) => !v)} style={styles.aceite} accessibilityRole="checkbox" accessibilityState={{ checked: aceito }}>
+        <Ionicons name={aceito ? 'checkbox' : 'square-outline'} size={24} color="#ffffff" />
+        <ThemedText type="small" style={styles.aceiteTexto}>
+          Li e aceito os{' '}
+          <ThemedText type="small" style={styles.aceiteLink} onPress={() => router.push('/termos-de-uso')}>
+            Termos de uso
+          </ThemedText>{' '}
+          e a{' '}
+          <ThemedText type="small" style={styles.aceiteLink} onPress={() => router.push('/politica-privacidade')}>
+            Política de privacidade
+          </ThemedText>
+          .
+        </ThemedText>
+      </Pressable>
+      {erros.aceito ? <ThemedText style={styles.erro}>{erros.aceito}</ThemedText> : null}
       {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
       {sucesso ? <ThemedText style={styles.sucesso}>{sucesso}</ThemedText> : null}
       <Button titulo="Registrar" onPress={cadastrar} carregando={enviando} />
@@ -295,6 +313,9 @@ function FormularioCadastrar() {
 }
 
 const styles = StyleSheet.create({
+  aceite: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  aceiteTexto: { flex: 1, color: '#ffffff' },
+  aceiteLink: { color: '#ffffff', textDecorationLine: 'underline', fontWeight: '700' },
   safeArea: { flex: 1, backgroundColor: BrandColors.fundoEscuro },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, padding: Spacing.four, gap: Spacing.four },

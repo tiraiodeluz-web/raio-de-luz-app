@@ -9,9 +9,12 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#010534",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.raiodeluzreligiosos.loja",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.raiodeluzreligiosos.loja",
@@ -23,7 +26,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 1000
+      "versionCode": 1001
     },
     "web": {
       "output": "static",
@@ -51,7 +54,8 @@
         "expo-image-picker",
         {
           "photosPermission": "O app acessa suas fotos para anexar imagens em notificações e enviar fotos ao assistente.",
-          "cameraPermission": "O app usa a câmera para você fotografar um produto ou uma lista de pedido e enviar ao assistente."
+          "cameraPermission": "O app usa a câmera para você fotografar um produto ou uma lista de pedido e enviar ao assistente.",
+          "microphonePermission": false
         }
       ]
     ],
