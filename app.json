@@ -12,7 +12,9 @@
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.raiodeluzreligiosos.loja",
       "supportsTablet": false,
+      "buildNumber": "2",
       "infoPlist": {
+        "CFBundleDisplayName": "Raio de Luz",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

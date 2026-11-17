@@ -113,7 +113,7 @@ function FormularioEntrar() {
           <ThemedText style={styles.linkClaro}>Esqueci minha senha</ThemedText>
         </Pressable>
       </Link>
-      <Button titulo="Entrar" onPress={entrar} carregando={enviando} />
+      <Button titulo="Entrar" variante="claro" onPress={entrar} carregando={enviando} />
     </View>
   );
 }
@@ -307,7 +307,7 @@ function FormularioCadastrar() {
       {erros.aceito ? <ThemedText style={styles.erro}>{erros.aceito}</ThemedText> : null}
       {erroGeral ? <ThemedText style={styles.erro}>{erroGeral}</ThemedText> : null}
       {sucesso ? <ThemedText style={styles.sucesso}>{sucesso}</ThemedText> : null}
-      <Button titulo="Registrar" onPress={cadastrar} carregando={enviando} />
+      <Button titulo="Registrar" variante="claro" onPress={cadastrar} carregando={enviando} />
     </View>
   );
 }
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1, padding: Spacing.four, gap: Spacing.four },
   logoContainer: { alignItems: 'center', gap: Spacing.one, marginBottom: Spacing.two },
-  logoTitulo: { color: '#ffffff', fontSize: 30, fontWeight: '700', letterSpacing: 1 },
+  logoTitulo: { color: '#ffffff', fontSize: 30, lineHeight: 40, fontWeight: '700', letterSpacing: 1 },
   logoLinha: { width: 160, height: 1, backgroundColor: '#ffffff88', marginVertical: Spacing.half },
   logoSubtitulo: { color: '#ffffff', fontSize: 16, fontWeight: '600', letterSpacing: 3 },
   logoSlogan: { color: '#ffffffcc', fontStyle: 'italic', fontSize: 12, marginTop: Spacing.half },

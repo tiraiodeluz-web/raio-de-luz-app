@@ -6,7 +6,9 @@ import { BrandColors, Radii, Spacing } from '@/constants/theme';
 
 type Props = Omit<PressableProps, 'style'> & {
   titulo: string;
-  variante?: 'primario' | 'secundario' | 'texto';
+  // 'claro' = fundo branco com texto escuro, pra usar sobre fundo azul-escuro
+  // (o primário é da mesma cor do fundo e ficaria invisível).
+  variante?: 'primario' | 'secundario' | 'texto' | 'claro';
   carregando?: boolean;
   icone?: keyof typeof Ionicons.glyphMap;
   corIcone?: string;
@@ -34,6 +36,7 @@ export function Button({
         variante === 'primario' && styles.primario,
         variante === 'secundario' && styles.secundario,
         variante === 'texto' && styles.texto,
+        variante === 'claro' && styles.claro,
         arredondamento !== undefined && { borderRadius: arredondamento },
         (disabled || carregando) && styles.desabilitado,
         pressed && styles.pressionado,
@@ -53,8 +56,12 @@ export function Button({
           <ThemedText
             type="smallBold"
             numberOfLines={1}
-            themeColor={variante === 'primario' ? undefined : 'text'}
-            style={[styles.textoBase, variante === 'primario' && styles.textoPrimario]}>
+            themeColor={variante === 'primario' || variante === 'claro' ? undefined : 'text'}
+            style={[
+              styles.textoBase,
+              variante === 'primario' && styles.textoPrimario,
+              variante === 'claro' && styles.textoClaro,
+            ]}>
             {titulo}
           </ThemedText>
         </View>
@@ -80,7 +87,9 @@ const styles = StyleSheet.create({
     borderColor: BrandColors.fundoEscuro,
   },
   texto: { backgroundColor: 'transparent', minHeight: 36 },
+  claro: { backgroundColor: '#ffffff' },
   textoPrimario: { color: '#ffffff' },
+  textoClaro: { color: BrandColors.fundoEscuro },
   desabilitado: { opacity: 0.5 },
   pressionado: { opacity: 0.8 },
 });
