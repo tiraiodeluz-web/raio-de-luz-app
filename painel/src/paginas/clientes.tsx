@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import { useAvisar } from '../componentes/avisos';
@@ -233,6 +233,33 @@ function ModalNovoCliente({ aoFechar }: { aoFechar: () => void }) {
   const queryClient = useQueryClient();
   const avisar = useAvisar();
   const campo = (k: keyof typeof f) => ({ value: f[k], onChange: (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value })) });
+  const [consultando, setConsultando] = useState(false);
+  const [avisoCnpj, setAvisoCnpj] = useState<string | null>(null);
+
+  // Com 14 números no CNPJ, puxa razão social, cidade e UF na BrasilAPI (igual ao app).
+  const cnpjDigitos = f.cnpj.replace(/\D/g, '');
+  useEffect(() => {
+    setAvisoCnpj(null);
+    if (cnpjDigitos.length !== 14) return;
+    let ativo = true;
+    setConsultando(true);
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitos}`)
+      .then(async (r) => {
+        if (r.status === 404) throw new Error('CNPJ não encontrado na Receita. Preencha os dados à mão.');
+        if (!r.ok) throw new Error('Não foi possível consultar o CNPJ agora. Preencha à mão.');
+        return r.json();
+      })
+      .then((d) => {
+        if (!ativo) return;
+        setF((x) => ({ ...x, razao_social: d.razao_social ?? x.razao_social, cidade: d.municipio ?? x.cidade, uf: d.uf ?? x.uf }));
+        setAvisoCnpj(d.razao_social ? `Dados puxados: ${d.razao_social}` : null);
+      })
+      .catch((e: Error) => ativo && setAvisoCnpj(e.message))
+      .finally(() => ativo && setConsultando(false));
+    return () => {
+      ativo = false;
+    };
+  }, [cnpjDigitos]);
 
   async function criar() {
     setErro(null);
@@ -274,11 +301,11 @@ function ModalNovoCliente({ aoFechar }: { aoFechar: () => void }) {
       <Campo rotulo="Senha *" ajuda="Mínimo 6 caracteres. Aparece na tela pra você conferir e passar à pessoa.">
         <Entrada autoComplete="off" {...campo('senha')} />
       </Campo>
-      <Campo rotulo="CNPJ (opcional)">
+      <Campo rotulo="CNPJ (opcional)" ajuda={consultando ? 'Consultando a Receita...' : (avisoCnpj ?? 'Com os 14 números, a razão social, cidade e UF são preenchidas sozinhas.')}>
         <Entrada inputMode="numeric" placeholder="Somente números" {...campo('cnpj')} />
       </Campo>
       <Campo rotulo="Razão social (opcional)">
-        <Entrada {...campo('razao_social')} />
+        <Entrada placeholder={consultando ? 'Consultando...' : ''} {...campo('razao_social')} />
       </Campo>
       <Campo rotulo="WhatsApp (opcional)">
         <Entrada inputMode="tel" {...campo('telefone')} />
