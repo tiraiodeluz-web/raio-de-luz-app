@@ -122,7 +122,11 @@ export default function AssistenteScreen() {
           </ThemedText>
           <ThemedText themeColor="textSecondary">
             Para responder, o app envia a esse serviço o que você escrever, as fotos que você escolher mandar e os dados do catálogo e do seu carrinho
-            necessários para a conversa. Esses dados são usados apenas para gerar a resposta.
+            necessários para a conversa. Esses dados são usados para gerar a resposta.
+          </ThemedText>
+          <ThemedText themeColor="textSecondary">
+            A Raio de Luz também guarda a sua conversa com a RDL AI (mensagens e fotos enviadas) por 24 horas úteis, só para a equipe acompanhar o
+            atendimento e melhorar o assistente. Depois desse prazo, tudo é apagado.
           </ThemedText>
           <ThemedText themeColor="textSecondary">
             Você escolhe se quer usar. Sem a sua permissão, nada é enviado, e você continua fazendo pedidos normalmente pelo catálogo ou falando com o

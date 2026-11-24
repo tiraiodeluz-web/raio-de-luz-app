@@ -12,6 +12,7 @@ import { COR_STATUS, ROTULO_STATUS, type StatusPedido } from '../lib/status';
 import { supabase } from '../lib/supabase';
 import { chamarAdminUsuarios, useEmails } from '../lib/usuarios';
 import { ModalAprovar } from './clientes';
+import { ConversasIa } from './conversas-ia';
 import type { TablesUpdate } from '@/types/database';
 
 export function PaginaCliente() {
@@ -189,6 +190,8 @@ export function PaginaCliente() {
                 ]}
               />
             </Cartao>
+
+            <ConversasIa usuarioId={id as string} />
 
             <Cartao titulo="Produtos que mais abriu (últimos 60 dias)" semCorpo>
               <Tabela

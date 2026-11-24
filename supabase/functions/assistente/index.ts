@@ -156,7 +156,7 @@ type MensagemApp = {
 const MAX_FOTO_BASE64 = 6_000_000;
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
-type Saida = { produtoIds: string[]; kitIds: string[]; sugestoes: string[]; carrinhoAlterado: boolean };
+type Saida = { produtoIds: string[]; kitIds: string[]; sugestoes: string[]; carrinhoAlterado: boolean; acoes: string[] };
 
 function json(corpo: unknown, status = 200) {
   return new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json" } });
@@ -263,6 +263,7 @@ async function executarFerramenta(
       });
       if (error) return { erro: error.message };
       saida.carrinhoAlterado = true;
+      saida.acoes.push(`adicionou ao carrinho: ${quantidade}x (produto ${entrada.produto_id})`);
       return { ok: true, adicionado: { produto_id: entrada.produto_id, quantidade } };
     }
 
@@ -303,6 +304,7 @@ async function executarFerramenta(
       const { data, error } = await db.rpc("repetir_pedido", { p_pedido_id: idValido(entrada.pedido_id) });
       if (error) return { erro: error.message };
       saida.carrinhoAlterado = true;
+      saida.acoes.push("repetiu um pedido anterior no carrinho");
       return data?.[0] ?? { itens_adicionados: 0, itens_indisponiveis: 0 };
     }
 
@@ -330,6 +332,7 @@ async function executarFerramenta(
       const { data, error } = await db.rpc("adicionar_kit_ao_carrinho", { p_kit_id: idValido(entrada.kit_id) });
       if (error) return { erro: error.message };
       saida.carrinhoAlterado = true;
+      saida.acoes.push("adicionou um kit ao carrinho");
       return data?.[0] ?? { itens_adicionados: 0, itens_indisponiveis: 0 };
     }
 
@@ -435,8 +438,27 @@ Deno.serve(async (req) => {
     return json({ erro: "Você atingiu o limite de mensagens do assistente por hoje. Amanhã libera de novo!" }, 429);
   }
 
+  // Histórico para o painel (só admin lê; apagado após 24 horas úteis). Nunca
+  // pode atrapalhar a resposta: qualquer falha aqui é só registrada no log.
+  const gravador = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  async function gravar(linha: { papel: "cliente" | "assistente"; texto: string; foto_base64?: string | null; produtos?: unknown; acoes?: string[] }) {
+    try {
+      const { error } = await gravador.from("assistente_mensagens").insert({ usuario_id: usuario.user.id, ...linha });
+      if (error) console.error("assistente: não gravou mensagem", error.message);
+    } catch (e) {
+      console.error("assistente: não gravou mensagem", e);
+    }
+  }
+  const ultimaDoCliente = [...recebidas].reverse().find((m) => m?.papel === "cliente");
+  if (ultimaDoCliente) {
+    const foto = typeof ultimaDoCliente.fotoBase64 === "string" && BASE64.test(ultimaDoCliente.fotoBase64) ? ultimaDoCliente.fotoBase64 : null;
+    await gravar({ papel: "cliente", texto: String(ultimaDoCliente.texto ?? "").slice(0, MAX_TEXTO), foto_base64: foto });
+  }
+
   const anthropic = new Anthropic({ apiKey: chaveAnthropic });
-  const saida: Saida = { produtoIds: [], kitIds: [], sugestoes: [], carrinhoAlterado: false };
+  const saida: Saida = { produtoIds: [], kitIds: [], sugestoes: [], carrinhoAlterado: false, acoes: [] };
   const mensagens: Anthropic.MessageParam[] = historico;
   let textoFinal = "";
   let tokensEntrada = 0;
@@ -507,6 +529,13 @@ Deno.serve(async (req) => {
     const porId = new Map((data ?? []).map((p: { id: string }) => [p.id, p]));
     produtos = saida.produtoIds.map((id) => porId.get(id)).filter(Boolean);
   }
+
+  await gravar({
+    papel: "assistente",
+    texto: textoFinal || "Pronto! Posso ajudar com mais alguma coisa?",
+    produtos: (produtos as { id: string; sku: string; nome: string }[]).map((p) => ({ id: p.id, sku: p.sku, nome: p.nome })),
+    acoes: saida.acoes,
+  });
 
   return json({
     texto: textoFinal || "Pronto! Posso ajudar com mais alguma coisa?",

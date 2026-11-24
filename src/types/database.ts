@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistente_mensagens: {
+        Row: {
+          acoes: string[] | null
+          criado_em: string
+          foto_base64: string | null
+          id: string
+          papel: string
+          produtos: Json | null
+          texto: string
+          usuario_id: string
+        }
+        Insert: {
+          acoes?: string[] | null
+          criado_em?: string
+          foto_base64?: string | null
+          id?: string
+          papel: string
+          produtos?: Json | null
+          texto?: string
+          usuario_id: string
+        }
+        Update: {
+          acoes?: string[] | null
+          criado_em?: string
+          foto_base64?: string | null
+          id?: string
+          papel?: string
+          produtos?: Json | null
+          texto?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistente_mensagens_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assistente_uso: {
         Row: {
           dia: string

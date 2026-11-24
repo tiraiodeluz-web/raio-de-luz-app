@@ -16,7 +16,7 @@ export default function PoliticaPrivacidadeScreen() {
       <CabecalhoVoltar titulo="Política de privacidade" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText themeColor="textSecondary" style={styles.atualizacao}>
-          Última atualização: 16 de novembro de 2026
+          Última atualização: 24 de novembro de 2026
         </ThemedText>
 
         <ThemedText themeColor="textSecondary">
@@ -35,7 +35,7 @@ export default function PoliticaPrivacidadeScreen() {
           notificações; registros técnicos de erros e de uso do aplicativo (por exemplo, produtos visualizados e
           data do último acesso); e, no programa de pontos, as respostas do formulário e os depoimentos em texto ou vídeo que você enviar.{'\n\n'}O aplicativo não coleta dados de localização (GPS). A câmera e a galeria de
           fotos só são acessadas quando você escolhe enviar uma foto ao assistente ou um vídeo de depoimento, e somente o
-          arquivo escolhido é enviado. O uso do assistente de compras (RDL AI) é opcional e só começa depois que você aceita, na tela do assistente, o aviso de que suas mensagens e fotos serão enviadas a um serviço de inteligência artificial de terceiros.
+          arquivo escolhido é enviado. O uso do assistente de compras (RDL AI) é opcional e só começa depois que você aceita, na tela do assistente, o aviso de que suas mensagens e fotos serão enviadas a um serviço de inteligência artificial de terceiros e de que a Raio de Luz guarda essa conversa (mensagens e fotos) por 24 horas úteis, para acompanhamento do atendimento e melhoria do assistente, apagando-a em seguida.
         </Secao>
 
         <Secao titulo="2. Finalidade da coleta">
