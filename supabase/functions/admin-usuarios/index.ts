@@ -121,5 +121,36 @@ Deno.serve(async (req) => {
     return json({ ok: true });
   }
 
+  // { acao: "emails", ids: [...] } -> { emails: { [id]: "email" } }
+  if (corpo.acao === "emails") {
+    const ids = new Set((Array.isArray(corpo.ids) ? corpo.ids : []).filter((i): i is string => typeof i === "string").slice(0, 1000));
+    const emails: Record<string, string> = {};
+    for (let pagina = 1; pagina <= 10 && ids.size > Object.keys(emails).length; pagina++) {
+      const { data, error } = await admin.auth.admin.listUsers({ page: pagina, perPage: 1000 });
+      if (error) return json({ erro: error.message }, 500);
+      for (const u of data.users) if (ids.has(u.id) && u.email) emails[u.id] = u.email;
+      if (data.users.length < 1000) break;
+    }
+    return json({ ok: true, emails });
+  }
+
+  // { acao: "trocar_email", usuario_id, email } -> troca na hora, sem link de confirmação.
+  // Em outros administradores não pode: só clientes e a própria conta.
+  if (corpo.acao === "trocar_email") {
+    const id = texto(corpo.usuario_id);
+    const email = texto(corpo.email)?.toLowerCase() ?? "";
+    if (!id) return json({ erro: "Usuário não informado." }, 400);
+    if (!EMAIL.test(email)) return json({ erro: "E-mail inválido." }, 400);
+    const { data: alvo } = await admin.from("perfis").select("tipo").eq("id", id).maybeSingle();
+    if (!alvo) return json({ erro: "Usuário não encontrado." }, 404);
+    if (alvo.tipo !== "cliente" && id !== quem.user.id) return json({ erro: "Não dá para trocar o e-mail de outro administrador." }, 403);
+    const { error } = await admin.auth.admin.updateUserById(id, { email, email_confirm: true });
+    if (error) {
+      const jaExiste = /already|registered|exists/i.test(error.message);
+      return json({ erro: jaExiste ? "Já existe um acesso com esse e-mail." : error.message }, jaExiste ? 409 : 500);
+    }
+    return json({ ok: true });
+  }
+
   return json({ erro: "Ação desconhecida." }, 400);
 });

@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from './supabase';
 
 // Chama a Edge Function admin-usuarios (só administradores). Em erro, devolve
@@ -19,4 +21,15 @@ export async function chamarAdminUsuarios<T = { ok: true }>(corpo: Record<string
   }
   if (data?.erro) throw new Error(String(data.erro));
   return data as T;
+}
+
+// E-mails de login (ficam no sistema de autenticação, então vêm pela função).
+export function useEmails(ids: string[]) {
+  const chave = [...ids].sort().join(',');
+  return useQuery({
+    queryKey: ['emails-usuarios', chave],
+    enabled: ids.length > 0,
+    staleTime: 60_000,
+    queryFn: async () => (await chamarAdminUsuarios<{ ok: true; emails: Record<string, string> }>({ acao: 'emails', ids })).emails,
+  });
 }

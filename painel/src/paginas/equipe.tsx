@@ -8,6 +8,7 @@ import { mensagemErro } from '../lib/erros';
 import { data } from '../lib/formato';
 import { useSessao } from '../lib/sessao';
 import { supabase } from '../lib/supabase';
+import { chamarAdminUsuarios, useEmails } from '../lib/usuarios';
 
 type Admin = { id: string; nome: string; razao_social: string | null; codigo: string | null; criado_em: string };
 
@@ -26,6 +27,20 @@ export function PaginaEquipe() {
     },
   });
 
+  const minhaEmpresa = useQuery({
+    queryKey: ['minha-empresa', perfil?.id],
+    enabled: !!perfil,
+    queryFn: async () => {
+      const { data: p, error } = await supabase.from('perfis').select('cnpj, razao_social').eq('id', perfil!.id).single();
+      if (error) throw error;
+      return p;
+    },
+  });
+  const emails = useEmails((admins.data ?? []).map((a) => a.id)).data ?? {};
+  const [cnpjEdit, setCnpjEdit] = useState<string | null>(null);
+  const [razaoEdit, setRazaoEdit] = useState<string | null>(null);
+  const cnpjAtual = cnpjEdit ?? minhaEmpresa.data?.cnpj ?? '';
+  const razaoAtual = razaoEdit ?? minhaEmpresa.data?.razao_social ?? '';
   const [meuNome, setMeuNome] = useState<string | null>(null);
   const [novoEmail, setNovoEmail] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -50,12 +65,31 @@ export function PaginaEquipe() {
     const email = novoEmail.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(email)) return avisar('E-mail inválido.', 'erro');
     if (email === emailAtual.toLowerCase()) return avisar('Esse já é o seu e-mail de login.', 'erro');
+    if (!perfil) return;
     setSalvando(true);
-    const { error } = await supabase.auth.updateUser({ email });
+    try {
+      await chamarAdminUsuarios({ acao: 'trocar_email', usuario_id: perfil.id, email });
+      await supabase.auth.refreshSession();
+      avisar('E-mail de login trocado. Da próxima vez, entre com o novo e-mail.', 'sucesso');
+      setNovoEmail('');
+    } catch (e) {
+      avisar((e as Error).message, 'erro');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function salvarMinhaEmpresa() {
+    if (!perfil) return;
+    const d = cnpjAtual.replace(/\D/g, '');
+    if (d && d.length !== 14) return avisar('O CNPJ precisa ter 14 números.', 'erro');
+    setSalvando(true);
+    const { error } = await supabase.from('perfis').update({ cnpj: d || null, razao_social: razaoAtual.trim() || null }).eq('id', perfil.id);
     setSalvando(false);
     if (error) return avisar(mensagemErro(error), 'erro');
-    avisar('Enviamos um link de confirmação. A troca só vale depois de abrir o link (confira também o e-mail atual).', 'sucesso');
-    setNovoEmail('');
+    avisar('CNPJ e razão social salvos.', 'sucesso');
+    queryClient.invalidateQueries({ queryKey: ['minha-empresa'] });
+    queryClient.invalidateQueries({ queryKey: ['admins-painel'] });
   }
 
   async function salvarNomeOutro() {
@@ -94,13 +128,26 @@ export function PaginaEquipe() {
                 </Botao>
               </div>
             ) : null}
-            <Campo rotulo="E-mail de login (usuário)" ajuda={`Hoje: ${emailAtual}. Ao trocar, o Supabase manda um link de confirmação para o novo e-mail e para o atual. Até confirmar, você continua entrando com o e-mail antigo.`}>
+            <Campo rotulo="E-mail de login (usuário)" ajuda={`Hoje: ${emailAtual}. A troca vale na hora, sem e-mail de confirmação: já entre com o novo e-mail.`}>
               <Entrada type="email" placeholder="novo@email.com" value={novoEmail} onChange={(e) => setNovoEmail(e.target.value)} autoComplete="off" />
             </Campo>
             {novoEmail.trim() ? (
               <div>
                 <Botao variante="primario" carregando={salvando} onClick={trocarEmail}>
                   Trocar e-mail de login
+                </Botao>
+              </div>
+            ) : null}
+            <Campo rotulo="Meu CNPJ">
+              <Entrada inputMode="numeric" value={cnpjAtual} onChange={(e) => setCnpjEdit(e.target.value)} />
+            </Campo>
+            <Campo rotulo="Minha razão social">
+              <Entrada value={razaoAtual} onChange={(e) => setRazaoEdit(e.target.value)} />
+            </Campo>
+            {cnpjEdit !== null || razaoEdit !== null ? (
+              <div>
+                <Botao variante="primario" carregando={salvando} onClick={salvarMinhaEmpresa}>
+                  Salvar CNPJ e razão social
                 </Botao>
               </div>
             ) : null}
@@ -147,6 +194,7 @@ export function PaginaEquipe() {
                       </div>
                     ),
                 },
+                { chave: 'email', titulo: 'E-mail de login', ordenar: (a) => emails[a.id], celula: (a) => emails[a.id] ?? '—' },
                 { chave: 'desde', titulo: 'Cadastro', ordenar: (a) => a.criado_em, celula: (a) => data(a.criado_em) },
                 {
                   chave: 'acoes',

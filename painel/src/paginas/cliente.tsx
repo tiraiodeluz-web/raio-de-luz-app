@@ -10,7 +10,7 @@ import { mensagemErro } from '../lib/erros';
 import { cnpj, data, dataHora, hoje, lerNumero, linkWhatsApp, numero, reais, relativo, somarDias, telefone } from '../lib/formato';
 import { COR_STATUS, ROTULO_STATUS, type StatusPedido } from '../lib/status';
 import { supabase } from '../lib/supabase';
-import { chamarAdminUsuarios } from '../lib/usuarios';
+import { chamarAdminUsuarios, useEmails } from '../lib/usuarios';
 import { ModalAprovar } from './clientes';
 import type { TablesUpdate } from '@/types/database';
 
@@ -70,10 +70,18 @@ export function PaginaCliente() {
   const [versao, setVersao] = useState('2.0');
   const [nome, setNome] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
+  const [novoEmail, setNovoEmail] = useState('');
+  const [trocandoEmail, setTrocandoEmail] = useState(false);
+  const [cnpjEdit, setCnpjEdit] = useState('');
+  const [razaoEdit, setRazaoEdit] = useState('');
+  const [buscandoCnpj, setBuscandoCnpj] = useState(false);
+  const emailAtual = useEmails(id ? [id] : []).data?.[id as string];
   const [trocandoSenha, setTrocandoSenha] = useState(false);
   useEffect(() => {
     if (!consulta.data) return;
     setNome(consulta.data.perfil.nome);
+    setCnpjEdit(consulta.data.perfil.cnpj ?? '');
+    setRazaoEdit(consulta.data.perfil.razao_social ?? '');
     setLimite(consulta.data.perfil.limite_credito ? String(consulta.data.perfil.limite_credito).replace('.', ',') : '');
     setVersao(consulta.data.perfil.versao_app);
   }, [consulta.data]);
@@ -254,6 +262,70 @@ export function PaginaCliente() {
                     Salvar nome
                   </Botao>
                 ) : null}
+                <Campo rotulo="E-mail de login" ajuda={emailAtual ? `Hoje: ${emailAtual}. A troca vale na hora, sem e-mail de confirmação.` : 'Carregando...'}>
+                  <Entrada type="email" autoComplete="off" placeholder="novo@email.com" value={novoEmail} onChange={(e) => setNovoEmail(e.target.value)} />
+                </Campo>
+                {novoEmail.trim() ? (
+                  <Botao
+                    variante="primario"
+                    carregando={trocandoEmail}
+                    onClick={async () => {
+                      setTrocandoEmail(true);
+                      try {
+                        await chamarAdminUsuarios({ acao: 'trocar_email', usuario_id: id, email: novoEmail });
+                        avisar('E-mail de login trocado.', 'sucesso');
+                        setNovoEmail('');
+                        queryClient.invalidateQueries({ queryKey: ['emails-usuarios'] });
+                      } catch (e) {
+                        avisar((e as Error).message, 'erro');
+                      } finally {
+                        setTrocandoEmail(false);
+                      }
+                    }}>
+                    Trocar e-mail
+                  </Botao>
+                ) : null}
+                <Campo rotulo="CNPJ" ajuda="Só números ou com pontuação. Não pode repetir o de outro cliente.">
+                  <Entrada inputMode="numeric" value={cnpjEdit} onChange={(e) => setCnpjEdit(e.target.value)} />
+                </Campo>
+                <Campo rotulo="Razão social">
+                  <Entrada value={razaoEdit} onChange={(e) => setRazaoEdit(e.target.value)} />
+                </Campo>
+                <div className="linha">
+                  <Botao
+                    pequeno
+                    carregando={buscandoCnpj}
+                    onClick={async () => {
+                      const d = cnpjEdit.replace(/\D/g, '');
+                      if (d.length !== 14) return avisar('Digite os 14 números do CNPJ.', 'erro');
+                      setBuscandoCnpj(true);
+                      try {
+                        const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${d}`);
+                        if (!r.ok) throw new Error(r.status === 404 ? 'CNPJ não encontrado na Receita.' : 'Consulta indisponível agora.');
+                        const j = await r.json();
+                        if (j.razao_social) setRazaoEdit(j.razao_social);
+                        avisar('Razão social puxada da Receita. Clique em Salvar para gravar.', 'sucesso');
+                      } catch (e) {
+                        avisar((e as Error).message, 'erro');
+                      } finally {
+                        setBuscandoCnpj(false);
+                      }
+                    }}>
+                    Buscar razão social pelo CNPJ
+                  </Botao>
+                  {cnpjEdit.replace(/\D/g, '') !== (perfil.cnpj ?? '') || razaoEdit.trim() !== (perfil.razao_social ?? '') ? (
+                    <Botao
+                      variante="primario"
+                      pequeno
+                      onClick={() => {
+                        const d = cnpjEdit.replace(/\D/g, '');
+                        if (d && d.length !== 14) return avisar('O CNPJ precisa ter 14 números.', 'erro');
+                        salvar({ cnpj: d || null, razao_social: razaoEdit.trim() || null }, 'CNPJ e razão social salvos');
+                      }}>
+                      Salvar CNPJ e razão social
+                    </Botao>
+                  ) : null}
+                </div>
                 <Campo rotulo="Nova senha de login" ajuda="Define a senha agora (o e-mail também fica confirmado). Passe a senha para o cliente; ele pode trocar depois com 'Esqueci minha senha'.">
                   <Entrada autoComplete="off" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
                 </Campo>

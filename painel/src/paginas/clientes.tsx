@@ -10,7 +10,7 @@ import { estaOnline } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { cnpj, data, lerNumero, linkWhatsApp, numero, reais, relativo, telefone } from '../lib/formato';
 import { supabase } from '../lib/supabase';
-import { chamarAdminUsuarios } from '../lib/usuarios';
+import { chamarAdminUsuarios, useEmails } from '../lib/usuarios';
 
 type Aba = 'pendentes' | 'aprovados' | 'todos';
 
@@ -82,6 +82,7 @@ export function PaginaClientes() {
   const navegar = useNavigate();
 
   const todos = consulta.data ?? [];
+  const emails = useEmails(todos.map((c) => c.id)).data ?? {};
   const pendentes = todos.filter((c) => !c.aprovado);
   const aprovados = todos.filter((c) => c.aprovado);
   const termo = busca
@@ -93,14 +94,14 @@ export function PaginaClientes() {
     const base = aba === 'pendentes' ? pendentes : aba === 'aprovados' ? aprovados : todos;
     if (!termo) return base;
     return base.filter((c) =>
-      [c.nome, c.razao_social, c.cnpj, c.telefone, c.cidade, c.codigo]
+      [c.nome, c.razao_social, c.cnpj, c.telefone, c.cidade, c.codigo, emails[c.id]]
         .join(' ')
         .toLowerCase()
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
         .includes(termo),
     );
-  }, [aba, pendentes, aprovados, todos, termo]);
+  }, [aba, pendentes, aprovados, todos, termo, emails]);
 
   function exportar() {
     baixarCsv(
@@ -109,6 +110,7 @@ export function PaginaClientes() {
         { titulo: 'Código', valor: (c) => c.codigo },
         { titulo: 'Razão social', valor: (c) => c.razao_social },
         { titulo: 'Nome', valor: (c) => c.nome },
+        { titulo: 'E-mail', valor: (c) => emails[c.id] },
         { titulo: 'CNPJ', valor: (c) => cnpj(c.cnpj) },
         { titulo: 'WhatsApp', valor: (c) => telefone(c.telefone) },
         { titulo: 'Cidade', valor: (c) => c.cidade },
@@ -152,7 +154,7 @@ export function PaginaClientes() {
       <div className="filtros">
         <label className="campo busca">
           <span>Buscar</span>
-          <Entrada placeholder="Razão social, nome, CNPJ, telefone, cidade ou código" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <Entrada placeholder="Razão social, nome, e-mail, CNPJ, telefone, cidade ou código" value={busca} onChange={(e) => setBusca(e.target.value)} />
         </label>
       </div>
       <Cartao semCorpo>
@@ -187,6 +189,7 @@ export function PaginaClientes() {
                   </div>
                 ),
               },
+              { chave: 'email', titulo: 'E-mail', ordenar: (c) => emails[c.id], celula: (c) => <span className="truncar">{emails[c.id] ?? '—'}</span> },
               { chave: 'cnpj', titulo: 'CNPJ', celula: (c) => <span className="sem-quebra">{cnpj(c.cnpj)}</span> },
               { chave: 'cidade', titulo: 'Cidade', ordenar: (c) => c.cidade, celula: (c) => [c.cidade, c.uf].filter(Boolean).join('/') || '—' },
               { chave: 'cadastro', titulo: 'Cadastro', ordenar: (c) => c.cadastrado_em, celula: (c) => data(c.cadastrado_em) },
