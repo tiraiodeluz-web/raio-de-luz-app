@@ -1,6 +1,8 @@
-# Publica uma atualização OTA (sem reinstalar) para quem instalou o app pela
-# Play Store (canal "production"). O canal "preview" continua sendo o dos APKs
-# de teste: ver publicar-atualizacao.yml.
+# Publica uma atualização OTA (sem reinstalar) no canal "production" para quem
+# instalou o app pela Play Store (Android) e pela App Store/TestFlight (iOS).
+# O canal "preview" continua sendo o dos APKs de teste: ver publicar-atualizacao.yml.
+# Android e iOS são duas etapas separadas: "platform: all" tentaria gerar
+# também a versão web e falha ("window is not defined").
 # Só rode depois de testar a mesma mudança no canal preview.
 name: Publicar atualização (produção)
 
@@ -13,8 +15,8 @@ on:
         required: false
 
 jobs:
-  atualizacao:
-    name: Atualização Android e iOS (production)
+  android:
+    name: Atualização Android (production)
     type: update
     environment: production
     env:
@@ -22,5 +24,16 @@ jobs:
       EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R
     params:
       channel: production
-      platform: all
+      platform: android
+      message: ${{ inputs.mensagem || 'Atualização' }}
+  ios:
+    name: Atualização iOS (production)
+    type: update
+    environment: production
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://zjkhlvomxhtafajbzbjb.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R
+    params:
+      channel: production
+      platform: ios
       message: ${{ inputs.mensagem || 'Atualização' }}
