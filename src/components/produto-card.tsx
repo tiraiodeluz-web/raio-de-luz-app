@@ -90,6 +90,10 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
         </ThemedText>
       </View>
 
+      <ThemedText type="small" themeColor="textSecondary" style={styles.minimo} numberOfLines={1}>
+        {`Mínimo: ${produto.embalagem || 1} un.`}
+      </ThemedText>
+
       {mostrarComprar ? (
         <View style={styles.botao}>
           <Button
@@ -144,7 +148,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   nome: { textAlign: "center" },
-  precos: { alignItems: "center", marginBottom: Spacing.one },
+  precos: { alignItems: "center" },
+  minimo: { textAlign: "center", marginBottom: Spacing.one },
   botao: { marginTop: "auto" },
   oculto: { opacity: 0 },
   preco: { fontSize: 17 },
