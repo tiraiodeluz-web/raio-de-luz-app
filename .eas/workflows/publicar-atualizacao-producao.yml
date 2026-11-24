@@ -14,7 +14,7 @@ on:
 
 jobs:
   atualizacao:
-    name: Atualização Android (production)
+    name: Atualização Android e iOS (production)
     type: update
     environment: production
     env:
@@ -22,5 +22,5 @@ jobs:
       EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R
     params:
       channel: production
-      platform: android
+      platform: all
       message: ${{ inputs.mensagem || 'Atualização' }}
