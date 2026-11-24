@@ -78,7 +78,15 @@ function FormularioEntrar() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
     setEnviando(false);
     if (error) {
-      setErro('E-mail ou senha incorretos.');
+      if (error.code === 'email_not_confirmed') {
+        setErro('Confirme seu e-mail para entrar: abra o link que enviamos para a sua caixa de entrada (veja também o spam).');
+      } else if (error.code === 'invalid_credentials') {
+        setErro('E-mail ou senha incorretos. Se você esqueceu a senha, toque em "Esqueci minha senha".');
+      } else if (error.message?.toLowerCase().includes('network') || error.message?.toLowerCase().includes('fetch')) {
+        setErro('Sem conexão com a internet. Tente de novo.');
+      } else {
+        setErro('Não foi possível entrar agora. Tente de novo em instantes.');
+      }
     }
     // sessão + perfil carregados via AuthProvider; o guardião de rotas em
     // src/app/_layout.tsx decide para onde ir (Início, Aguardando aprovação ou "Ir para?")
