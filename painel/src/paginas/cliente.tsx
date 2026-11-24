@@ -10,6 +10,7 @@ import { mensagemErro } from '../lib/erros';
 import { cnpj, data, dataHora, hoje, lerNumero, linkWhatsApp, numero, reais, relativo, somarDias, telefone } from '../lib/formato';
 import { COR_STATUS, ROTULO_STATUS, type StatusPedido } from '../lib/status';
 import { supabase } from '../lib/supabase';
+import { chamarAdminUsuarios } from '../lib/usuarios';
 import { ModalAprovar } from './clientes';
 import type { TablesUpdate } from '@/types/database';
 
@@ -68,6 +69,8 @@ export function PaginaCliente() {
   const [limite, setLimite] = useState('');
   const [versao, setVersao] = useState('2.0');
   const [nome, setNome] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [trocandoSenha, setTrocandoSenha] = useState(false);
   useEffect(() => {
     if (!consulta.data) return;
     setNome(consulta.data.perfil.nome);
@@ -249,6 +252,29 @@ export function PaginaCliente() {
                       salvar({ nome: nome.trim() }, 'Nome salvo');
                     }}>
                     Salvar nome
+                  </Botao>
+                ) : null}
+                <Campo rotulo="Nova senha de login" ajuda="Define a senha agora (o e-mail também fica confirmado). Passe a senha para o cliente; ele pode trocar depois com 'Esqueci minha senha'.">
+                  <Entrada autoComplete="off" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
+                </Campo>
+                {novaSenha ? (
+                  <Botao
+                    variante="primario"
+                    carregando={trocandoSenha}
+                    onClick={async () => {
+                      if (novaSenha.length < 6) return avisar('A senha precisa ter ao menos 6 caracteres.', 'erro');
+                      setTrocandoSenha(true);
+                      try {
+                        await chamarAdminUsuarios({ acao: 'senha', usuario_id: id, senha: novaSenha });
+                        avisar('Senha definida. O cliente já pode entrar com ela.', 'sucesso');
+                        setNovaSenha('');
+                      } catch (e) {
+                        avisar((e as Error).message, 'erro');
+                      } finally {
+                        setTrocandoSenha(false);
+                      }
+                    }}>
+                    Definir senha
                   </Botao>
                 ) : null}
                 <Campo rotulo="Acesso de administrador" ajuda="Ligado, esta pessoa entra neste painel e vê no app a tela de escolher entre administrador e usuário. Para tirar depois, use Equipe e minha conta.">

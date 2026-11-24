@@ -10,6 +10,7 @@ import { estaOnline } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { cnpj, data, lerNumero, linkWhatsApp, numero, reais, relativo, telefone } from '../lib/formato';
 import { supabase } from '../lib/supabase';
+import { chamarAdminUsuarios } from '../lib/usuarios';
 
 type Aba = 'pendentes' | 'aprovados' | 'todos';
 
@@ -76,6 +77,7 @@ export function PaginaClientes() {
   const aba = (params.get('aba') as Aba) || 'aprovados';
   const [busca, setBusca] = useState('');
   const [aprovando, setAprovando] = useState<ClienteLinha | null>(null);
+  const [criando, setCriando] = useState(false);
   const consulta = useClientes();
   const navegar = useNavigate();
 
@@ -129,7 +131,14 @@ export function PaginaClientes() {
       <CabecalhoPagina
         titulo="Clientes"
         descricao="Aprove cadastros novos, veja quanto cada loja compra e fale com ela pelo WhatsApp."
-        acoes={<Botao onClick={exportar}>⬇ Exportar CSV</Botao>}
+        acoes={
+          <>
+            <Botao variante="primario" onClick={() => setCriando(true)}>
+              + Novo cliente
+            </Botao>
+            <Botao onClick={exportar}>⬇ Exportar CSV</Botao>
+          </>
+        }
       />
       <Abas<Aba>
         ativa={aba}
@@ -211,7 +220,83 @@ export function PaginaClientes() {
         )}
       </Cartao>
       {aprovando ? <ModalAprovar cliente={aprovando} aoFechar={() => setAprovando(null)} /> : null}
+      {criando ? <ModalNovoCliente aoFechar={() => setCriando(false)} /> : null}
     </>
+  );
+}
+
+function ModalNovoCliente({ aoFechar }: { aoFechar: () => void }) {
+  const [f, setF] = useState({ nome: '', email: '', senha: '', cnpj: '', razao_social: '', telefone: '', cidade: '', uf: '' });
+  const [aprovar, setAprovar] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const avisar = useAvisar();
+  const campo = (k: keyof typeof f) => ({ value: f[k], onChange: (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value })) });
+
+  async function criar() {
+    setErro(null);
+    setSalvando(true);
+    try {
+      const r = await chamarAdminUsuarios<{ ok: true; codigo: string | null }>({ acao: 'criar', ...f, aprovar });
+      queryClient.invalidateQueries({ queryKey: ['clientes-painel'] });
+      queryClient.invalidateQueries({ queryKey: ['contadores-menu'] });
+      avisar(`Acesso criado${r.codigo ? ` (código ${r.codigo})` : ''}. Já pode entrar no app com esse e-mail e senha.`, 'sucesso');
+      aoFechar();
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Modal
+      titulo="Novo cliente (criar acesso)"
+      aoFechar={aoFechar}
+      rodape={
+        <>
+          <Botao onClick={aoFechar}>Cancelar</Botao>
+          <Botao variante="primario" onClick={criar} carregando={salvando}>
+            Criar acesso
+          </Botao>
+        </>
+      }>
+      <p className="texto-2 pequeno" style={{ marginTop: 0 }}>
+        O acesso é criado já com o e-mail confirmado: a pessoa entra no app direto com o e-mail e a senha que você definir aqui.
+      </p>
+      <Campo rotulo="Nome *">
+        <Entrada {...campo('nome')} />
+      </Campo>
+      <Campo rotulo="E-mail de login *">
+        <Entrada type="email" autoComplete="off" {...campo('email')} />
+      </Campo>
+      <Campo rotulo="Senha *" ajuda="Mínimo 6 caracteres. Aparece na tela pra você conferir e passar à pessoa.">
+        <Entrada autoComplete="off" {...campo('senha')} />
+      </Campo>
+      <Campo rotulo="CNPJ (opcional)">
+        <Entrada inputMode="numeric" placeholder="Somente números" {...campo('cnpj')} />
+      </Campo>
+      <Campo rotulo="Razão social (opcional)">
+        <Entrada {...campo('razao_social')} />
+      </Campo>
+      <Campo rotulo="WhatsApp (opcional)">
+        <Entrada inputMode="tel" {...campo('telefone')} />
+      </Campo>
+      <div className="linha">
+        <Campo rotulo="Cidade (opcional)">
+          <Entrada {...campo('cidade')} />
+        </Campo>
+        <Campo rotulo="UF">
+          <Entrada maxLength={2} {...campo('uf')} />
+        </Campo>
+      </div>
+      <label className="linha" style={{ gap: 8 }}>
+        <input type="checkbox" checked={aprovar} onChange={(e) => setAprovar(e.target.checked)} />
+        <span>Já deixar aprovado (pode comprar na hora)</span>
+      </label>
+      {erro ? <div className="caixa-erro">{erro}</div> : null}
+    </Modal>
   );
 }
 
