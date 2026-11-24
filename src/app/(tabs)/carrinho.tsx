@@ -41,6 +41,10 @@ export default function CarrinhoScreen() {
   const removerItem = useRemoverDoCarrinho();
   const compartilharCarrinho = useCompartilharCarrinho();
   const recursos20 = useRecursos20();
+  // Hooks sempre antes dos retornos antecipados abaixo (!session / isLoading):
+  // se ficarem depois, a tela quebra ao sair da conta ("Rendered fewer hooks").
+  const pedidoMinimo = usePedidoMinimo();
+  const descontoFidelidade = usePontos().data?.desconto ?? 0;
 
   const [codigoCupom, setCodigoCupom] = useState('');
   const [cupom, setCupom] = useState<CupomValidado | null>(null);
@@ -95,9 +99,7 @@ export default function CarrinhoScreen() {
   const listaItens: LinhaCarrinho[] = [...(itens ?? []), ...itensPendentes];
   const subtotal = calcularSubtotalCarrinho(listaItens);
   const desconto = cupom ? Math.min(cupom.valor, subtotal) : 0;
-  const pedidoMinimo = usePedidoMinimo();
   const faltaParaMinimo = Math.max(0, pedidoMinimo - subtotal);
-  const descontoFidelidade = usePontos().data?.desconto ?? 0;
   const valorFidelidade = Math.round((subtotal - desconto) * descontoFidelidade) / 100;
   const total = subtotal - desconto - valorFidelidade;
 
