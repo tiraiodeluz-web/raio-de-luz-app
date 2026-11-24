@@ -899,6 +899,7 @@ export type Database = {
           ultimo_acesso: string | null
           ultimo_produto_carrinho: string | null
           versao_app: string
+          sistema: string | null
         }
         Insert: {
           aprovado_em?: string | null
@@ -924,6 +925,7 @@ export type Database = {
           ultimo_acesso?: string | null
           ultimo_produto_carrinho?: string | null
           versao_app?: string
+          sistema?: string | null
         }
         Update: {
           aprovado_em?: string | null
@@ -949,6 +951,7 @@ export type Database = {
           ultimo_acesso?: string | null
           ultimo_produto_carrinho?: string | null
           versao_app?: string
+          sistema?: string | null
         }
         Relationships: []
       }

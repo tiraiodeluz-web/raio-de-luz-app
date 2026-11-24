@@ -28,6 +28,7 @@ export type ClienteLinha = {
   ultimo_acesso: string | null;
   limite_credito: number | null;
   versao_app: string;
+  sistema: string | null;
   pedidos: number;
   total_gasto: number;
   ticket_medio: number;
@@ -42,7 +43,7 @@ export function useClientes() {
     queryFn: async () => {
       const [metricas, perfis] = await Promise.all([
         supabase.rpc('relatorio_clientes'),
-        supabase.from('perfis').select('id, cnpj, limite_credito, versao_app').eq('tipo', 'cliente'),
+        supabase.from('perfis').select('id, cnpj, limite_credito, versao_app, sistema').eq('tipo', 'cliente'),
       ]);
       if (metricas.error) throw metricas.error;
       if (perfis.error) throw perfis.error;
@@ -62,6 +63,7 @@ export function useClientes() {
           ultimo_acesso: m.ultimo_acesso,
           limite_credito: extra.get(m.cliente_id)?.limite_credito ?? null,
           versao_app: extra.get(m.cliente_id)?.versao_app ?? '2.0',
+          sistema: extra.get(m.cliente_id)?.sistema ?? null,
           pedidos: Number(m.pedidos),
           total_gasto: Number(m.total_gasto),
           ticket_medio: Number(m.ticket_medio),
@@ -111,7 +113,10 @@ export function PaginaClientes() {
 
   const todos = consulta.data ?? [];
   const emails = useEmails(todos.map((c) => c.id)).data ?? {};
-  const sistemas = useSistemas().data ?? {};
+  const detectados = useSistemas().data ?? {};
+  // O que você marcou na ficha do cliente vale mais do que o detectado pelas notificações.
+  const sistemas: Record<string, string> = { ...detectados };
+  for (const c of todos) if (c.sistema) sistemas[c.id] = c.sistema === 'ios' ? 'iOS' : 'Android';
   const pendentes = todos.filter((c) => !c.aprovado);
   const aprovados = todos.filter((c) => c.aprovado);
   const termo = busca

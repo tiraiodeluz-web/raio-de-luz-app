@@ -326,6 +326,15 @@ export function PaginaCliente() {
                     </Botao>
                   ) : null}
                 </div>
+                <Campo rotulo="Sistema do celular" ajuda="Aparece na coluna S.O da lista de clientes. Vazio = o painel usa o que detectar pelas notificações.">
+                  <Selecao
+                    value={perfil.sistema ?? ''}
+                    onChange={(e) => salvar({ sistema: e.target.value || null }, 'Sistema salvo')}>
+                    <option value="">Não informado</option>
+                    <option value="ios">iOS (iPhone)</option>
+                    <option value="android">Android</option>
+                  </Selecao>
+                </Campo>
                 <Campo rotulo="Nova senha de login" ajuda="Define a senha agora (o e-mail também fica confirmado). Passe a senha para o cliente; ele pode trocar depois com 'Esqueci minha senha'.">
                   <Entrada autoComplete="off" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
                 </Campo>
