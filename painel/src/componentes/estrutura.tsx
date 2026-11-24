@@ -21,6 +21,7 @@ export function Estrutura() {
       itens: [
         { para: '/pedidos', rotulo: 'Pedidos', icone: '🧾', contador: contadores?.pedidosNovos },
         { para: '/clientes', rotulo: 'Clientes', icone: '👥', contador: contadores?.clientesPendentes },
+        { para: '/carrinhos', rotulo: 'Carrinhos abandonados', icone: '🛒', contador: contadores?.carrinhos },
         { para: '/cupons', rotulo: 'Cupons', icone: '🏷️' },
         { para: '/notificacoes', rotulo: 'Notificações', icone: '🔔' },
         { para: '/pontos', rotulo: 'Pontos', icone: '🏆', contador: contadores?.feedbacksPendentes },
@@ -47,6 +48,7 @@ export function Estrutura() {
         { para: '/erros', rotulo: 'Erros do app', icone: '🐞' },
       ],
     },
+    { titulo: 'Conta', itens: [{ para: '/equipe', rotulo: 'Equipe e minha conta', icone: '🛡️' }] },
   ];
 
   return (

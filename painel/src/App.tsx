@@ -6,7 +6,9 @@ import { Carregando } from './componentes/ui';
 import { useSessao } from './lib/sessao';
 import { PaginaBanners } from './paginas/banners';
 import { PaginaCatalogos, PaginaCategorias, PaginaSantos } from './paginas/cadastros';
+import { PaginaCarrinhos } from './paginas/carrinhos';
 import { PaginaCliente } from './paginas/cliente';
+import { PaginaEquipe } from './paginas/equipe';
 import { PaginaClientes } from './paginas/clientes';
 import { PaginaCupons } from './paginas/cupons';
 import { PaginaCustoIa } from './paginas/custo-ia';
@@ -40,6 +42,8 @@ export function App() {
         <Route path="pedidos/:id" element={<PaginaPedido />} />
         <Route path="clientes" element={<PaginaClientes />} />
         <Route path="clientes/:id" element={<PaginaCliente />} />
+        <Route path="carrinhos" element={<PaginaCarrinhos />} />
+        <Route path="equipe" element={<PaginaEquipe />} />
         <Route path="cupons" element={<PaginaCupons />} />
         <Route path="produtos" element={<PaginaProdutos />} />
         <Route path="produtos/:id" element={<PaginaProduto />} />

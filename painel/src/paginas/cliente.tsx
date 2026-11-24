@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 
 import { useAvisar } from '../componentes/avisos';
 import { Tabela } from '../componentes/tabela';
-import { Botao, CabecalhoPagina, Campo, CaixaErro, Carregando, Cartao, Entrada, Etiqueta, Kpi, Miniatura, Selecao, Vazio } from '../componentes/ui';
+import { Botao, CabecalhoPagina, Campo, CaixaErro, Carregando, Cartao, Entrada, Etiqueta, Interruptor, Kpi, Miniatura, Selecao, Vazio } from '../componentes/ui';
 import { estaOnline } from '../lib/dados';
 import { mensagemErro } from '../lib/erros';
 import { cnpj, data, dataHora, hoje, lerNumero, linkWhatsApp, numero, reais, relativo, somarDias, telefone } from '../lib/formato';
@@ -67,8 +67,10 @@ export function PaginaCliente() {
 
   const [limite, setLimite] = useState('');
   const [versao, setVersao] = useState('2.0');
+  const [nome, setNome] = useState('');
   useEffect(() => {
     if (!consulta.data) return;
+    setNome(consulta.data.perfil.nome);
     setLimite(consulta.data.perfil.limite_credito ? String(consulta.data.perfil.limite_credito).replace('.', ',') : '');
     setVersao(consulta.data.perfil.versao_app);
   }, [consulta.data]);
@@ -236,6 +238,40 @@ export function PaginaCliente() {
 
             <Cartao titulo="Configurações">
               <div className="pilha">
+                <Campo rotulo="Nome do contato" ajuda="É o nome que aparece no painel e nas mensagens do app.">
+                  <Entrada value={nome} onChange={(e) => setNome(e.target.value)} />
+                </Campo>
+                {nome.trim() !== perfil.nome ? (
+                  <Botao
+                    variante="primario"
+                    onClick={() => {
+                      if (!nome.trim()) return avisar('Informe o nome.', 'erro');
+                      salvar({ nome: nome.trim() }, 'Nome salvo');
+                    }}>
+                    Salvar nome
+                  </Botao>
+                ) : null}
+                <Campo rotulo="Acesso de administrador" ajuda="Ligado, esta pessoa entra neste painel e vê no app a tela de escolher entre administrador e usuário. Para tirar depois, use Equipe e minha conta.">
+                  <Interruptor
+                    marcado={perfil.tipo === 'admin'}
+                    desabilitado={perfil.tipo === 'admin'}
+                    aoMudar={(ligado) => {
+                      if (!ligado) return;
+                      if (!confirm(`Dar acesso de administrador a ${perfil.nome}? Essa pessoa passa a ver os dados de todos os clientes e pedidos.`)) return;
+                      supabase
+                        .from('perfis')
+                        .update({ tipo: 'admin' })
+                        .eq('id', id as string)
+                        .then(({ error }) => {
+                          if (error) return avisar(mensagemErro(error), 'erro');
+                          avisar('Acesso de administrador liberado', 'sucesso');
+                          queryClient.invalidateQueries({ queryKey: ['clientes-painel'] });
+                          queryClient.invalidateQueries({ queryKey: ['admins-painel'] });
+                          navegar('/equipe');
+                        });
+                    }}
+                  />
+                </Campo>
                 <Campo rotulo="Limite de crédito" ajuda="Vazio = sem limite.">
                   <Entrada prefixo="R$" value={limite} onChange={(e) => setLimite(e.target.value)} inputMode="decimal" />
                 </Campo>
