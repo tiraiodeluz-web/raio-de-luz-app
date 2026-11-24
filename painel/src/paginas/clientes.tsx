@@ -72,6 +72,34 @@ export function useClientes() {
   });
 }
 
+
+// Sistema do celular de cada cliente, pelo aparelho que registrou as notificações.
+// Quem nunca aceitou notificações ainda não aparece (fica "—").
+export function useSistemas() {
+  return useQuery({
+    queryKey: ['sistemas-clientes'],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('dispositivos_push').select('usuario_id, plataforma, ativo');
+      if (error) throw error;
+      const porUsuario = new Map<string, { ativos: Set<string>; todos: Set<string> }>();
+      for (const d of data) {
+        const item = porUsuario.get(d.usuario_id) ?? { ativos: new Set<string>(), todos: new Set<string>() };
+        item.todos.add(d.plataforma);
+        if (d.ativo) item.ativos.add(d.plataforma);
+        porUsuario.set(d.usuario_id, item);
+      }
+      const rotulo = (p: string) => (p === 'ios' ? 'iOS' : p === 'android' ? 'Android' : p);
+      const mapa: Record<string, string> = {};
+      for (const [id, v] of porUsuario) {
+        const plataformas = [...(v.ativos.size ? v.ativos : v.todos)].sort();
+        mapa[id] = plataformas.map(rotulo).join(' + ');
+      }
+      return mapa;
+    },
+  });
+}
+
 export function PaginaClientes() {
   const [params, setParams] = useSearchParams();
   const aba = (params.get('aba') as Aba) || 'aprovados';
@@ -83,6 +111,7 @@ export function PaginaClientes() {
 
   const todos = consulta.data ?? [];
   const emails = useEmails(todos.map((c) => c.id)).data ?? {};
+  const sistemas = useSistemas().data ?? {};
   const pendentes = todos.filter((c) => !c.aprovado);
   const aprovados = todos.filter((c) => c.aprovado);
   const termo = busca
@@ -118,6 +147,7 @@ export function PaginaClientes() {
         { titulo: 'Aprovado', valor: (c) => c.aprovado },
         { titulo: 'Cadastro', valor: (c) => data(c.cadastrado_em) },
         { titulo: 'Último acesso', valor: (c) => data(c.ultimo_acesso) },
+        { titulo: 'S.O', valor: (c) => sistemas[c.id] },
         { titulo: 'Pedidos', valor: (c) => c.pedidos },
         { titulo: 'Total comprado', valor: (c) => c.total_gasto },
         { titulo: 'Ticket médio', valor: (c) => c.ticket_medio },
@@ -194,6 +224,7 @@ export function PaginaClientes() {
               { chave: 'cidade', titulo: 'Cidade', ordenar: (c) => c.cidade, celula: (c) => [c.cidade, c.uf].filter(Boolean).join('/') || '—' },
               { chave: 'cadastro', titulo: 'Cadastro', ordenar: (c) => c.cadastrado_em, celula: (c) => data(c.cadastrado_em) },
               { chave: 'acesso', titulo: 'Último acesso', ordenar: (c) => c.ultimo_acesso, celula: (c) => <span className="sem-quebra">{estaOnline(c.ultimo_acesso) ? <strong style={{ color: 'var(--sucesso)' }}>online agora</strong> : relativo(c.ultimo_acesso)}</span> },
+              { chave: 'so', titulo: 'S.O', ordenar: (c) => sistemas[c.id], celula: (c) => <span className="sem-quebra">{sistemas[c.id] ?? '—'}</span> },
               { chave: 'pedidos', titulo: 'Pedidos', classe: 'num', ordenar: (c) => c.pedidos, celula: (c) => numero(c.pedidos) },
               { chave: 'total', titulo: 'Total comprado', classe: 'num', ordenar: (c) => c.total_gasto, celula: (c) => reais(c.total_gasto) },
               {
