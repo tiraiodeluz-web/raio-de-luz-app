@@ -14,6 +14,6 @@ export const LINKS_INSTITUCIONAIS: {
 
 // Rodapé "Desenvolvido por" da tela Sobre, visível por completo no print.
 export const DESENVOLVIDO_POR = {
-  nome: '@CA_APPS',
-  instagram: 'https://instagram.com/ca_apps',
+  nome: '@ca_aplicativos_',
+  instagram: 'https://www.instagram.com/ca_aplicativos_/',
 };
