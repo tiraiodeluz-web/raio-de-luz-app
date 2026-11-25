@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { useAvisar } from '../componentes/avisos';
 import { Tabela } from '../componentes/tabela';
-import { Abas, Botao, CabecalhoPagina, CaixaErro, Cartao, Carregando, Entrada, Etiqueta, Modal, Vazio } from '../componentes/ui';
+import { Abas, Botao, CabecalhoPagina, CaixaErro, Cartao, Carregando, Entrada, Etiqueta, Modal, Selecao, Vazio } from '../componentes/ui';
 import { mensagemErro } from '../lib/erros';
 import { dataHora } from '../lib/formato';
 import { supabase } from '../lib/supabase';
@@ -217,6 +217,116 @@ function VideoFeedback({ caminho }: { caminho: string | null }) {
   );
 }
 
+
+type LinhaLink = { id: string; nome: string; empresa: string | null; contato: string; respostas: Record<string, string | number>; criado_em: string; vinculado_a: string | null };
+
+// Respostas enviadas pela página pública /formulario.html (cliente que não usa o app).
+// O admin vincula a um cliente: vira a resposta dele e ele ganha o desconto.
+function RecebidasPeloLink() {
+  const avisar = useAvisar();
+  const queryClient = useQueryClient();
+  const [vinculando, setVinculando] = useState<LinhaLink | null>(null);
+  const lista = useQuery({
+    queryKey: ['pontos', 'formulario-publico'],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('formulario_publico').select('id, nome, empresa, contato, respostas, criado_em, vinculado_a').order('criado_em', { ascending: false });
+      if (error) throw error;
+      return data as unknown as LinhaLink[];
+    },
+  });
+  const clientes = useQuery({
+    queryKey: ['pontos', 'clientes-para-vincular'],
+    enabled: !!vinculando,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('perfis').select('id, nome, razao_social, codigo').eq('tipo', 'cliente').order('razao_social');
+      if (error) throw error;
+      return data;
+    },
+  });
+  const [escolhido, setEscolhido] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  if (!lista.data?.length) return null;
+
+  async function vincular() {
+    if (!vinculando || !escolhido) return avisar('Escolha o cliente.', 'erro');
+    setSalvando(true);
+    const { error } = await supabase.rpc('admin_vincular_formulario', { p_id: vinculando.id, p_usuario: escolhido });
+    setSalvando(false);
+    if (error) return avisar(mensagemErro(error), 'erro');
+    avisar('Vinculado: o cliente ganhou +1% de desconto e foi avisado.', 'sucesso');
+    setVinculando(null);
+    setEscolhido('');
+    queryClient.invalidateQueries({ queryKey: ['pontos'] });
+  }
+
+  return (
+    <>
+      <Cartao titulo={`Recebidas pelo link (${lista.data.length})`}>
+        <p className="texto-2 pequeno" style={{ marginTop: 0 }}>
+          Link para mandar: <strong>https://raiodeluz-painel.expo.app/formulario.html</strong>
+        </p>
+        <div className="pilha" style={{ gap: 14 }}>
+          {lista.data.map((r) => (
+            <div key={r.id} className="pilha" style={{ gap: 6, borderTop: '1px solid #E5E6EC', paddingTop: 10 }}>
+              <div className="linha entre">
+                <div>
+                  <strong>{r.nome}</strong>
+                  {r.empresa ? ` · ${r.empresa}` : ''}
+                  <div className="texto-3 pequeno">
+                    {r.contato} · {dataHora(r.criado_em)}
+                  </div>
+                </div>
+                {r.vinculado_a ? (
+                  <Etiqueta tom="sucesso">Vinculado</Etiqueta>
+                ) : (
+                  <Botao pequeno variante="primario" onClick={() => setVinculando(r)}>
+                    Vincular a cliente
+                  </Botao>
+                )}
+              </div>
+              {Object.entries(PERGUNTAS).map(([chave, rotulo]) =>
+                r.respostas[chave] !== undefined && r.respostas[chave] !== '' ? (
+                  <div key={chave}>
+                    <span className="texto-2 pequeno">{rotulo}</span>
+                    <div>{String(r.respostas[chave])}</div>
+                  </div>
+                ) : null,
+              )}
+            </div>
+          ))}
+        </div>
+      </Cartao>
+      {vinculando ? (
+        <Modal
+          titulo="Vincular a um cliente"
+          aoFechar={() => setVinculando(null)}
+          rodape={
+            <>
+              <Botao onClick={() => setVinculando(null)}>Cancelar</Botao>
+              <Botao variante="primario" carregando={salvando} onClick={vincular}>
+                Vincular e dar +1%
+              </Botao>
+            </>
+          }>
+          <p className="texto-2" style={{ marginTop: 0 }}>
+            Respostas de <strong>{vinculando.nome}</strong> ({vinculando.contato}). Escolha o cliente que vai receber o desconto:
+          </p>
+          <Selecao value={escolhido} onChange={(e) => setEscolhido(e.target.value)}>
+            <option value="">Escolha...</option>
+            {(clientes.data ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.razao_social || c.nome} · {c.nome} {c.codigo ? `(${c.codigo})` : ''}
+              </option>
+            ))}
+          </Selecao>
+        </Modal>
+      ) : null}
+    </>
+  );
+}
+
 type RespostaLinha = { id: string; respostas: Record<string, string | number>; criado_em: string; perfis: Cliente };
 
 function Formularios() {
@@ -235,14 +345,18 @@ function Formularios() {
   if (lista.error) return <CaixaErro erro={lista.error} tentarDeNovo={() => lista.refetch()} />;
   if (!lista.data?.length)
     return (
-      <div className="cartao">
-        <Vazio icone="📋" titulo="Ninguém respondeu ainda" />
+      <div className="pilha" style={{ gap: 12 }}>
+        <RecebidasPeloLink />
+        <div className="cartao">
+          <Vazio icone="📋" titulo="Ninguém respondeu ainda dentro do app" />
+        </div>
       </div>
     );
   const notas = lista.data.map((r) => Number(r.respostas.nota_recomendacao)).filter((n) => !Number.isNaN(n));
   const media = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
   return (
     <div className="pilha" style={{ gap: 12 }}>
+      <RecebidasPeloLink />
       <Cartao>
         <strong>{lista.data.length} respostas</strong>
         {media !== null ? <span className="texto-2"> · nota média de recomendação: {media.toFixed(1)}</span> : null}

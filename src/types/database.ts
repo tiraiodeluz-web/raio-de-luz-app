@@ -601,6 +601,39 @@ export type Database = {
           },
         ]
       }
+      formulario_publico: {
+        Row: {
+          contato: string
+          criado_em: string
+          empresa: string | null
+          id: string
+          nome: string
+          respostas: Json
+          vinculado_a: string | null
+          vinculado_em: string | null
+        }
+        Insert: {
+          contato: string
+          criado_em?: string
+          empresa?: string | null
+          id?: string
+          nome: string
+          respostas: Json
+          vinculado_a?: string | null
+          vinculado_em?: string | null
+        }
+        Update: {
+          contato?: string
+          criado_em?: string
+          empresa?: string | null
+          id?: string
+          nome?: string
+          respostas?: Json
+          vinculado_a?: string | null
+          vinculado_em?: string | null
+        }
+        Relationships: []
+      }
       formulario_respostas: {
         Row: {
           criado_em: string
@@ -1305,6 +1338,10 @@ export type Database = {
           itens_adicionados: number
           itens_indisponiveis: number
         }[]
+      }
+      admin_vincular_formulario: {
+        Args: { p_id: string; p_usuario: string }
+        Returns: undefined
       }
       admin_avaliar_feedback: {
         Args: { p_aprovar: boolean; p_id: string; p_motivo?: string }
