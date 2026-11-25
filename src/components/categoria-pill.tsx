@@ -15,7 +15,7 @@ export function CategoriaPill({ id, nome, fotoUrl }: Props) {
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/categoria/${id}`)}>
       <View style={styles.circulo}>
-        {fotoUrl ? <Image source={{ uri: fotoUrl }} style={styles.imagem} contentFit="cover" /> : null}
+        {fotoUrl ? <Image source={{ uri: fotoUrl }} style={styles.imagem} contentFit="cover" cachePolicy="memory-disk" transition={150} /> : null}
       </View>
       <ThemedText type="smallBold" numberOfLines={2} style={styles.nome}>
         {nome.toUpperCase()}

@@ -29,7 +29,7 @@ export default function CatalogosScreen() {
             <View style={styles.coluna}>
               <Pressable onPress={() => router.push(`/catalogo/${item.id}`)} style={styles.capa} accessibilityLabel={item.nome}>
                 {item.imagem_url ? (
-                  <Image source={{ uri: item.imagem_url }} style={styles.imagem} contentFit="cover" />
+                  <Image source={{ uri: item.imagem_url }} style={styles.imagem} contentFit="cover" cachePolicy="memory-disk" transition={150} />
                 ) : (
                   <ThemedText type="smallBold" style={styles.legendaSemImagem}>
                     {item.nome}

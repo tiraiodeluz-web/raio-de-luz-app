@@ -63,7 +63,7 @@ export function BannerCarrossel({ banners }: { banners: Banner[] }) {
           onPress={() => banner.link && abrirLink(banner.link)}
           style={styles.banner}>
           <ThemedView type="backgroundElement" style={styles.banner}>
-            <Image source={{ uri: banner.foto_url }} style={styles.imagem} contentFit="cover" />
+            <Image source={{ uri: banner.foto_url }} style={styles.imagem} contentFit="cover" cachePolicy="memory-disk" priority="high" transition={150} />
           </ThemedView>
         </Pressable>
       ))}
