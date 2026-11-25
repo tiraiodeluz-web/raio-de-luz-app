@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulário · Raio de Luz Religiosos</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f3f1eb;font-family:Helvetica,Arial,sans-serif;color:#1b1d2a;line-height:1.5}
+  header{background:#010534;padding:18px;text-align:center}
+  header img{height:44px}
+  main{max-width:640px;margin:0 auto;padding:22px 16px 56px}
+  h1{color:#010534;font-size:24px;margin:6px 0 8px}
+  p.intro{margin:0 0 16px;color:#46495a}
+  .cartao{background:#fff;border-radius:12px;padding:16px 18px;margin:12px 0}
+  label.t{display:block;font-weight:700;margin-bottom:8px}
+  .obrig{color:#b3261e}
+  input[type=text],textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid #c6c8d2;border-radius:10px;background:#fff}
+  textarea{min-height:84px;resize:vertical}
+  .opcoes{display:flex;flex-wrap:wrap;gap:8px}
+  .opcoes label{cursor:pointer}
+  .opcoes input{position:absolute;opacity:0;pointer-events:none}
+  .opcoes span{display:inline-block;padding:9px 14px;border:1px solid #c6c8d2;border-radius:999px;background:#fff;font-size:15px}
+  .opcoes input:checked + span{background:#010534;border-color:#010534;color:#fff;font-weight:700}
+  .opcoes input:focus-visible + span{outline:2px solid #c9a227;outline-offset:2px}
+  .notas span{min-width:44px;text-align:center;padding:9px 0}
+  button{width:100%;font:inherit;font-weight:700;background:#010534;color:#fff;border:0;border-radius:12px;padding:15px;margin-top:8px;cursor:pointer}
+  button[disabled]{opacity:.6;cursor:default}
+  .erro{color:#b3261e;margin:10px 0;font-weight:700}
+  .ok{background:#fff;border-radius:12px;padding:26px 20px;text-align:center}
+  .ok h2{color:#010534;margin:0 0 8px}
+  small{color:#6a6d7c}
+  a{color:#010534}
+</style>
+</head>
+<body>
+<header><img src="./logo.png" alt="Raio de Luz Religiosos"></header>
+<main>
+<div id="tela-form">
+  <h1>Conte o que você acha</h1>
+  <p class="intro">São 6 perguntas rápidas. Suas respostas ajudam a melhorar o aplicativo e o atendimento da <b>Raio de Luz Religiosos</b>. Quem responde ganha <b>+1% de desconto</b> no próximo pedido.</p>
+
+  <form id="f" novalidate>
+    <div class="cartao">
+      <label class="t" for="nome">Seu nome <span class="obrig">*</span></label>
+      <input type="text" id="nome" maxlength="120" autocomplete="name">
+    </div>
+    <div class="cartao">
+      <label class="t" for="empresa">Nome da sua loja ou empresa</label>
+      <input type="text" id="empresa" maxlength="160" autocomplete="organization">
+    </div>
+    <div class="cartao">
+      <label class="t" for="contato">Seu WhatsApp ou e-mail <span class="obrig">*</span></label>
+      <input type="text" id="contato" maxlength="120" autocomplete="off" placeholder="Para identificarmos o seu cadastro e liberar o desconto">
+    </div>
+
+    <div class="cartao">
+      <span class="t" style="display:block;font-weight:700;margin-bottom:8px">1. De 0 a 10, quanto você recomendaria o app da Raio de Luz a outro lojista? <span class="obrig">*</span></span>
+      <div class="opcoes notas" id="notas"></div>
+    </div>
+    <div class="cartao">
+      <span class="t" style="display:block;font-weight:700;margin-bottom:8px">2. Antes do app, como você fazia seus pedidos? <span class="obrig">*</span></span>
+      <div class="opcoes" id="como"></div>
+    </div>
+    <div class="cartao">
+      <span class="t" style="display:block;font-weight:700;margin-bottom:8px">3. Com que frequência você repõe artigos religiosos na sua loja? <span class="obrig">*</span></span>
+      <div class="opcoes" id="freq"></div>
+    </div>
+    <div class="cartao">
+      <label class="t" for="gosta">4. O que você mais gosta no app? <span class="obrig">*</span></label>
+      <textarea id="gosta" maxlength="1500"></textarea>
+    </div>
+    <div class="cartao">
+      <label class="t" for="melhorar">5. O que podemos melhorar? <span class="obrig">*</span></label>
+      <textarea id="melhorar" maxlength="1500"></textarea>
+    </div>
+    <div class="cartao">
+      <label class="t" for="produtos">6. Que produtos você gostaria de encontrar no catálogo? <small>(opcional)</small></label>
+      <textarea id="produtos" maxlength="1500"></textarea>
+    </div>
+
+    <div class="erro" id="erro" role="alert" hidden></div>
+    <button type="submit" id="enviar">Enviar respostas</button>
+    <p><small>Ao enviar, você concorda que a Raio de Luz use suas respostas para melhorar o atendimento. Veja a <a href="./politica-de-privacidade.html">Política de privacidade</a>.</small></p>
+  </form>
+</div>
+
+<div class="ok" id="tela-ok" hidden>
+  <h2>Obrigado! 🙏</h2>
+  <p>Recebemos as suas respostas. A equipe da Raio de Luz vai liberar o seu <b>+1% de desconto</b> no próximo pedido.</p>
+</div>
+</main>
+
+<script>
+(function () {
+  var URL = 'https://zjkhlvomxhtafajbzbjb.supabase.co';
+  var CHAVE = 'sb_publishable_4pSB9ulVgeDKtA5TYb4qmw_xMRcCf4R';
+  var COMO = ['WhatsApp', 'Telefone', 'Representante / visita', 'Indo à loja', 'Outro'];
+  var FREQ = ['Toda semana', 'A cada 15 dias', 'Uma vez por mês', 'A cada 2 meses ou mais'];
+
+  function opcoes(idDiv, nome, lista) {
+    var d = document.getElementById(idDiv);
+    lista.forEach(function (v) {
+      var l = document.createElement('label');
+      var i = document.createElement('input'); i.type = 'radio'; i.name = nome; i.value = String(v);
+      var s = document.createElement('span'); s.textContent = String(v);
+      l.appendChild(i); l.appendChild(s); d.appendChild(l);
+    });
+  }
+  opcoes('notas', 'nota', [0,1,2,3,4,5,6,7,8,9,10]);
+  opcoes('como', 'como', COMO);
+  opcoes('freq', 'freq', FREQ);
+
+  function marcado(nome) {
+    var e = document.querySelector('input[name="' + nome + '"]:checked');
+    return e ? e.value : null;
+  }
+  function val(id) { return document.getElementById(id).value.trim(); }
+  var erro = document.getElementById('erro');
+  function mostrarErro(t) { erro.textContent = t; erro.hidden = false; erro.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  document.getElementById('f').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    erro.hidden = true;
+    var nota = marcado('nota'), como = marcado('como'), freq = marcado('freq');
+    if (val('nome').length < 2) return mostrarErro('Informe o seu nome.');
+    if (val('contato').length < 5) return mostrarErro('Informe o seu WhatsApp ou e-mail.');
+    if (nota === null || !como || !freq) return mostrarErro('Responda as perguntas de escolha (1, 2 e 3).');
+    if (val('gosta').length < 3 || val('melhorar').length < 3) return mostrarErro('Conte o que você gosta e o que podemos melhorar.');
+
+    var botao = document.getElementById('enviar');
+    botao.disabled = true; botao.textContent = 'Enviando...';
+    fetch(URL + '/rest/v1/rpc/enviar_formulario_publico', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CHAVE, Authorization: 'Bearer ' + CHAVE },
+      body: JSON.stringify({
+        p_nome: val('nome'),
+        p_empresa: val('empresa'),
+        p_contato: val('contato'),
+        p_respostas: {
+          nota_recomendacao: Number(nota),
+          como_pedia_antes: como,
+          frequencia_compra: freq,
+          o_que_gosta: val('gosta'),
+          o_que_melhorar: val('melhorar'),
+          produtos_desejados: val('produtos')
+        }
+      })
+    }).then(function (r) {
+      if (r.ok) {
+        document.getElementById('tela-form').hidden = true;
+        document.getElementById('tela-ok').hidden = false;
+        window.scrollTo(0, 0);
+        return;
+      }
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        mostrarErro(j && j.message ? j.message : 'Não foi possível enviar agora. Tente de novo em instantes.');
+        botao.disabled = false; botao.textContent = 'Enviar respostas';
+      });
+    }).catch(function () {
+      mostrarErro('Sem conexão. Confira a internet e tente de novo.');
+      botao.disabled = false; botao.textContent = 'Enviar respostas';
+    });
+  });
+})();
+</script>
+</body>
+</html>
