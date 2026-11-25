@@ -28,7 +28,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 1002
+      "versionCode": 1001
     },
     "web": {
       "output": "static",
