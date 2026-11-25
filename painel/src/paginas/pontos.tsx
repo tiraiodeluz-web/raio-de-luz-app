@@ -39,7 +39,7 @@ export function PaginaPontos() {
     <>
       <CabecalhoPagina
         titulo="Desconto de fidelidade"
-        descricao="Pedido pago: +3% · formulário: +2% · feedback em vídeo aprovado: +2%. O desconto acumulado (máx. 7%) vale no próximo pedido do cliente e é consumido nele."
+        descricao="Pedido pago: +2% · formulário: +1% · feedback em vídeo aprovado: +1%. O desconto acumulado (máx. 4%) vale no próximo pedido do cliente e é consumido nele."
       />
       <Abas<Aba>
         abas={[
@@ -149,7 +149,7 @@ function Feedbacks() {
                       variante="primario"
                       carregando={avaliar.isPending && avaliar.variables?.id === f.id && avaliar.variables.aprovar}
                       onClick={() => avaliar.mutate({ id: f.id, aprovar: true })}>
-                      Aprovar (+2% de desconto)
+                      Aprovar (+1% de desconto)
                     </Botao>
                     <Botao variante="perigo" onClick={() => setRecusando(f)}>
                       Recusar

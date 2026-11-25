@@ -10,12 +10,12 @@ import type { Tables } from '@/types/database';
 // (supabase/migrations/20261110120*_pontos_* e 20261111*): o "saldo" de
 // pontos_movimentos é esse % acumulado.
 export const DESCONTO_POR_ACAO = {
-  pedido: 3, // quando o pedido é pago
-  formulario: 2, // uma vez
-  feedback_video: 2, // uma vez, depois de aprovado
+  pedido: 2, // quando o pedido é pago
+  formulario: 1, // uma vez
+  feedback_video: 1, // uma vez, depois de aprovado
 } as const;
 
-export const DESCONTO_MAXIMO = 7; // 3 + 2 + 2: teto do desconto no próximo pedido
+export const DESCONTO_MAXIMO = 4; // 2 + 1 + 1: teto do desconto no próximo pedido
 
 export type MovimentoPontos = Tables<'pontos_movimentos'>;
 export type Feedback = Tables<'feedbacks'>;
