@@ -1,0 +1,6 @@
+-- Formulário público (painel/public/formulario.html) para quem não usa o app.
+--   public.formulario_publico                -> respostas recebidas (só admin lê; anon não lê nem grava direto)
+--   public.enviar_formulario_publico(...)    -> anon grava pela função (valida; 2 por contato/24 h e 60/h no total)
+--   public.admin_vincular_formulario(id, usuario) -> admin vincula a um cliente: vira a resposta dele
+--                                              em formulario_respostas, +1% (pontos_movimentos) e aviso no app
+-- Corpo completo aplicado no banco (ver histórico de migrações do Supabase).
