@@ -16,7 +16,8 @@
       "infoPlist": {
         "CFBundleDisplayName": "Raio de Luz",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "runtimeVersion": "29cf2ebc8181ae2a8da03bf193b28de09eaac547"
     },
     "android": {
       "package": "com.raiodeluzreligiosos.loja",
@@ -28,7 +29,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 1001
+      "versionCode": 1002,
+      "runtimeVersion": "8a476048fc64144ba668bf0f1f0e669f1a620f8c"
     },
     "web": {
       "output": "static",
