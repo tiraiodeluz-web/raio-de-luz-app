@@ -13,7 +13,7 @@ export function KitCard({ kit }: { kit: Kit }) {
   return (
     <Pressable style={styles.container} onPress={() => router.push(`/kit/${kit.id}`)}>
       <View style={styles.imagemContainer}>
-        {kit.imagem_url ? <Image source={{ uri: kit.imagem_url }} style={styles.imagem} contentFit="cover" /> : null}
+        {kit.imagem_url ? <Image source={{ uri: kit.imagem_url }} style={styles.imagem} contentFit="cover" cachePolicy="memory-disk" transition={150} /> : null}
         <View style={styles.selo}>
           <ThemedText type="small" style={styles.seloTexto}>
             KIT

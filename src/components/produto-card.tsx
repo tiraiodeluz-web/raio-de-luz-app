@@ -50,6 +50,9 @@ export function ProdutoCard({ produto, mostrarComprar, onComprar }: Props) {
           source={{ uri: urlImagem(produto.imagem_principal, "card") }}
           style={styles.imagem}
           contentFit="contain"
+          cachePolicy="memory-disk"
+          recyclingKey={produto.id}
+          transition={150}
         />
         {temDesconto ? (
           <View style={styles.selo}>

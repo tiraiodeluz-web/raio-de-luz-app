@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { Image } from 'expo-image';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -7,6 +8,7 @@ import { EstadoVazio } from '@/components/estado-vazio';
 import { ProdutoCard } from '@/components/produto-card';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { urlImagem } from '@/lib/imagem';
 import type { ProdutoResumo, useProdutos } from '@/lib/produtos';
 
 type QueryResultado = ReturnType<typeof useProdutos>;
@@ -28,6 +30,14 @@ export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagem
 
   const [produtoParaComprar, setProdutoParaComprar] = useState<ProdutoResumo | null>(null);
 
+  // Assim que uma página de produtos chega, já baixa as fotos dela pro cache
+  // (disco + memória), antes de o cliente rolar até lá. Fica antes do retorno
+  // antecipado de "carregando" (regra dos hooks).
+  useEffect(() => {
+    const urls = itens.map((p) => urlImagem(p.imagem_principal, 'card')).filter((u): u is string => !!u);
+    if (urls.length > 0) Image.prefetch(urls, 'memory-disk').catch(() => {});
+  }, [itens.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (isLoading) {
     return (
       <>
@@ -44,6 +54,10 @@ export function GradeProdutos({ query, mostrarContagem, mostrarComprar, mensagem
         data={itens}
         keyExtractor={(item) => item.id}
         numColumns={2}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={9}
+        removeClippedSubviews
         columnWrapperStyle={styles.linha}
         contentContainerStyle={styles.lista}
         ListHeaderComponent={
