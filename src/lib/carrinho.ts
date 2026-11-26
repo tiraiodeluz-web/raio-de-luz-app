@@ -147,6 +147,10 @@ export function useItensCarrinho() {
            produtos ( id, nome, sku, preco, preco_promocional, imagem_principal, embalagem, ativo ),
            santos ( id, nome )`,
         )
+        // Filtro explícito: a política do banco deixa o admin enxergar o carrinho
+        // de TODOS os clientes (usado no painel), então sem isto o carrinho de um
+        // admin misturava itens de outras contas.
+        .eq('usuario_id', session!.user.id)
         .order('criado_em', { ascending: true });
       if (error) throw error;
 
