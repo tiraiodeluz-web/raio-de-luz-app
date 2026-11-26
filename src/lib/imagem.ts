@@ -9,7 +9,7 @@ export type TamanhoImagem = 'miniatura' | 'card' | 'grande';
 const LADO: Record<TamanhoImagem, number> = {
   miniatura: 240, // thumbs de 44–80px em listas, carrinho, pedido
   card: 480, // cards de produto (~160px de largura em tela 3x)
-  grande: 1080, // foto principal do produto
+  grande: 900, // foto principal do produto (900px: nítida em tela 3x e ~35% mais leve que 1080)
 };
 
 const GOOGLE_FOTOS = /^https:\/\/lh\d\.googleusercontent\.com\//;

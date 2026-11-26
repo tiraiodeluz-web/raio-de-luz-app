@@ -51,6 +51,18 @@ export default function DetalheProdutoScreen() {
     }
   }, [data]);
 
+  // Baixa em segundo plano as fotos grandes de todos os santos assim que o
+  // produto abre: ao tocar em outro santo, a foto já está no aparelho e troca
+  // na hora. (Hook antes do retorno de "carregando" — regra dos hooks.)
+  useEffect(() => {
+    if (!data?.produto.personalizavel) return;
+    const urls = data.santos
+      .map((santo) => (santo.fotoUrl ? urlImagem(santo.fotoUrl, 'grande') : undefined))
+      .filter((u): u is string => !!u)
+      .slice(0, 24);
+    if (urls.length > 0) Image.prefetch(urls, 'memory-disk').catch(() => {});
+  }, [data]);
+
   // Trocar de santo limpa o texto digitado — personalização é por variação
   // escolhida, não faz sentido carregar texto de outro santo.
   useEffect(() => {
@@ -136,7 +148,19 @@ export default function DetalheProdutoScreen() {
       />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.fotoContainer}>
-          {foto ? <Image source={{ uri: urlImagem(foto, 'grande') }} style={styles.foto} contentFit="contain" /> : null}
+          {foto ? (
+            <Image
+              source={{ uri: urlImagem(foto, 'grande') }}
+              // Enquanto a foto grande não chega, mostra a miniatura do santo (já
+              // no aparelho, vem da faixa de miniaturas) ampliada: troca instantânea.
+              placeholder={santoEscolhido?.miniaturaUrl ? { uri: urlImagem(santoEscolhido.miniaturaUrl, 'miniatura') } : undefined}
+              placeholderContentFit="contain"
+              cachePolicy="memory-disk"
+              transition={120}
+              style={styles.foto}
+              contentFit="contain"
+            />
+          ) : null}
         </View>
 
         {precisaEscolherSanto ? (
@@ -150,7 +174,7 @@ export default function DetalheProdutoScreen() {
                     style={[styles.santoMiniatura, selecionado && styles.santoSelecionado]}
                     onPress={() => setSantoEscolhido(santo)}>
                     {santo.miniaturaUrl ? (
-                      <Image source={{ uri: urlImagem(santo.miniaturaUrl, 'miniatura') }} style={styles.santoFoto} contentFit="cover" />
+                      <Image source={{ uri: urlImagem(santo.miniaturaUrl, 'miniatura') }} style={styles.santoFoto} contentFit="cover" cachePolicy="memory-disk" />
                     ) : (
                       <View style={styles.santoSemFoto}>
                         <Ionicons name="create-outline" size={22} color={BrandColors.fundoEscuro} />
